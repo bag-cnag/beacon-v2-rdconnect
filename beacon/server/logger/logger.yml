@@ -6,25 +6,16 @@ root:
   handlers: [noHandler]
 
 loggers:
-  beacon:
+  server:
     level: DEBUG
     handlers: [console]
     propagate: True
   asynpg:
-    level: CRITICAL
+    level: DEBUG
     handlers: [console]
   aiohttp:
-    level: CRITICAL
+    level: DEBUG
     handlers: [console]
-
-handlers:
-  noHandler:
-    class: logging.NullHandler
-    level: NOTSET
-  console:
-    class: logging.StreamHandler
-    formatter: simple
-    stream: ext://sys.stderr
 
 formatters:
   simple:
