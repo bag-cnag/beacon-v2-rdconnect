@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width, shrink-to-fit=no"/>
+    <title>{{ config.beacon_name }}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet"> <!-- font-family: 'Open Sans', sans-serif; -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet"> <!-- font-family: 'Roboto Mono', monospace; -->       
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="{{ static('js/jquery.json-viewer.js') }}"></script>
+    <link href="{{ static('css/jquery.json-viewer.css') }}" type="text/css" rel="stylesheet" />
+    <style type="text/css">
+      textarea#json-input {
+        width: 100%;
+        height: 200px;
+      }
+      pre#json-renderer {
+        border: 1px solid #aaa;
+      }
+    </style>
+    <script>
+      $(function() {
+        function renderJson() {
+          try {
+            //var input = eval('(' + $('#json-input').val() + ')');
+            var input = {{ beacon_response|tojson|safe }}
+          }
+          catch (error) {
+            return alert("Cannot eval JSON: " + error);
+          }
+          var options = {
+            collapsed: $('#collapsed').is(':checked'),
+            rootCollapsable: $('#root-collapsable').is(':checked'),
+            withQuotes: $('#with-quotes').is(':checked'),
+            withLinks: $('#with-links').is(':checked')
+          };
+          $('#json-renderer').jsonViewer(input, options);
+        }
+      
+        // Generate on click
+        //$('#btn-json-viewer').click(renderJson);
+      
+        // Generate on option change
+        //$('p.options input[type=checkbox]').click(renderJson);
+      
+        // Display JSON sample on page load
+        renderJson();
+      });
+    </script>
+  </head>
+  <body id="{% if beacon_response %}response{% else %}info{% endif %}">
+    <div class="container">
+      {% include 'header.html' %}
+      <main>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="h-100 p-5 bg-light border rounded-3">
+              <h2>Using Beacon v2 in RD-Connect</h2>
+              <p>The Beacon v2 in RD-Connect works under the premise that you are a registered used in RD-Connect PhenoStore and/or in RD-Connect GPAP. To use Beacon v2, use the button on the top-right of the page to login using you PhenoStore or GPAP user. Once you are logged in you will be able to test Beacon v2 API endpoints the following using the following links.</p>
+            </div>
+          </div>
+        </div>
+        <div class="row p-5">
+          <div class="col text-center">
+            {% if session.user %}
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" class="btn btn-primary">biosamples</button>
+              <button type="button" class="btn btn-primary">individuals</button>
+              <button type="button" class="btn btn-primary">variant</button>
+              <button type="button" class="btn btn-primary">varaint_in_samples</button>
+              <button type="button" class="btn btn-primary">cohort</button>
+            </div>
+            {% else %} 
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" class="btn btn-primary" disabled>biosamples</button>
+              <button type="button" class="btn btn-primary" disabled>individuals</button>
+              <button type="button" class="btn btn-primary" disabled>variant</button>
+              <button type="button" class="btn btn-primary" disabled>varaint_in_samples</button>
+              <button type="button" class="btn btn-primary" disabled>cohort</button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <pre id="json-renderer"></pre>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+  <footer>
+  </footer>
+</html>
