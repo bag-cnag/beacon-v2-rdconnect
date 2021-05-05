@@ -12,6 +12,7 @@ Server implements the following endpoints from API:
  * ...
 
 Logging model was obtained from refrence implementation of Beacon 2.x by EGA/CRG.
+Filter and schema was taken for reference implementation of Beacon 2.x by EGA/CRG.
 JSON viewer was obtained from: https://www.jqueryscript.net/other/jQuery-Plugin-For-Easily-Readable-JSON-Data-Viewer.html
 """
 
@@ -47,7 +48,6 @@ def main():
 
     # Add API' endpoints
     beacon.add_routes(routes)
-    LOG.debug(routes)
 
     # Start web server
     web.run_app(beacon,
