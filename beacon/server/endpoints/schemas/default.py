@@ -11,6 +11,12 @@ LOG = logging.getLogger(__name__)
 def snake_case_to_camelCase(j):
     return j if j is None else json.loads(under_pat.sub(lambda x: x.group(1).upper(), j))
 
+def get_val(dd, k, rst = [], conv = lambda x: x):
+    if k in dd.keys():
+        return conv(dd[k])
+    else:
+        return rst
+
 def beacon_info_v30(datasets, authorized_datasets=[]):
     return {
         'id': config.beacon_id,
@@ -133,21 +139,21 @@ def beacon_individual_v30(row):                                    # PHENOSTORE 
     return {
         'individualId': row['id'],                                 # PHENOSTORE ID
         'taxonId': None,                                           # NONE
-        'sex': row['sex'],                                         #
+        'sex': get_val(row, 'sex', None, lambda x: 'Female' if x == 'F' else 'Male'), #
         'ethnicity': None,                                         # NONE
         'geographicOrigin': None,                                  # NONE
-        'phenotypicFeatures': row['features'],                     # FEATURES
-        'diseases': row['diagnosis'],                              # DIAGNOSIS
+        'phenotypicFeatures': get_val(row, 'features', []),        # FEATURES
+        'diseases': get_val(row, 'diagnosis', []),                 # DIAGNOSIS
         'pedigrees': [],                                           # ?
         'handovers': [],                                           # NONE/[]
         'treatments': [],                                          # NONE/[]
         'interventions': [],                                       # NONE/[]
-        'measures': snake_case_to_camelCase(row['measurements']),  #
+        'measures': get_val(row, 'measurements', []),              #
         'exposures': [],                                           # NONE/[]
         'info': {                                                  # FREE FIELD
-            'family': row['famid'],                                # PS FAMILY ID
-            'index': row['index'],                                 # RD-CONNECT INDEX CASE
-            'solved': row['solved'],                               # RD-CONNECT SOLVED STATUS
+            'family': get_val(row, 'famid', None),                 # PS FAMILY ID
+            'index': get_val(row, 'index', None),                  # RD-CONNECT INDEX CASE
+            'solved': get_val(row, 'solved', None)                 # RD-CONNECT SOLVED STATUS
         },
     }
 

@@ -46,7 +46,7 @@ def not_implemented_handler(entity):
         raise BeaconEndPointNotImplemented() 
     return wrapper
 
-def generic_handler(entity, by_entity_type, proxy, fetch_func, count_results_func, build_response_func):
+def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_func):
     async def wrapper(request):
         LOG.info('Running a request for %s', entity)
         access_token = request.headers.get('Authorization')
@@ -83,14 +83,14 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, count_results_fun
         #     error = f'You are not authorized to access any of these datasets: {non_accessible_datasets}'
         #     raise BeaconUnauthorised(error, api_error=proxy.api_error)
 
-        response_total_results, response = fetch_func(qparams, access_token, groups, projects)
+        num_total_results, response = fetch_func(qparams, access_token, groups, projects)
         #response_total_results = count_results_func(qparams, access_token, groups, projects)
         
         # Create reponse
         #rows = [row async for row in response]
         #rows = [row for row in response]
         #num_total_results = await response_total_results
-        response_converted = build_beacon_response(proxy, rows, num_total_results, qparams, by_entity_type, non_accessible_datasets, build_response_func)
+        response_converted = build_beacon_response(proxy, response, num_total_results, qparams, by_entity_type, non_accessible_datasets, build_response_func)
 
         LOG.info('Formatting the response for %s', entity)
         return await json_response(request, response_converted)
@@ -131,16 +131,16 @@ cohorts_by_cohort         = not_implemented_handler('cohorts')
 
 test                      = testing_handler('test')
 
-# individuals_by_biosample = generic_handler('individuals', BeaconEntity.BIOSAMPLE, individuals_proxy, db.fetch_individuals_by_biosample, db.count_individuals_by_biosample, build_biosample_or_individual_response)
-# biosamples_by_biosample = generic_handler('biosamples' , BeaconEntity.BIOSAMPLE, biosamples_proxy , db.fetch_biosamples_by_biosample , db.count_biosamples_by_biosample, build_biosample_or_individual_response)
-# gvariants_by_biosample = generic_handler('gvariants'  , BeaconEntity.BIOSAMPLE, gvariants_proxy  , db.fetch_variants_by_biosample   , db.count_variants_by_biosample, build_variant_response)
+# individuals_by_biosample = generic_handler('individuals', BeaconEntity.BIOSAMPLE, individuals_proxy, fetch_individuals_by_biosample, build_biosample_or_individual_response)
+# biosamples_by_biosample = generic_handler('biosamples' , BeaconEntity.BIOSAMPLE, biosamples_proxy , fetch_biosamples_by_biosample, build_biosample_or_individual_response)
+# gvariants_by_biosample = generic_handler('gvariants'  , BeaconEntity.BIOSAMPLE, gvariants_proxy  , fetch_variants_by_biosample, build_variant_response)
 
-# individuals_by_variant = generic_handler('individuals', BeaconEntity.VARIANT, individuals_proxy, db.fetch_individuals_by_variant, db.count_individuals_by_variant, build_biosample_or_individual_response)
-# biosamples_by_variant = generic_handler('biosamples' , BeaconEntity.VARIANT, biosamples_proxy , db.fetch_biosamples_by_variant , db.count_biosamples_by_variant, build_biosample_or_individual_response)
-# gvariants_by_variant = generic_handler('gvariants'  , BeaconEntity.VARIANT, gvariants_proxy  , db.fetch_variants_by_variant   , db.count_variants_by_variant, build_variant_response)
+# individuals_by_variant = generic_handler('individuals', BeaconEntity.VARIANT, individuals_proxy, fetch_individuals_by_variant, build_biosample_or_individual_response)
+# biosamples_by_variant = generic_handler('biosamples' , BeaconEntity.VARIANT, biosamples_proxy , fetch_biosamples_by_variant, build_biosample_or_individual_response)
+# gvariants_by_variant = generic_handler('gvariants'  , BeaconEntity.VARIANT, gvariants_proxy  , fetch_variants_by_variant, build_variant_response)
 
-individuals_by_individual = generic_handler('individuals', BeaconEntity.INDIVIDUAL, individuals_proxy, fetch_individuals_by_individual, count_individuals_by_individual, build_biosample_or_individual_response)
-# biosamples_by_individual = generic_handler('biosamples' , BeaconEntity.INDIVIDUAL, biosamples_proxy , db.fetch_biosamples_by_individual , db.count_biosamples_by_individual, build_biosample_or_individual_response)
-# gvariants_by_individual = generic_handler('gvariants'  , BeaconEntity.INDIVIDUAL, gvariants_proxy  , db.fetch_variants_by_individual   , db.count_variants_by_individual, build_variant_response)
+individuals_by_individual = generic_handler('individuals', BeaconEntity.INDIVIDUAL, individuals_proxy, fetch_individuals_by_individual, build_biosample_or_individual_response)
+# biosamples_by_individual = generic_handler('biosamples' , BeaconEntity.INDIVIDUAL, biosamples_proxy , fetch_biosamples_by_individual, build_biosample_or_individual_response)
+# gvariants_by_individual = generic_handler('gvariants'  , BeaconEntity.INDIVIDUAL, gvariants_proxy  , fetch_variants_by_individual, build_variant_response)
 
-# cohorts_by_cohort = generic_handler('cohorts', BeaconEntity.COHORT, cohorts_proxy  , db.fetch_cohorts_by_cohort   , db.count_cohorts_by_cohort, build_cohort_response)
+# cohorts_by_cohort = generic_handler('cohorts', BeaconEntity.COHORT, cohorts_proxy, fetch_cohorts_by_cohort, count_cohorts_by_cohort, build_cohort_response)
