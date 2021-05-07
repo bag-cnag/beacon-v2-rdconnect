@@ -9,7 +9,7 @@ from server.config import config
 from server.gpap.payloads import *
 from server.utils.exceptions import BeaconEndPointNotImplemented, BeaconForbidden, BeaconServerError, BeaconUnauthorised
 
-LOG     = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 def close_session():
     session.close()

@@ -83,6 +83,12 @@ class Filter(Field):
         super().__init__(*args, **kwargs)
         self.name = name
 
+class StringField(Field):
+    error_message = 'not a string'
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class ChoiceField(Field):
 
     def __init__(self, *args, **kwargs):

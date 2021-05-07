@@ -62,9 +62,10 @@ class GVariantParametersBase(RequestParameters):
     datasetIds = DatasetsField()
     # TODO implement fusions
     mateName = ChoiceField("1", "2", "3", "4", "5", "6", "7",
-                                "8", "9", "10", "11", "12", "13", "14",
-                                "15", "16", "17", "18", "19", "20",
-                                "21", "22", "X", "Y", "MT")
+        "8", "9", "10", "11", "12", "13", "14",
+        "15", "16", "17", "18", "19", "20",
+        "21", "22", "X", "Y", "MT"
+    )
 
     apiVersion = RegexField(r'^v[0-9]+(\.[0-9]+)*$')
     # pagination
@@ -116,6 +117,14 @@ class IndividualsParameters(GVariantParametersBase):
     requestedSchema = SchemaField('ga4gh-phenopacket-individual-v1.0',
                                   'beacon-individual-v2.0.0-draft.3',
                                   default='beacon-individual-v2.0.0-draft.3')
+    id = StringField()
+    family_id = StringField() 
+    index = ChoiceField('Yes', 'No')
+    solved = ChoiceField('Solved','Unsolved','NA')
+    sex = ChoiceField('F', 'M', 'U')
+    affectedStatus = ChoiceField('Affected', 'Unaffected', 'Unknown')
+    lifeStatus = ChoiceField('Alive', 'Deceased')
+
 
 class GVariantsParameters(GVariantParametersBase):
     requestedSchema = SchemaField('beacon-variant-v2.0.0-draft.3',
