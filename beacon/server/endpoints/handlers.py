@@ -56,11 +56,13 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
         access_token = access_token[7:]
         try:
             decoded  = jwt.decode(access_token, public_key, algorithms = 'RS256', options = jwt_options)
+            LOG.debug('Token was decoded')
             userid   = decoded.get('preferred_username')
             groups   = extract_items(decoded,'group')
             projects = extract_items(decoded,'group_projects')
         except Exception as e:
-            raise BeaconServerError(error = str(e))
+            LOG.debug('Invalida validation of token')
+            raise BeaconServerError(error = 'Invalida validation of token. {}.'.format(str(e)))
 
         if len(projects) == 0:
             projects.append("no_project")
@@ -114,7 +116,7 @@ cohorts_proxy     = CohortParameters()
 # Not implemented endpoints
 
 individuals_by_biosample  = not_implemented_handler('individuals')
-biosamples_by_biosample   = not_implemented_handler('biosamples')
+#biosamples_by_biosample   = not_implemented_handler('biosamples')
 gvariants_by_biosample    = not_implemented_handler('gvariants')
 
 individuals_by_variant    = not_implemented_handler('individuals')
@@ -122,7 +124,7 @@ biosamples_by_variant     = not_implemented_handler('biosamples')
 gvariants_by_variant      = not_implemented_handler('gvariants')
 
 #individuals_by_individual = not_implemented_handler('individuals')
-biosamples_by_individual  = not_implemented_handler('biosamples')
+#biosamples_by_individual  = not_implemented_handler('biosamples')
 gvariants_by_individual   = not_implemented_handler('gvariants')
 
 cohorts_by_cohort         = not_implemented_handler('cohorts')
@@ -132,7 +134,7 @@ cohorts_by_cohort         = not_implemented_handler('cohorts')
 test                      = testing_handler('test')
 
 # individuals_by_biosample = generic_handler('individuals', BeaconEntity.BIOSAMPLE, individuals_proxy, fetch_individuals_by_biosample, build_biosample_or_individual_response)
-# biosamples_by_biosample = generic_handler('biosamples' , BeaconEntity.BIOSAMPLE, biosamples_proxy , fetch_biosamples_by_biosample, build_biosample_or_individual_response)
+biosamples_by_biosample = generic_handler('biosamples' , BeaconEntity.BIOSAMPLE, biosamples_proxy , fetch_biosamples_by_biosample, build_biosample_or_individual_response)
 # gvariants_by_biosample = generic_handler('gvariants'  , BeaconEntity.BIOSAMPLE, gvariants_proxy  , fetch_variants_by_biosample, build_variant_response)
 
 # individuals_by_variant = generic_handler('individuals', BeaconEntity.VARIANT, individuals_proxy, fetch_individuals_by_variant, build_biosample_or_individual_response)
@@ -140,7 +142,7 @@ test                      = testing_handler('test')
 # gvariants_by_variant = generic_handler('gvariants'  , BeaconEntity.VARIANT, gvariants_proxy  , fetch_variants_by_variant, build_variant_response)
 
 individuals_by_individual = generic_handler('individuals', BeaconEntity.INDIVIDUAL, individuals_proxy, fetch_individuals_by_individual, build_biosample_or_individual_response)
-# biosamples_by_individual = generic_handler('biosamples' , BeaconEntity.INDIVIDUAL, biosamples_proxy , fetch_biosamples_by_individual, build_biosample_or_individual_response)
+biosamples_by_individual = generic_handler('biosamples' , BeaconEntity.INDIVIDUAL, biosamples_proxy , fetch_biosamples_by_individual, build_biosample_or_individual_response)
 # gvariants_by_individual = generic_handler('gvariants'  , BeaconEntity.INDIVIDUAL, gvariants_proxy  , fetch_variants_by_individual, build_variant_response)
 
 # cohorts_by_cohort = generic_handler('cohorts', BeaconEntity.COHORT, cohorts_proxy, fetch_cohorts_by_cohort, count_cohorts_by_cohort, build_cohort_response)

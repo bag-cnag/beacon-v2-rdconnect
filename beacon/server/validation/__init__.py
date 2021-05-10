@@ -107,23 +107,36 @@ class GVariantParametersBase(RequestParameters):
         if values.mateName:
             raise BeaconBadRequest("Queries using 'mateName' are not implemented (yet)")
 
-
 class BiosamplesParameters(GVariantParametersBase):
     requestedSchema = SchemaField('ga4gh-phenopacket-biosample-v1.0',
                                   'beacon-biosample-v2.0.0-draft.3',
                                   default='beacon-biosample-v2.0.0-draft.3')
+    RD_Connect_ID_Experiment     = StringField()
+    Participant_ID               = StringField()
+    EGA_ID                       = StringField()
+    Owner                        = StringField()
+    in_platform                  = BooleanField()
+    POSTEMBARGO                  = BooleanField()
+    experiment_type              = StringField()
+    kit                          = StringField()
+    tissue                       = StringField()
+    library_source               = ChoiceField('Genomic', 'Transcriptomic', 'Other')
+    library_selection            = StringField()
+    library_strategy             = StringField()
+    library_contruction_protocol = StringField()
+    erns                         = StringField()
 
 class IndividualsParameters(GVariantParametersBase):
     requestedSchema = SchemaField('ga4gh-phenopacket-individual-v1.0',
                                   'beacon-individual-v2.0.0-draft.3',
                                   default='beacon-individual-v2.0.0-draft.3')
-    id = StringField()
-    family_id = StringField() 
-    index = ChoiceField('Yes', 'No')
-    solved = ChoiceField('Solved','Unsolved','NA')
-    sex = ChoiceField('F', 'M', 'U')
+    id             = StringField()
+    family_id      = StringField() 
+    index          = ChoiceField('Yes', 'No')
+    solved         = ChoiceField('Solved','Unsolved','NA')
+    sex            = ChoiceField('F', 'M', 'U')
     affectedStatus = ChoiceField('Affected', 'Unaffected', 'Unknown')
-    lifeStatus = ChoiceField('Alive', 'Deceased')
+    lifeStatus     = ChoiceField('Alive', 'Deceased')
 
 
 class GVariantsParameters(GVariantParametersBase):

@@ -16,14 +16,25 @@ def close_session():
 
 # Fetchers for GPAP's API
 
+def _fetch_biosamples(qparams, access_token, groups):
+    headers = { 'Authorization': 'Bearer {}'.format(access_token), 'Accept': 'application/json' }
+    payload = datamanagement_playload(qparams, groups)
+    url = config.gpap_base_url + config.dm_experiments
+    resp = requests.post(url, headers = headers, data = json.dumps(payload), verify = False)
+    if resp.status_code != 200:
+        raise BeaconServerError(error = resp.text)
+    resp = resp.json()
+    return resp['_meta']['total_items'], resp['items']
+
+
 def fetch_biosamples_by_variant(qparams, access_token, groups, projects):
     return (x for x in [])
 
 def fetch_biosamples_by_biosample(qparams, access_token, groups, projects):
-    return (x for x in [])
+    return _fetch_biosamples(qparams, access_token, groups)
 
 def fetch_biosamples_by_individual(qparams, access_token, groups, projects):
-    return (x for x in [])
+    return _fetch_biosamples(qparams, access_token, groups)
 
 def fetch_variants_by_variant(qparams, access_token, groups, projects):
     return (x for x in [])
