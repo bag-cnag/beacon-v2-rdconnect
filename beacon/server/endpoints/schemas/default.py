@@ -145,7 +145,7 @@ def beacon_biosample_v30(row):
 
 def beacon_individual_v30(row):                                    # PHENOSTORE PERMISION LAYER
     return {
-        'individualId':       row['id'],                           # PHENOSTORE ID
+        'individualId':       row['report_id'],                    # PHENOSTORE ID
         'taxonId':            None,                                # NONE
         'sex':                get_val(row, 'sex', None, lambda x: 'Female' if x == 'F' else 'Male'), #
         'ethnicity':          None,                                # NONE
@@ -161,7 +161,8 @@ def beacon_individual_v30(row):                                    # PHENOSTORE 
         'info': {                                                  # FREE FIELD
             'family':         get_val(row, 'famid', None),         # PS FAMILY ID
             'index':          get_val(row, 'index', None),         # RD-CONNECT INDEX CASE
-            'solved':         get_val(row, 'solved', None)         # RD-CONNECT SOLVED STATUS
+            'solved':         get_val(row, 'solved', None),        # RD-CONNECT SOLVED STATUS
+            'iid':            row['id']                            # INTERNAL ID
         },
     }
 

@@ -8,8 +8,10 @@ _valid_individuals = ['id', 'family_id', 'index', 'solved', 'sex', 'affectedStat
 _valid_biosamples  = ['RD_Connect_ID_Experiment', 'EGA_ID', 'Participant_ID', 'Owner', 'in_platform', 'POSTEMBARGO', 'experiment_type', 'kit', 'tissue', 'library_source', 'library_selection', 'library_strategy', 'library_contruction_protocol', 'erns']
 
 # Function to translate from RequestParameters to PhenoStore filtering
-def ps_to_gpap(qparams):
+def ps_to_gpap(qparams, psid = None):
     fltrs = []
+    if psid:
+        fltrs.append({ 'id': 'phenotips_id', 'value': psid})
     for qkey in _valid_individuals:
         x = getattr(qparams, qkey)
         if x:
@@ -35,7 +37,7 @@ def dm_to_gpap(qparams):
 # For individuals, filtering criteria is expected a dictionarly
 # having keys matching PhenoStore. This matching is done in
 # server/validation.py IndividualParameters
-def phenostore_playload(qparams):
+def phenostore_playload(qparams, psid):
     """
     PhenoStore filtering ciretia to be included as playload in each query.
     """
@@ -43,7 +45,7 @@ def phenostore_playload(qparams):
         'page':     1 + qparams.skip,
         'pageSize': qparams.limit,
         'sorted':   [],
-        'filtered': ps_to_gpap(qparams)
+        'filtered': ps_to_gpap(qparams, psid)
     }
 
 

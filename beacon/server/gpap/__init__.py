@@ -46,10 +46,11 @@ def fetch_individuals_by_biosample(qparams, access_token, groups, projects):
     return (x for x in [])
 
 def fetch_individuals_by_individual(qparams, access_token, groups, projects):
-    payload = phenostore_playload(qparams)
+    payload = phenostore_playload(qparams, qparams.targetIdReq)
     headers = { 'Authorization': access_token, 'Content-Type': 'application/json' }
     if qparams.targetIdReq:
-        url = config.gpap_base_url + config.ps_participant.format(qparams.targetIdReq)
+        #url = config.gpap_base_url + config.ps_participant.format(qparams.targetIdReq)
+        url = config.gpap_base_url + config.ps_participants
     else:
         url = config.gpap_base_url + config.ps_participants
     resp = requests.post(url, headers = headers, data = json.dumps(payload), verify = False)
