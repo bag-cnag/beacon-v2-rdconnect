@@ -15,6 +15,7 @@ from server.endpoints.response.response_schema import *
 
 LOG         = logging.getLogger(__name__)
 jwt_options = config.jwt_options
+jwt_algorithm = config.jwt_algorithm
 public_key  = '-----BEGIN PUBLIC KEY-----\n' + config.beacon_idrsa + '\n-----END PUBLIC KEY-----'
 
 def extract_items(token,name):
@@ -55,7 +56,7 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
 
         access_token = access_token[7:]
         try:
-            decoded  = jwt.decode(access_token, public_key, algorithms = 'RS256', options = jwt_options)
+            decoded  = jwt.decode(access_token, public_key, algorithms = jwt_algorithm, options = jwt_options)
             LOG.debug('Token was decoded')
             userid   = decoded.get('preferred_username')
             groups   = extract_items(decoded,'group')

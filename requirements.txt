@@ -2,3 +2,5 @@ aiohttp==3.7.4
 PyJWT==2.1.0
 pyyaml
 requests
+pytest==6.2.4
+cryptography==3.4.7

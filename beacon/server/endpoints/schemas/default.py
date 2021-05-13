@@ -162,7 +162,7 @@ def beacon_individual_v30(row):                                    # PHENOSTORE 
             'family':         get_val(row, 'famid', None),         # PS FAMILY ID
             'index':          get_val(row, 'index', None),         # RD-CONNECT INDEX CASE
             'solved':         get_val(row, 'solved', None),        # RD-CONNECT SOLVED STATUS
-            'iid':            row['id']                            # INTERNAL ID
+            'iid':            get_val(row, 'id', None)             # INTERNAL ID
         },
     }
 
