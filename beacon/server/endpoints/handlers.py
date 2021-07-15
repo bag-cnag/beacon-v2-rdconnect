@@ -3,7 +3,6 @@
 
 import jwt
 import logging
-import datetime
 
 from server.gpap import *
 from server.config import config
@@ -100,7 +99,6 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
     return wrapper
 
 def testing(entity):
-    LOG.debug('hello!')
     async def wrapper(request):
         LOG.debug('wrapper')
         response = {'result': 'this is a test'}

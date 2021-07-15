@@ -11,28 +11,25 @@ Date: May 3th, 2021
 Server implements the following endpoints from API:
  * ...
 
-Logging model was obtained from refrence implementation of Beacon 2.x by EGA/CRG.
-Filter and schema was taken for reference implementation of Beacon 2.x by EGA/CRG.
-JSON viewer was obtained from: https://www.jqueryscript.net/other/jQuery-Plugin-For-Easily-Readable-JSON-Data-Viewer.html
 """
 
-__title__ = 'Beacon v2.0.0.d3'
-__version__ = VERSION = '2.0.0.d3'
+__title__ = 'Beacon v2.0.0.d4'
+__version__ = VERSION = '2.0.0.d4'
 __author__ = 'CNAG-CRG Bioinformatic Unit, Analysis Team'
 __license__ = 'MIT'
-__copyright__ = 'Beacon 2.0.0.d5 @ CNAG-CRG, Barcelona, Spain'
+__copyright__ = 'Beacon 2.0.0.d4 @ CNAG-CRG, Barcelona, Spain'
 
-import os
-import base64
+# import os
+# import base64
 import logging
 
 from aiohttp import web
-from pathlib import Path
-from time import strftime
+# from pathlib import Path
+# from time import strftime
 
 from server.config import config
 from server.endpoints import routes
-from server.logger import load_logger
+# from server.logger import load_logger
 
 LOG = logging.getLogger(__name__)
 
@@ -41,7 +38,7 @@ def main():
 
     # Configure logging system
     # load_logger() # TODO
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level = logging.DEBUG)
     
     # Create beacon
     beacon = web.Application()

@@ -4,12 +4,13 @@
 from aiohttp import web
 
 from . import handlers
+from . import info as info_handler
 
 routes = [
     # Info
-    #web.get('/api'                  , info.handler),
-    #web.get('/api/info'             , info.handler),
-    #web.get('/api/service-info'     , info.handler_ga4gh_service_info),
+    web.get('/api'                  , info_handler.info('api')),
+    web.get('/api/info'             , info_handler.info('api/info')),
+    web.get('/api/service-info'     , info_handler.ga4gh('api/service-info')),
 
     # Datasets
     #web.get('/api/datasets'         , datasets.handler), # NOT IMPLEMENTED

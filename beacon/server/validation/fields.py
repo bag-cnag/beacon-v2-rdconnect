@@ -348,12 +348,12 @@ class SchemaField(Field):
 
     def __init__(self, *schemas, **kwargs):
         if not schemas:
-            raise FieldError(self.name, 'You should select some schemas')
+            raise FieldError(self, 'You should select some schemas')
         for schema in schemas:
             if not isinstance(schema, str):
-                raise FieldError(self.name, f'{schema} must be a str')
+                raise FieldError(self, f'{schema} must be a str')
             if not schema in supported_schemas:
-                raise FieldError(self.name, f'{schema} is not a supported schema')
+                raise FieldError(self, f'{schema} is not a supported schema')
         super().__init__(**kwargs)
         self.schemas = schemas
         self.validate_schemas = EnumValidator(schemas)
@@ -362,14 +362,14 @@ class SchemaField(Field):
         try:
             self.validate_schemas(value[0]) # skip the func
         except ValidationError as e:
-            raise FieldError(self.name, str(e))
+            raise FieldError(self, str(e))
 
     async def convert(self, value: str, **kwargs) -> (set, set):
         if value in EMPTY_VALUES:
             if self.required:
-                raise FieldError(self.name, 'required field')
+                raise FieldError(self, 'required field')
             value = self.default
         func = supported_schemas.get(value)
         if func is None:
-            raise FieldError(self.name, f'{value} is not a supported schema')
+            raise FieldError(self, f'{value} is not a supported schema')
         return (value, func)
