@@ -92,7 +92,7 @@ pipeline {
         always {
         	archiveArtifacts artifacts: '*.*', fingerprint: true
         	withPythonEnv('python3') {
-                sh 'tar -zcvf beacon_v2_server.tgz --exclude=__pycache__ server'
+                sh 'tar -zcvf beacon_v2_server.tgz --exclude=__pycache__ beacon'
                 BuildAndCopyMibsHere(env.BRANCH_NAME, 'gitea_config','beacon_v2_artifact','beacon_v2_server.tgz')
             }
             slackSend color: "good", message: "Job: ${env.JOB_NAME} with buildnumber ${env.BUILD_NUMBER} was successful"
