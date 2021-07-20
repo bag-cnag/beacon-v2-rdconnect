@@ -31,6 +31,9 @@ from server.config import config
 from server.endpoints import routes
 # from server.logger import load_logger
 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 LOG = logging.getLogger(__name__)
 
 def main():
