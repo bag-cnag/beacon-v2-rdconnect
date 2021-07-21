@@ -3,7 +3,6 @@
 
 import jwt
 import logging
-import datetime
 
 from server.gpap import *
 from server.config import config
@@ -51,14 +50,18 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
     async def wrapper(request):
         LOG.info('Running a request for %s', entity)
         access_token = request.headers.get('Authorization')
-        if not access_token:
+        
+        if not access_token and config.gpap_token_required[0]:
             raise BeaconForbidden(error = 'No authentication header was provided')
-
-        access_token = access_token[7:]
+        elif not config.gpap_token_required[0]:
+            access_token = get_kc_token()['access_token']
+        else:
+            access_token = access_token[7:]
+        
         try:
             decoded  = jwt.decode(access_token, public_key, algorithms = jwt_algorithm, options = jwt_options)
             LOG.debug('Token was decoded')
-            userid   = decoded.get('preferred_username')
+            #userid   = decoded.get('preferred_username')
             groups   = extract_items(decoded,'group')
             projects = extract_items(decoded,'group_projects')
         except Exception as e:
@@ -100,7 +103,6 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
     return wrapper
 
 def testing(entity):
-    LOG.debug('hello!')
     async def wrapper(request):
         LOG.debug('wrapper')
         response = {'result': 'this is a test'}

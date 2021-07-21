@@ -109,8 +109,8 @@ class GVariantParametersBase(RequestParameters):
 
 class BiosamplesParameters(GVariantParametersBase):
     requestedSchema = SchemaField('ga4gh-phenopacket-biosample-v1.0',
-                                  'beacon-biosample-v2.0.0-draft.3',
-                                  default='beacon-biosample-v2.0.0-draft.3')
+                                  'beacon-biosample-v2.0.0-draft.4',
+                                  default='beacon-biosample-v2.0.0-draft.4')
     RD_Connect_ID_Experiment     = StringField()
     Participant_ID               = StringField()
     EGA_ID                       = StringField()
@@ -128,8 +128,8 @@ class BiosamplesParameters(GVariantParametersBase):
 
 class IndividualsParameters(GVariantParametersBase):
     requestedSchema = SchemaField('ga4gh-phenopacket-individual-v1.0',
-                                  'beacon-individual-v2.0.0-draft.3',
-                                  default='beacon-individual-v2.0.0-draft.3')
+                                  'beacon-individual-v2.0.0-draft.4',
+                                  default='beacon-individual-v2.0.0-draft.4')
     id             = StringField()
     family_id      = StringField() 
     index          = ChoiceField('Yes', 'No')
@@ -140,18 +140,18 @@ class IndividualsParameters(GVariantParametersBase):
 
 
 class GVariantsParameters(GVariantParametersBase):
-    requestedSchema = SchemaField('beacon-variant-v2.0.0-draft.3',
+    requestedSchema = SchemaField('beacon-variant-v2.0.0-draft.4',
                                   'ga4gh-phenopacket-variant-v1.0',
                                   'ga4gh-variant-representation-v1.1',
-                                  default='beacon-variant-v2.0.0-draft.3')
-    requestedAnnotationSchema = SchemaField('beacon-variant-annotation-v2.0.0-draft.3',
+                                  default='beacon-variant-v2.0.0-draft.4')
+    requestedAnnotationSchema = SchemaField('beacon-variant-annotation-v2.0.0-draft.4',
                                             'ga4gh-phenopacket-variant-annotation-v1.0',
-                                  default='beacon-variant-annotation-v2.0.0-draft.3')
+                                  default='beacon-variant-annotation-v2.0.0-draft.4')
 
 class CohortParameters(GVariantParametersBase):
     requestedSchema = SchemaField(
-        'beacon-cohort-v2.0.0-draft.3.1',
-        default='beacon-cohort-v2.0.0-draft.3.1'
+        'beacon-cohort-v2.0.0-draft.4',
+        default='beacon-cohort-v2.0.0-draft.4'
     )
 
 class ValidationError(Exception):

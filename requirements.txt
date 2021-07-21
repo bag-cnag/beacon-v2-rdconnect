@@ -4,3 +4,4 @@ pyyaml
 requests
 pytest==6.2.4
 cryptography==3.4.7
+python-keycloak==0.17.4
