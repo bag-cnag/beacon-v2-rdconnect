@@ -52,11 +52,16 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
         access_token = request.headers.get('Authorization')
         
         if not access_token and config.gpap_token_required[0]:
+            LOG.debug('No access token but validation required.')
             raise BeaconForbidden(error = 'No authentication header was provided')
         elif not config.gpap_token_required[0]:
+            LOG.debug('No access token and validation not required.')
             access_token = get_kc_token()['access_token']
         else:
+            LOG.debug('Access token received.')
             access_token = access_token[7:]
+        
+        LOG.debug(access_token)
         
         try:
             decoded  = jwt.decode(access_token, public_key, algorithms = jwt_algorithm, options = jwt_options)
@@ -65,7 +70,7 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
             groups   = extract_items(decoded,'group')
             projects = extract_items(decoded,'group_projects')
         except Exception as e:
-            LOG.debug('Invalida validation of token')
+            LOG.debug('Invalid validation of token. {}'.format(str(e)))
             raise BeaconServerError(error = 'Invalida validation of token. {}.'.format(str(e)))
 
         if len(projects) == 0:
