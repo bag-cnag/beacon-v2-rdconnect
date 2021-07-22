@@ -9,8 +9,11 @@ from . import info as info_handler
 routes = [
     # Info
     web.get('/api'                  , info_handler.info('api')),
+    web.get('/api/'                 , info_handler.info('api')),
     web.get('/api/info'             , info_handler.info('api/info')),
     web.get('/api/service-info'     , info_handler.ga4gh('api/service-info')),
+    web.get('/api/map'              , info_handler.ga4gh('api/map')),
+    web.get('/api/configuration'    , info_handler.ga4gh('api/configuration')),
 
     # Datasets
     #web.get('/api/datasets'         , datasets.handler), # NOT IMPLEMENTED
