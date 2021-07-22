@@ -49,12 +49,12 @@ def map(request):
                 'biosamples': {
                     'entryType': 'biosample',
                     'rootUrl': '{}/biosamples'.format(config.server_api_url),
-                    'singleEntryUrl': '{}/biosamples/\{id\}'.format(config.server_api_url)
+                    'singleEntryUrl': '{}/biosamples/"id"'.format(config.server_api_url)
                 },
                 'individuals': {
                     'entryType': 'individual',
                     'rootUrl': '{}/individuals'.format(config.server_api_url),
-                    'singleEntryUrl': '{}/individuals/\{id\}'.format(config.server_api_url),
+                    'singleEntryUrl': '{}/individuals/"id"'.format(config.server_api_url),
                 }
             }
         }
