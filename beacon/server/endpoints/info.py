@@ -58,7 +58,7 @@ def map(request):
                 }
             }
         }
-        return await map
+        return await json_response(request, map)
     return wraper
 
 
@@ -123,5 +123,5 @@ def configuration(request):
                 }
             }
         }
-        return configuration
+        return json_response(request, configuration)
     return wraper
