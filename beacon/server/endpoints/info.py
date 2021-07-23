@@ -8,6 +8,7 @@ from server.validation.fields import ChoiceField, RegexField, SchemaField
 from server.validation.request import RequestParameters
 from server.utils.streamer import json_response
 from server.endpoints.response.info_schema import build_beacon_response, build_service_info_response, ga4gh_service_info_v10
+from server.endpoints.response.response_schema import build_received_request
 
 
 LOG = logging.getLogger(__name__)
@@ -195,6 +196,23 @@ def filtering_terms(request):
             },
             'required': ['filteringTerms'],
             'additionalProperties': True
+        }
+        return await json_response(request, rsp)
+    return wrapper
+
+
+def datasets(request):
+    async def wrapper(request):
+        rsp =  {
+            'meta': {
+                'beaconId': config.beacon_id,
+                'apiVersion': config.api_version,
+                'returnedSchemas': './dataset/beaconResultsets.json',
+            },
+            'resultSets':  [{
+                'id': 'datasetBeacon',
+                'type': 'Fake abstracted level for beacon v2 implementation (in test)'
+            }]
         }
         return await json_response(request, rsp)
     return wrapper

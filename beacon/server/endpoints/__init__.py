@@ -18,7 +18,7 @@ routes = [
     web.get('/api/filtering_terms'  , info_handler.filtering_terms('api/filtering_terms')),
 
     # Datasets
-    #web.get('/api/datasets'         , datasets.handler), # NOT IMPLEMENTED
+    web.get('/api/datasets'         , info_handler.datasets('api/filtering_terms')),
 
     # Schemas
     # web.get('/api/schemas'          , schemas.handler),
