@@ -20,6 +20,7 @@ def build_beacon_response(proxy, data, num_total_results, qparams_converted, by_
     """"
     Transform data into the Beacon response format.
     """
+    
 
     beacon_response = {
         'meta': build_meta(proxy, qparams_converted, by_entity_type),
@@ -185,8 +186,10 @@ def build_response(data, num_total_results, qparams, non_accessible_datasets, fu
     """
 
     response = {
+            'id': 'datasetBeacon',
+            'type': 'dataset',
             'exists': bool(data),
-            'numTotalResults': int(num_total_results),
+            'resultsCount': int(num_total_results),
             'results': func(data, qparams),
             'info': None,
             'resultsHandover': None, # build_results_handover
