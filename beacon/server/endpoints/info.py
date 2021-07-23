@@ -46,15 +46,24 @@ def map(request):
             'title': 'Beacon Map',
             'description': 'Map of a Beacon, its entry types and endpoints. It is conceptually similar to a website sitemap.',
             'endpointSets': {
-                'biosamples': {
+                'dataset': {
+                    'entryType': 'dataset',
+                    'rootUrl': '{}/datasets'.format(config.server_api_url),
+                    'singleEntryUrl': '{}/datasets/"id"'.format(config.server_api_url),
+                    'endoints': {}
+                },
+                'biosample': {
                     'entryType': 'biosample',
                     'rootUrl': '{}/biosamples'.format(config.server_api_url),
-                    'singleEntryUrl': '{}/biosamples/"id"'.format(config.server_api_url)
+                    'singleEntryUrl': '{}/biosamples/"id"'.format(config.server_api_url),
+                    'endoints': {
+                        'biosamples': {'returnEntryType': 'biosample', 'url': '{}/api/individuals/"target_id_req"/biosamples'.format(config.server_api_url)}
+                    }
                 },
-                'individuals': {
+                'individual': {
                     'entryType': 'individual',
                     'rootUrl': '{}/individuals'.format(config.server_api_url),
-                    'singleEntryUrl': '{}/individuals/"id"'.format(config.server_api_url),
+                    'singleEntryUrl': '{}/individuals/"id"'.format(config.server_api_url)
                 }
             }
         }
@@ -74,53 +83,57 @@ def config_txt(request):
                 'securityLevels': ['{}'.format(config.security)]
             },
             'entryTypes': {
-                'individual': {
-                    'individualId': 'individual',
-                    'aCollectionOf': {
-                        'individualId': 'id',
-                        'sex': ['Female', 'Male'],
-                        'phenotypicFeatures': [{'id': 'HP:0000000', 'name': 'HP:term', 'observed': [False, True] }],
-                        'diseases': [{ 'ordo': { 'id': 'Orphanet:000000', 'name': 'Orphanet:term' } }],
-                        'measures': [{ 'curves': '', 'height': '', 'weight': '', 'head_circ': '', 'measurement_date': '1987-11-26' }],
-                        'info': { 'family': 'AAA0000000', 'index': ['No', 'Yes'], 'solved': ['Solved', 'Unsolved'], 'iid': 'RD-Connect GPAP ID' }
-                    },    
-                    'partOfSpecification': 'Beacon v2.0-draft3',
-                    'description': 'An individual is the definition of a human participant in RD-Connect and Solve-RD.',
-                    'defaultSchema': {
-                        'id': 'datasetDefaultSchema',
-                        'name': 'Default schema for individual',
-                        'schemaVersion': 'v.2.draft-3'
+                "dataset": {
+                    "id": "dataset",
+                    "name": "Dataset",
+                    "ontologyTermForThisType": {
+                        "id": "NCIT:C47824",
+                        "label": "Data set"
                     },
-                    'endpoint': 'api/individuals'
+                    "partOfSpecification": "Beacon v2.0.0-draft.4",
+                    "description": "A Dataset is a collection of records, like rows in a database or cards in a cardholder.",
+                    "defaultSchema": {
+                        "id": "ga4gh-beacon-dataset-v2.0.0-draft.4",
+                        "name": "Default schema for datasets",
+                        "referenceToSchemaDefinition": "./datasets/defaultSchema.json",
+                        "schemaVersion": "v2.0.0-draft.4"
+                    },
+                    "aCollectionOf": [{ "id": "individual", "name": "Individuals" }],
+                    "additionalSupportedSchemas": []
                 },
-                'biosamples': {
-                    'biosampleId': 'biosample',
-                    'aCollectionOf': {
-                        'biosampleId': 'id',
-                        'subjectId': 'individualId',
-                        'info': {
-                            'owner': 'ownerTag',
-                            'tissue': 'tissueByStr',
-                            'ega_id': ['EgaId', 'null'],
-                            'in_platform': [False, True],
-                            'experiment_type': ['WES', 'WGS'],
-                            'library_source': ['...', 'Other'],
-                            'library_selection': ['...', 'unspecified'],
-                            'library_strategy': ['WES', 'WGS'],
-                            'library_contruction_protocol': ['...', 'null'],
-                            'POSTEMBARGO': [False, True],
-                            'kit': ['...', 'null'],
-                            'tumour_experiment_id': ['pairedTumorId', 'null']
-                        }
-                    },    
-                    'partOfSpecification': 'Beacon v2.0-draft3',
-                    'description': 'An biosample is the experiment corresponding to an individual who participanted in RD-Connect and Solve-RD.',
-                    'defaultSchema': {
-                        'id': 'datasetDefaultSchema',
-                        'name': 'Default schema for biosample',
-                        'schemaVersion': 'v.2.draft-3'
+                "individual": {
+                    "id": "individual",
+                    "name": "Individual",
+                    "ontologyTermForThisType": {
+                        "id": "NCIT:C25190",
+                        "label": "Person"
                     },
-                    'endpoint': 'api/biosamples'
+                    "partOfSpecification": "Beacon v2.0.0-draft.4",
+                    "description": "A human being. It could be a Patient, a Tissue Donor, a Participant, a Human Study Subject, etc.",
+                    "defaultSchema": {
+                        "id": "ga4gh-beacon-individual-v2.0.0-draft.4",
+                        "name": "Default schema for an individual",
+                        "referenceToSchemaDefinition": "./individuals/defaultSchema.json",
+                        "schemaVersion": "v2.0.0-draft.4"
+                    },
+                    "additionallySupportedSchemas": []
+                },
+                "biosample": {
+                    "id": "biosample",
+                    "name": "Biological Sample",
+                    "ontologyTermForThisType": {
+                        "id": "NCIT:C70699",
+                        "label": "Biospecimen"
+                    },
+                    "partOfSpecification": "Beacon v2.0.0-draft.4",
+                    "description": "Any material sample taken from a biological entity for testing, diagnostic, propagation, treatment or research purposes, including a sample obtained from a living organism or taken from the biological object after halting of all its life functions. Biospecimen can contain one or more components including but not limited to cellular molecules, cells, tissues, organs, body fluids, embryos, and body excretory products. [ NCI ]",
+                    "defaultSchema": {
+                        "id": "ga4gh-beacon-biosample-v2.0.0-draft.4",
+                        "name": "Default schema for a biological sample",
+                        "referenceToSchemaDefinition": "./biosamples/defaultSchema.json",
+                        "schemaVersion": "v2.0.0-draft.4"
+                    },
+                    "additionallySupportedSchemas": []
                 }
             }
         }
@@ -131,53 +144,40 @@ def config_txt(request):
 def entry_types(request):
     async def wrapper(request):
         rsp = {
-            'title': 'Entry Types',
-            'description': 'Definition of an element or entry type including the Beacon v2 required and suggested attributes. This schema purpose is to  describe each type of entities included in a Beacon, hence Beacon clients could have some metadata about such entities.\n\nThe ìd`attribute is the key that should be used in other parts of the Beacon Model to allow Beacon clients to identify the different parts (e.g. endpoints, filteringTerms, request parameters, etc.) that fully describe an entry type.',
-            'properties': {
-                'id': {
-                    '$comments': '++++++ THIS IS THE START OF THE ontologized element ++++++',
-                    'type': 'string',
-                    'description': 'A (unique) identifier of the element.'
-                },
-                'name': {
-                    'type': 'string',
-                    'description': 'A distinctive name for the element.'
-                },
-                'description': {
-                    'type': 'string',
-                    'description': 'A textual description for the element.'
-                },
-                'partOfSpecification': {
-                    'description': 'This is label to group together entry types that are part of the same specification.',
-                    'type': 'string',
-                    'example': 'Beacon v2.0-draft3'
-                },
-                'defaultSchema': {
-                    'description': 'Description of the default schema used for this concept.',
-                },
-                'additionallySupportedSchemas': {
-                    'description': 'List of additional schemas that could be used for this concept in this instance of Beacon.',
-                    'type': 'array'
-                },
-                'aCollectionOf': {
-                    'description': 'If the entry type is a collection of other entry types, (e.g. a Dataset is a collection of Records), then this attribute must list the entry types that could be included. One collection type could be defined as included more than one entry type (e.g. a Dataset could include Individuals or Genomic Variants), in such cases the entries are alternative, meaning that a given instance of this entry type could be of only one of the types (e.g. a given Dataset contains Individuals, while another Dataset could contain Genomic Variants, but not both at once).',
-                    'includedConcepts': {
-                        'type': 'array'
-                    }
-                },
-                'filteringTerms': {
-                    'description': 'Reference to the file with the list of filtering terms that could be used to filter this concept in this instance of Beacon. The referenced file could be used to populate the `filteringTerms`endpoint. Having it independently should allow for updating the list of accepted filtering terms when it is necessary.',
-                    'type': 'string'
-                }
+            '$schema': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconEntryTypesResponse.json',
+            'meta': {
+                'beaconId':	'org.ga4gh.beacon',
+                'apiVersion': 'v2.0-draft4',
+                'returnedSchemas':	[	
+                    { 'entryTypes': 'beacon-entry-types-v2.0.0-draft.3' }
+                ]
             },
-            'required': [
-                'id',
-                'name',
-                'ontologyTermForThisType',
-                'partOfSpecification',
-                'defaultSchema'
-            ],
-            'additionalProperties': True
+            'response': {
+                '$schema': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/configuration/entryTypesSchema.json',
+                'entryTypes': {
+                    'dataset': {
+                        'id': 'dataset',
+                        'name': 'Dataset',
+                        'ontologyTermForThisType': {
+                            'id': 'NCIT:C47824',
+                            'label': 'Data set'
+                        },
+                        'partOfSpecification': 'Beacon v2.0.0-draft.4',
+                        'description': 'A Dataset is a collection of individuals.',
+                        'defaultSchema': {
+                            'id': 'ga4gh-beacon-dataset-v2.0.0-draft.4',
+                            'name': 'Default schema for datasets',
+                            'referenceToSchemaDefinition': './datasets/defaultSchema.json',
+                            'schemaVersion': 'v2.0.0-draft.4'
+                        },
+                        'aCollectionOf': [{
+                            'id': 'genomicVariant',
+                            'name': 'Genomic Variants'
+                        }],
+                        'additionalSupportedSchemas': []
+                    }
+                }
+            }
         }
         return await json_response(request, rsp)
     return wrapper
@@ -190,8 +190,6 @@ def filtering_terms(request):
             'type': 'object',
             'properties': {
                 'filteringTerms': {
-                    'description': 'List of filtering terms that could be used to filter this concept in this instance of Beacon.',
-                    'type': 'array',
                     'minItems': 0
                 }
             },
