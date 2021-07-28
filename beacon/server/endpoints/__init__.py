@@ -9,14 +9,16 @@ from . import info as info_handler
 routes = [
     # Info
     web.get('/api'                  , info_handler.info('api')),
+    web.get('/api/'                 , info_handler.info('api')),
     web.get('/api/info'             , info_handler.info('api/info')),
     web.get('/api/service-info'     , info_handler.ga4gh('api/service-info')),
+    web.get('/api/map'              , info_handler.map('api/map')),
+    web.get('/api/configuration'    , info_handler.config_txt('api/configuration')),
+    web.get('/api/entry_types'      , info_handler.entry_types('api/entry_types')),
+    web.get('/api/filtering_terms'  , info_handler.filtering_terms('api/filtering_terms')),
 
     # Datasets
-    #web.get('/api/datasets'         , datasets.handler), # NOT IMPLEMENTED
-
-    # Filtering terms
-    #web.get('/api/filtering_terms'   , filtering_terms.handler),
+    web.post('/api/datasets'         , info_handler.datasets('api/filtering_terms')),
 
     # Schemas
     # web.get('/api/schemas'          , schemas.handler),

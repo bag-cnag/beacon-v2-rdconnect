@@ -1,0 +1,136 @@
+{
+  "openapi": "3.0.2",
+  "servers": [],
+  "info": {
+    "version": "2.0.0-draft.4",
+    "title": "GA4GH Beacon API Specification - Individuals endpoints",
+    "description": "TBD.",
+    "contact": {
+      "email": "beacon@ga4gh.org"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "paths": {
+    "/individuals": {
+      "post": {
+        "description": "Get a list of example entries",
+        "operationId": "postIndividualsRequest",
+        "tags": ["POST Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/requests/beaconRequestBody.json"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconResultsetsResponse.json"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unsuccessful operation.\n",
+            "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconErrorResponse.json"
+          }
+        }
+      }
+    },
+    "/individuals/{id}": {
+      "post": {
+        "description": "Get details about one Individual, identified by its (unique) 'id'.\n",
+        "operationId": "postOneIndividual",
+        "tags": ["POST Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/requests/beaconRequestBody.json"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconResultsetsResponse.json"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unsuccessful operation.\n",
+            "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconErrorResponse.json"
+          }
+        }
+      }
+    },
+    "/individuals/{id}/biosamples": {
+      "post": {
+        "description": "Get the biosamples list from one individual, identified by its (unique) 'id'.\n",
+        "operationId": "postOneIndividualBiosamples",
+        "tags": [ "POST Endpoints" ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/requests/beaconRequestBody.json"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation.\n",
+            "content": {
+              "application/json": 
+              {
+                "schema":{
+                  "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconResultsetsResponse.json"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unsuccessful operation.\n",
+            "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconErrorResponse.json"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "skip": {
+        "name": "skip",
+        "in": "query",
+        "schema": {
+          "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/common/beaconCommonComponents.json#/definitions/Skip"
+        }
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "$ref": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/common/beaconCommonComponents.json#/definitions/Limit"
+        }
+      }
+    }
+  }
+}
