@@ -222,8 +222,23 @@ def build_biosample_or_individual_response(data, qparams):
     """
     Fills the `results` part with the format for biosample or individual data
     """
+    
+    rsp = {
+        "$schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconCollectionsResponse.json",
+        'meta': {
+            'beaconId':	'org.ga4gh.beacon',
+            'apiVersion': 'v2.0-draft4',
+            'returnedSchemas':	[	
+                { 'entryTypes': 'beacon-entry-types-v2.0.0-draft.4' }
+            ]
+        },
+        "responseSummary": {
+            "exists": True
+        },
+        "resultSets":  [qparams.requestedSchema[1](row) for row in data]
+    }
 
-    return [qparams.requestedSchema[1](row) for row in data]
+    return rsp
 
 def build_cohort_response(data, qparams):
     return [qparams.requestedSchema[1](row) for row in data]
