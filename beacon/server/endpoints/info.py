@@ -44,7 +44,6 @@ def ga4gh(request):
 def map(request):
     async def wraper(request):
         rsp = {
-            '$schema': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconMapResponse.json',
             'meta': {
                 'beaconId':	'org.ga4gh.beacon',
                 'apiVersion': 'v2.0-draft4',
@@ -53,6 +52,7 @@ def map(request):
                 ]
             },
             'response': {
+                '$schema': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconMapResponse.json',
                 'title': 'Beacon Map',
                 'description': 'Map of a Beacon, its entry types and endpoints. It is conceptually similar to a website sitemap.',
                 'endpointSets': {
@@ -85,7 +85,6 @@ def map(request):
 def config_txt(request):
     async def wraper(request):
         rsp = {
-            '$schema': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconConfigurationResponse.json',
             'meta': {
                 'beaconId':	'org.ga4gh.beacon',
                 'apiVersion': 'v2.0-draft4',
@@ -94,6 +93,7 @@ def config_txt(request):
                 ]
             },
             'response': {
+                '$schema': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconConfigurationResponse.json',
                 'maturityAttributes': {
                     'productionStatus': '{}/{}'.format(config.environment, config.api_version)
                 },
