@@ -47,6 +47,8 @@ def not_implemented_handler(entity):
     return wrapper
 
 def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_func):
+    print("---> generic_handler of {}".format(entity))
+    LOG.debug("---> generic_handler of {}".format(entity))
     async def wrapper(request):
         LOG.info('Running a request for %s', entity)
         access_token = request.headers.get('Authorization')
