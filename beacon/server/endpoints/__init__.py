@@ -18,7 +18,8 @@ routes = [
     web.get('/api/filtering_terms'  , info_handler.filtering_terms('api/filtering_terms')),
 
     # Datasets
-    web.post('/api/datasets'        , info_handler.datasets('api/filtering_terms')),
+    ##web.post('/api/datasets'        , info_handler.datasets('api/filtering_terms')),
+    web.post('/api/datasets'        , handlers.datasets),
 
     # Schemas
     # web.get('/api/schemas'          , schemas.handler),

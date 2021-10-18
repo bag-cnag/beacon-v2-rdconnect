@@ -40,6 +40,13 @@ def _fetch_biosamples(qparams, access_token, groups):
     return resp['_meta']['total_items'], resp['items']
 
 
+def fetch_datsets_by_dataset(qparams, access_token, groups, projects):
+    return [ {
+        'id': 'datasetBeacon',
+        'type': 'Fake abstracted level for beacon v2 implementation (in test)'
+    } ]
+
+
 def fetch_biosamples_by_variant(qparams, access_token, groups, projects):
     return (x for x in [])
 

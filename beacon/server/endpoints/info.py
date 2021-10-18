@@ -220,18 +220,30 @@ def filtering_terms(request):
     return wrapper
 
 
-def datasets(request):
-    async def wrapper(request):
-        rsp =  {
-            'meta': {
-                'beaconId': config.beacon_id,
-                'apiVersion': config.api_version,
-                'returnedSchemas': './dataset/beaconResultsets.json',
-            },
-            'resultSets':  [{
-                'id': 'datasetBeacon',
-                'type': 'Fake abstracted level for beacon v2 implementation (in test)'
-            }]
-        }
-        return await json_response(request, rsp)
-    return wrapper
+# def datasets(request):
+#     async def wrapper(request):
+#         rsp =  {
+#             'meta': {
+#                 'beaconId': config.beacon_id,
+#                 'apiVersion': config.api_version,
+#                 'returnedSchemas': './dataset/beaconResultsets.json',
+#                 'receivedRequestSummary': {
+#                         'requestedSchemas' : schemas,
+#                         'apiVersion' : config.api_version,
+#                         'pagination': {
+#                             'skip': qparams.skip,
+#                             'limit': qparams.limit
+#                         }
+#                     }
+#             },
+#             'response': {
+#                 'resultSets':  [{
+#                     'id': 'datasetBeacon',
+#                     'type': 'Fake abstracted level for beacon v2 implementation (in test)'
+#                 }],
+#             },
+#             'responseSummary': { 'exists': True }
+
+#         }
+#         return await json_response(request, rsp)
+#     return wrapper

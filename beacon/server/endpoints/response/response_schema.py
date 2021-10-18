@@ -14,6 +14,7 @@ class BeaconEntity(IntEnum):
     INDIVIDUAL = 2
     VARIANT = 3
     COHORT = 4
+    DATASET = 5
 
 
 def build_beacon_response(proxy, data, num_total_results, qparams_converted, by_entity_type, non_accessible_datasets, func_response_type):
@@ -35,7 +36,7 @@ def build_meta(proxy, qparams, by_entity_type):
     We assume that receivedRequest is the evaluated request (qparams) sent by the user.
     """
 
-    entinty_name = [ 'BIOSAMPLE', 'INDIVIDUAL', 'VARIANT', 'COHORT' ][ by_entity_type - 1 ]
+    entinty_name = [ 'BIOSAMPLE', 'INDIVIDUAL', 'VARIANT', 'COHORT', 'DATASET' ][ by_entity_type - 1 ]
 
     schemas = [ { "entityType": entinty_name, "schema": s } for s in get_schemas(proxy, qparams) ]
 
@@ -236,6 +237,8 @@ def build_variant_response(data, qparams):
             'datasetAlleleResponses': row['dataset_response']
         }
 
+def build_dataset_response(data, qparams):
+    return data
 
 def build_biosample_or_individual_response(data, qparams):
     """
