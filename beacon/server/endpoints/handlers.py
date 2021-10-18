@@ -47,8 +47,6 @@ def not_implemented_handler(entity):
     return wrapper
 
 def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_func):
-    print("---> generic_handler of {}".format(entity))
-    LOG.debug("---> generic_handler of {}".format(entity))
     async def wrapper(request):
         LOG.info('Running a request for %s', entity)
         access_token = request.headers.get('Authorization')
@@ -62,8 +60,6 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
         else:
             LOG.debug('Access token received.')
             access_token = access_token[7:]
-        
-        LOG.debug(access_token)
         
         try:
             decoded  = jwt.decode(access_token, public_key, algorithms = jwt_algorithm, options = jwt_options)
