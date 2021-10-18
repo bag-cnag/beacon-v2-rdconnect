@@ -34,16 +34,17 @@ def _fetch_biosamples(qparams, access_token, groups):
     url = config.gpap_base_url + config.dm_experiments
 
     resp = requests.post(url, headers = headers, data = json.dumps(payload), verify = False)
-    print("=" * 25)
-    print(headers)
-    print(payload)
-    print(url)
-    print(resp.text)
-    print("=" * 25)
     if resp.status_code != 200:
         raise BeaconServerError(error = resp.text)
     resp = resp.json()
     return resp['_meta']['total_items'], resp['items']
+
+
+def fetch_datsets_by_dataset(qparams, access_token, groups, projects):
+    return [ {
+        'id': 'datasetBeacon',
+        'type': 'Fake abstracted level for beacon v2 implementation (in test)'
+    } ]
 
 
 def fetch_biosamples_by_variant(qparams, access_token, groups, projects):
@@ -74,17 +75,10 @@ def fetch_individuals_by_individual(qparams, access_token, groups, projects):
         url = config.gpap_base_url + config.ps_participants
     resp = requests.post(url, headers = headers, data = json.dumps(payload), verify = False)
 
-    print("=" * 25)
-    print(headers)
-    print(payload)
-    print(url)
-    print(resp.text)
-    print("=" * 25)
-
-
     if resp.status_code != 200:
         raise BeaconServerError(error = resp.json()['message'])
     resp = json.loads(resp.text)
+
     return resp['total'], resp['rows']
 
 def fetch_variants_by_biosample(qparams, access_token, groups, projects):

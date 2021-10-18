@@ -145,7 +145,7 @@ def beacon_biosample_v30(row):
 
 def beacon_individual_v30(row):                                    # PHENOSTORE PERMISION LAYER
     return {
-        'individualId':       row['report_id'],                    # PHENOSTORE ID
+        'id':                 row['report_id'],                    # PHENOSTORE ID
         'taxonId':            None,                                # NONE
         'sex':                get_val(row, 'sex', None, lambda x: 'Female' if x == 'F' else 'Male'), #
         'ethnicity':          None,                                # NONE

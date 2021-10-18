@@ -77,6 +77,7 @@ def build_response(data, qparams, func, authorized_datasets=[]):
     response = {
             'results': func(data, qparams, authorized_datasets),
             'info': None,
+            'name': config.beacon_name
             # 'resultsHandover': None, # build_results_handover
             # 'beaconHandover': None, # build_beacon_handover
         }

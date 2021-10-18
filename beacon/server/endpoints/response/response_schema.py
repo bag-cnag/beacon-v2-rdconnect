@@ -14,6 +14,7 @@ class BeaconEntity(IntEnum):
     INDIVIDUAL = 2
     VARIANT = 3
     COHORT = 4
+    DATASET = 5
 
 
 def build_beacon_response(proxy, data, num_total_results, qparams_converted, by_entity_type, non_accessible_datasets, func_response_type):
@@ -23,7 +24,8 @@ def build_beacon_response(proxy, data, num_total_results, qparams_converted, by_
     
     beacon_response = {
         'meta': build_meta(proxy, qparams_converted, by_entity_type),
-        'response': build_response(data, num_total_results, qparams_converted, non_accessible_datasets, func_response_type)
+        'response': build_response(data, num_total_results, qparams_converted, non_accessible_datasets, func_response_type),
+        'responseSummary': { 'exists': True }
     }
     return beacon_response
 
@@ -34,12 +36,15 @@ def build_meta(proxy, qparams, by_entity_type):
     We assume that receivedRequest is the evaluated request (qparams) sent by the user.
     """
 
-    schemas = [s for s in get_schemas(proxy, qparams)]
+    entinty_name = [ 'BIOSAMPLE', 'INDIVIDUAL', 'VARIANT', 'COHORT', 'DATASET' ][ by_entity_type - 1 ]
+
+    schemas = [ { "entityType": entinty_name, "schema": s } for s in get_schemas(proxy, qparams) ]
 
     meta = {
         'beaconId': config.beacon_id,
         'apiVersion': config.api_version,
         'receivedRequest': build_received_request(qparams, schemas, by_entity_type),
+        'receivedRequestSummary':  build_received_request_summary(qparams, schemas, by_entity_type),
         'returnedSchemas': schemas,
     }
     return meta
@@ -59,9 +64,23 @@ def build_received_request(qparams, schemas, by_entity_type):
     request = {
         'meta': {
             'requestedSchemas' : schemas,
-            'apiVersion' : qparams.apiVersion,
+            'apiVersion' : config.api_version,
         },
         'query': build_received_query(qparams, by_entity_type),
+    }
+
+    return request
+
+def build_received_request_summary(qparams, schemas, by_entity_type):
+    """"Fills the `receivedRequestSummary` part with the request data"""
+
+    request = {
+        'requestedSchemas' : schemas,
+        'apiVersion' : config.api_version,
+        'pagination': {
+            'skip': qparams.skip,
+            'limit': qparams.limit
+        }
     }
 
     return request
@@ -184,16 +203,17 @@ def build_response(data, num_total_results, qparams, non_accessible_datasets, fu
     Fills the `response` part with the correct format in `results`
     """
 
-    response = {
+    response = { 'resultSets': [ {
             'id': 'datasetBeacon',
             'type': 'dataset',
             'exists': bool(data),
             'resultsCount': int(num_total_results),
             'results': func(data, qparams),
-            'info': None,
+            'info': { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
             'resultsHandover': None, # build_results_handover
-            'beaconHandover': config.beacon_handovers,
-        }
+            'beaconHandover': config.beacon_handovers#,
+            #'setType': 'object'
+        } ] }
 
     if non_accessible_datasets:
         response['error'] = build_error(non_accessible_datasets)
@@ -217,26 +237,33 @@ def build_variant_response(data, qparams):
             'datasetAlleleResponses': row['dataset_response']
         }
 
+def build_dataset_response(data, qparams):
+    return data
 
 def build_biosample_or_individual_response(data, qparams):
     """
     Fills the `results` part with the format for biosample or individual data
     """
+
+    # "$schema": "https://schemas-fake-depot.org/beaconv2/datasetSchema.json",
     
     rsp = {
-        "$schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconCollectionsResponse.json",
-        'meta': {
-            'beaconId':	'org.ga4gh.beacon',
-            'apiVersion': 'v2.0-draft4',
-            'returnedSchemas':	[	
-                { 'entryTypes': 'beacon-entry-types-v2.0.0-draft.4' }
-            ]
-        },
-        "responseSummary": {
-            "exists": True
-        },
-        "resultSets":  [qparams.requestedSchema[1](row) for row in data]
+        #"$schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconCollectionsResponse.json",
+        #'meta': {
+        #    'beaconId':	'org.ga4gh.beacon',
+        #    'apiVersion': 'v2.0-draft4',
+        #    'returnedSchemas':	[	
+        #        { 'entryTypes': 'beacon-entry-types-v2.0.0-draft.4' }
+        #    ]
+        #},
+        #"receivedRequestSummary": {},
+        #"responseSummary": {
+        #    "exists": True
+        #},
+        #"resultSets":  [ qparams.requestedSchema[1](row) for row in data ]
     }
+
+    rsp = [ qparams.requestedSchema[1](row) for row in data ]
 
     return rsp
 

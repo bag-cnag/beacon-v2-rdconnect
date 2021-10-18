@@ -47,8 +47,6 @@ def not_implemented_handler(entity):
     return wrapper
 
 def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_func):
-    print("---> generic_handler of {}".format(entity))
-    LOG.debug("---> generic_handler of {}".format(entity))
     async def wrapper(request):
         LOG.info('Running a request for %s', entity)
         access_token = request.headers.get('Authorization')
@@ -62,8 +60,6 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
         else:
             LOG.debug('Access token received.')
             access_token = access_token[7:]
-        
-        LOG.debug(access_token)
         
         try:
             decoded  = jwt.decode(access_token, public_key, algorithms = jwt_algorithm, options = jwt_options)
@@ -142,6 +138,7 @@ cohorts_by_cohort         = not_implemented_handler('cohorts')
 # Implemented endpoints
 
 test                      = testing_handler('test')
+datasets                  = generic_handler('datasets' , BeaconEntity.DATASET, biosamples_proxy , fetch_datsets_by_dataset, build_dataset_response)
 
 # individuals_by_biosample = generic_handler('individuals', BeaconEntity.BIOSAMPLE, individuals_proxy, fetch_individuals_by_biosample, build_biosample_or_individual_response)
 biosamples_by_biosample = generic_handler('biosamples' , BeaconEntity.BIOSAMPLE, biosamples_proxy , fetch_biosamples_by_biosample, build_biosample_or_individual_response)
