@@ -263,7 +263,7 @@ def build_biosample_or_individual_response(data, qparams):
         #"resultSets":  [ qparams.requestedSchema[1](row) for row in data ]
     }
 
-    rsp = [ qparams.requestedSchema[1](row) for row in data[:2] ]
+    rsp = [ qparams.requestedSchema[1](row) for row in data ]
 
     return rsp
 
