@@ -107,6 +107,12 @@ class GVariantParametersBase(RequestParameters):
         if values.mateName:
             raise BeaconBadRequest("Queries using 'mateName' are not implemented (yet)")
 
+class DatasetsParameters(GVariantParametersBase):
+    requestedSchema = SchemaField('beacon-dataset-v2.0.0-draft.4',
+                                  default='beacon-dataset-v2.0.0-draft.4')
+    id      = StringField()
+    type    = StringField()
+
 class BiosamplesParameters(GVariantParametersBase):
     requestedSchema = SchemaField('ga4gh-phenopacket-biosample-v1.0',
                                   'beacon-biosample-v2.0.0-draft.4',

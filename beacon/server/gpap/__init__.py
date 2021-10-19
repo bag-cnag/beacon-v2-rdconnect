@@ -41,7 +41,7 @@ def _fetch_biosamples(qparams, access_token, groups):
 
 
 def fetch_datsets_by_dataset(qparams, access_token, groups, projects):
-    return [ {
+    return 1, [ {
         'id': 'datasetBeacon',
         'type': 'Fake abstracted level for beacon v2 implementation (in test)'
     } ]
@@ -78,6 +78,10 @@ def fetch_individuals_by_individual(qparams, access_token, groups, projects):
     if resp.status_code != 200:
         raise BeaconServerError(error = resp.json()['message'])
     resp = json.loads(resp.text)
+
+    print("----------")
+    print(resp)
+    print("----------")
 
     return resp['total'], resp['rows']
 
