@@ -51,6 +51,6 @@ routes = [
     web.post('/api/cohorts/{target_id_req}'                  , handlers.cohorts_by_cohort),
 
     # TESTING
-    web.get( '/api/test'                                     , handlers.test),
+    web.get('/api/test'                                      , handlers.test),
     web.post('/api/test'                                     , handlers.test),
 ]
