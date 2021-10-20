@@ -50,19 +50,19 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
     async def wrapper(request):
         LOG.info('Running a request for {}'.format(entity))
         print('Running a request for {}'.format(entity))
-        # access_token = request.headers.get('Authorization')
+        access_token = request.headers.get('Authorization')
         
-        # if not access_token and config.gpap_token_required[0]:
-        #     LOG.debug('No access token but validation required.')
-        #     raise BeaconForbidden(error = 'No authentication header was provided')
-        # elif not config.gpap_token_required[0]:
-        #     LOG.debug('No access token and validation not required.')
-        #     access_token = get_kc_token()['access_token']
-        # else:
-        #     LOG.debug('Access token received.')
-        #     access_token = access_token[7:]
+        if not access_token and config.gpap_token_required[0]:
+            LOG.debug('No access token but validation required.')
+            raise BeaconForbidden(error = 'No authentication header was provided')
+        elif not config.gpap_token_required[0]:
+            LOG.debug('No access token and validation not required.')
+            access_token = get_kc_token()['access_token']
+        else:
+            LOG.debug('Access token received.')
+            access_token = access_token[7:]
         
-        access_token = get_kc_token()['access_token']
+        #access_token = get_kc_token()['access_token']
 
         try:
             decoded  = jwt.decode(access_token, public_key, algorithms = jwt_algorithm, options = jwt_options)
