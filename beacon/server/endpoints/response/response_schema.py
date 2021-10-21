@@ -17,14 +17,14 @@ class BeaconEntity(IntEnum):
     DATASET = 5
 
 
-def build_beacon_response(proxy, data, num_total_results, qparams_converted, by_entity_type, non_accessible_datasets, func_response_type):
+def build_beacon_response(proxy, data, num_total_results, qparams_converted, by_entity_type, entity, non_accessible_datasets, func_response_type):
     """"
     Transform data into the Beacon response format.
     """
     
     beacon_response = {
         'meta': build_meta(proxy, qparams_converted, by_entity_type),
-        'response': build_response(data, num_total_results, qparams_converted, non_accessible_datasets, func_response_type),
+        'response': build_response(data, num_total_results, qparams_converted, non_accessible_datasets, func_response_type, entity),
         'responseSummary': { 'exists': True }
     }
     return beacon_response
@@ -198,21 +198,20 @@ def build_error(non_accessible_datasets):
     }
 
 
-def build_response(data, num_total_results, qparams, non_accessible_datasets, func):
+def build_response(data, num_total_results, qparams, non_accessible_datasets, func, entity):
     """"
     Fills the `response` part with the correct format in `results`
     """
 
     response = { 'resultSets': [ {
             'id': 'datasetBeacon',
-            'type': 'dataset',
+            'seType': entity,
             'exists': bool(data),
             'resultsCount': int(num_total_results),
             'results': func(data, qparams),
             'info': { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
             'resultsHandover': None, # build_results_handover
             'beaconHandover': config.beacon_handovers#,
-            #'setType': 'object'
         } ] }
 
     if non_accessible_datasets:

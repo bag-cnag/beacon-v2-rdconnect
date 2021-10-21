@@ -102,7 +102,7 @@ def generic_handler(entity, by_entity_type, proxy, fetch_func, build_response_fu
         #rows = [row async for row in response]
         #rows = [row for row in response]
         #num_total_results = await response_total_results
-        response_converted = build_beacon_response(proxy, response, num_total_results, qparams, by_entity_type, non_accessible_datasets, build_response_func)
+        response_converted = build_beacon_response(proxy, response, num_total_results, qparams, by_entity_type, entity, non_accessible_datasets, build_response_func)
 
         LOG.info('Formatting the response for %s', entity)
         return await json_response(request, response_converted)
