@@ -205,12 +205,12 @@ def build_response(data, num_total_results, qparams, non_accessible_datasets, fu
 
     response = { 'resultSets': [ {
             'id': 'datasetBeacon',
-            'seType': entity,
+            'setType': entity,
             'exists': bool(data),
             'resultsCount': int(num_total_results),
             'results': func(data, qparams),
             'info': { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
-            'resultsHandover': None, # build_results_handover
+            'resultsHandover': '', # build_results_handover
             'beaconHandover': config.beacon_handovers#,
         } ] }
 
@@ -232,7 +232,7 @@ def build_variant_response(data, qparams):
         yield {
             'variant': variant_func(row),
             'variantAnnotations': variant_annotation_func(row),
-            'handovers': None,  # build_variant_handover
+            'handovers': '',  # build_variant_handover
             'datasetAlleleResponses': row['dataset_response']
         }
 
