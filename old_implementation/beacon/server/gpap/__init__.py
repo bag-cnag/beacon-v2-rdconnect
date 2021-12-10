@@ -9,7 +9,7 @@ from keycloak import KeycloakOpenID
 
 from server.config import config
 from server.gpap.payloads import *
-from server.framework.exceptions import BeaconEndPointNotImplemented, BeaconForbidden, BeaconServerError, BeaconUnauthorised
+from server.utils.exceptions import BeaconEndPointNotImplemented, BeaconForbidden, BeaconServerError, BeaconUnauthorised
 
 LOG = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def fetch_datsets_by_dataset(qparams, access_token, groups, projects):
 
 
 def fetch_biosamples_by_variant(qparams, access_token, groups, projects):
-    return 0, (x for x in [])
+    return (x for x in [])
 
 def fetch_biosamples_by_biosample(qparams, access_token, groups, projects):
     return _fetch_biosamples(qparams, access_token, groups)
@@ -57,20 +57,20 @@ def fetch_biosamples_by_individual(qparams, access_token, groups, projects):
     return _fetch_biosamples(qparams, access_token, groups)
 
 def fetch_variants_by_variant(qparams, access_token, groups, projects):
-    return 0, (x for x in [])
+    return (x for x in [])
 
 def fetch_individuals_by_variant(qparams, access_token, groups, projects):
-    return 0, (x for x in [])
+    return (x for x in [])
 
 def fetch_individuals_by_biosample(qparams, access_token, groups, projects):
-    return 0, (x for x in [])
+    return (x for x in [])
 
 def fetch_individuals_by_individual(qparams, access_token, groups, projects):
     payload = phenostore_playload(qparams, qparams.targetIdReq)
     headers = { 'Authorization': access_token, 'Content-Type': 'application/json' }
     if qparams.targetIdReq:
-        url = config.gpap_base_url + config.ps_participant.format(qparams.targetIdReq)
-        #url = config.gpap_base_url + config.ps_participants
+        #url = config.gpap_base_url + config.ps_participant.format(qparams.targetIdReq)
+        url = config.gpap_base_url + config.ps_participants
     else:
         url = config.gpap_base_url + config.ps_participants
     resp = requests.post(url, headers = headers, data = json.dumps(payload), verify = False)
@@ -93,3 +93,57 @@ def fetch_variants_by_individual(qparams, access_token, groups, projects):
 
 def fetch_cohorts_by_cohort(qparams, access_token, groups, projects):
     return (x for x in [])
+
+
+
+# # Counters for GPAP's API
+
+# def count_variants_by_variant(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_variants_by_biosample(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_variants_by_individual(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_individuals_by_variant(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_individuals_by_biosample(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_individuals_by_individual(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_biosamples_by_variant(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_biosamples_by_biosample(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_biosamples_by_individual(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()
+
+# def count_cohorts_by_cohort(qparams, access_token, groups, projects):
+#     async def cnt():
+#         return 0
+#     return cnt()

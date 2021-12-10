@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from server.framework.exceptions import BeaconBadRequest
+from server.utils.exceptions import BeaconBadRequest
 
 # List of valid filtering keys per GPAP's endpoint
 _valid_individuals = ['id', 'family_id', 'index', 'solved', 'sex', 'affectedStatus', 'lifeStatus' ]
