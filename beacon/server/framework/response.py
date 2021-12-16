@@ -29,43 +29,46 @@ def build_beacon_response(entity, qparams, num_total_results, data, func_respons
 #     return beacon_response
 
 
-def build_meta(entity, qparams):
+def build_meta( entity, qparams ):
     meta = {
         'beaconId': config.beacon_id,
         'apiVersion': config.api_version,
-        'receivedRequest': build_received_request(entity, qparams),
-        'receivedRequestSummary':  build_received_request_summary(qparams),
-        'returnedSchemas': qparams['requestedSchemas'],
+        'returnedGranularity': qparams[ 'query' ][ 'requestedGranularity' ],
+        #'receivedRequest': build_received_request(entity, qparams),
+        'receivedRequestSummary':  build_received_request_summary( qparams ),
+        'returnedSchemas': qparams[ 'query' ][ 'requestedSchemas' ],
     }
     return meta
 
 
-def build_received_request(entity, qparams):
+# def build_received_request(entity, qparams):
+#     request = {
+#         'meta': {
+#             'requestedSchemas' : qparams[ 'query' ][ 'requestedSchemas' ],
+#             'apiVersion' : config.api_version,
+#         },
+#         'query': {} # build_received_query(qparams, entity),
+#     }
+
+#     return request
+
+def build_received_request_summary( qparams ):
     request = {
-        'meta': {
-            'requestedSchemas' : qparams['requestedSchemas'],
-            'apiVersion' : config.api_version,
+        'apiVersion': qparams[ 'meta' ][ 'apiVersion' ],
+        'requestedSchemas': qparams[ 'query' ][ 'requestedSchemas' ],
+        'pagination': {
+            'skip': qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+            'limit': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         },
-        'query': {} # build_received_query(qparams, entity),
+        'filters': [],
+        'requestParameters': [],
+        'includeResultsetResponses': 'HIT', # TODO <--------
+        'testMode': False                   # TODO <--------
     }
-
-    return request
-
-def build_received_request_summary(qparams):
-    request = {
-        'requestedSchemas' : qparams['requestedSchemas'],
-        'apiVersion' : config.api_version,
-    }
-
-    if 'pagination' in qparams.keys():
-        request['pagination'] = {
-            'skip': qparams['pagination']['skip'],
-            'limit': qparams['pagination']['limit'],
-        }
     return request
 
 
-def build_received_query(entity, qparams):
+def build_received_query( entity, qparams ):
     query_part = {}
     if entity == 'datasets':
         build_datasets_params(qparams)
@@ -121,10 +124,13 @@ def build_received_query(entity, qparams):
 
 # #     return g_variant_params
 
-def build_datasets_params(qparams):
+def build_datasets_params( qparams ):
     datasets_params = {}
-    if qparams.id:
-        datasets_params['datasets'] = qparams.id
+    if qparams[ 'parameters' ]:
+        if type( qparams.id ) is list:
+            datasets_params[ 'datasets' ] = qparams.id
+        else:
+            datasets_params[ 'datasets' ] = [ qparams.id ]
     
     return datasets_params
 

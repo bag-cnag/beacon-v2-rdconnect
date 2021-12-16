@@ -9,13 +9,12 @@ from datetime import datetime
 from server.config import config
 from server.model.parameters.validators import *
 from server.model.schemas import supported_schemas
+from server.logger import LOG
 
 # __all__ = (
 #     'Field', 'StringField', 'IntegerField', 'FloatField', 'DecimalField',
 #     'RegexField', 'BooleanField', 'NullBooleanField', 'ChoiceField', 'BoundedListField'
 # )
-
-LOG = logging.getLogger(__name__)
 
 # These values, if given to validate(), will trigger the self.required check.
 EMPTY_VALUES = (None, '', [], (), {}, set())

@@ -2,48 +2,75 @@
 # -*- coding: utf-8 -*-
 
 
+from multidict import MultiDict
+
 import server.model.parameters.validators as valid
 from server.logger import LOG
 from server.framework.exceptions import BeaconBadRequest
 from server.model.schemas import supported_schemas_by_entity
 
+
+
+# response
+#current_page
+#next_page
+#previous_page
+
+
 async def process_request(request, entity):
-    global params
+    default_params = {
+        'meta': {
+            'apiVersion'           : 'v2.0.0-draft.4',
+        },
+        'query': {
+            'pagination'           : { 'skip': 1, 'limit': 5 },
+            'requestedGranularity' : 'count', #["boolean", "count", "aggregated", "record"]
+            'requestedSchemas'      : [ { 'entityType': entity, 'schema': supported_schemas_by_entity[ entity ] } ]
+        },
+    }
+
     if request.headers.get('Content-Type') == 'application/json':
-        qrt = await request.json()
+        qrt = MultiDict(await request.json())
     else:
-        qrt = await request.post()
+        qrt = MultiDict(await request.post())
+    
+    print(qrt, request, entity)
 
-    meta = build('meta', params['meta'], qrt['meta'])
-    if 'requestedSchemas' not in meta.keys():
-        meta['requestedSchemas'] = [ { 'entity': entity, 'schema': supported_schemas_by_entity['entity'] } ]
-    query = build('query', params['query'], qrt['query'])
+    if 'meta' not in qrt:
+        qrt.add( 'meta', default_params[ 'meta' ] )
+    else:
+        if 'apiVersion' not in qrt[ 'meta' ]:
+            qrt[ 'meta' ][ 'apiVersion' ] = default_params[ 'meta' ][ 'apiVersion' ]
+    
+    if 'query' not in qrt:
+        qrt.add( 'query', default_params[ 'query' ] )
+    else:
+        if 'pagination' not in qrt[ 'query' ]:
+            qrt[ 'query' ][ 'pagination' ] = default_params[ 'query' ][ 'pagination' ]
+        if 'requestedGranularity' not in qrt[ 'query' ]:
+            qrt[ 'query' ][ 'requestedGranularity' ] = default_params[ 'query' ][ 'requestedGranularity' ]
+        if 'requestedSchemas' not in qrt[ 'query' ]:
+            qrt[ 'query' ][ 'requestedSchemas' ] = default_params[ 'query' ][ 'requestedSchemas' ]
+        else:
+            if len( qrt[ 'query' ][ 'requestedSchemas' ] ) > 1:
+                raise BeaconBadRequest( 'Expected single item in requested schemas but more were received.')
+            if qrt[ 'query' ][ 'requestedSchemas' ] != supported_schemas_by_entity[ entity ]:
+                raise BeaconBadRequest( 'For entity "{}", this beacon supports "{}" but not "{}".'.format( entity, supported_schemas_by_entity[ entity ], qrt[ 'query' ][ 'requestedSchemas' ]))
+    
+    return qrt
 
-    LOG.debug('Processed request (meta + query)')
-    return { **meta , **query }
+
+# def build(entity, map, qrt):
+#     rst = {}
+#     for key in map.keys():
+#         if key in qrt.keys():
+#             rst[key] = map[key]['valid'](qrt[key])
+#         elif key not in qrt.keys() and map[key]['required']:
+#             raise BeaconBadRequest('Expected argument "{}" in section "{}" from request.'.format(key, entity))
+#     return rst
 
 
-def build(entity, map, qrt):
-    rst = {}
-    for key in map.keys():
-        if key in qrt.keys():
-            rst[key] = map[key]['valid'](qrt[key])
-        elif key not in qrt.keys() and map[key]['required']:
-            raise BeaconBadRequest('Expected argument "{}" in section "{}" from request.'.format(key, entity))
-    return rst
 
-
-params = {
-    'meta': {
-        'apiVersion'                    : { 'valid': valid.api_version, 'required': True },
-        'requestedSchemas'              : { 'valid': valid.requested_schemas, 'required': False },
-    },
-    'query': {
-        'filters'                       : { 'valid': valid.filters, 'required': False },
-        'pagination'                    : { 'valid': valid.pagination, 'required': False },
-        'requestedGranularity'          : { 'valid': valid.requested_granularity, 'required': False },
-    },
-}
 
 
 

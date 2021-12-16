@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import jwt
-import logging
-
 from server.config import config
 from server.framework.utils import json_response
 from server.framework.exceptions import  BeaconServerError, BeaconForbidden, BeaconEndPointNotImplemented
@@ -13,7 +11,6 @@ from server.logger import LOG
 
 from server.model.parameters import process_request
 
-#LOG         = logging.getLogger(__name__)
 jwt_options = config.jwt_options
 jwt_algorithm = config.jwt_algorithm
 public_key  = '-----BEGIN PUBLIC KEY-----\n' + config.beacon_idrsa + '\n-----END PUBLIC KEY-----'
