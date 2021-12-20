@@ -6,6 +6,7 @@ from multidict import MultiDict
 
 import server.model.parameters.validators as valid
 from server.logger import LOG
+from server.config import config
 from server.framework.exceptions import BeaconBadRequest
 from server.model.schemas import supported_schemas_by_entity
 
@@ -54,12 +55,12 @@ async def process_request( request, entity ):
         else:
             if len( qrt[ 'query' ][ 'requestedSchemas' ] ) > 1:
                 raise BeaconBadRequest( 'Expected single item in requested schemas but more were received.')
-            if qrt[ 'query' ][ 'requestedSchemas' ] != supported_schemas_by_entity[ entity ]:
-                raise BeaconBadRequest( 'For entity "{}", this beacon supports "{}" but not "{}".'.format( entity, supported_schemas_by_entity[ entity ], qrt[ 'query' ][ 'requestedSchemas' ] ) )
+            if qrt[ 'query' ][ 'requestedSchemas' ][ 0 ][ 'schema' ] != supported_schemas_by_entity[ entity ]:
+                raise BeaconBadRequest( 'For entity "{}", this beacon supports "{}" but not "{}".'.format( entity, supported_schemas_by_entity[ entity ], qrt[ 'query' ][ 'requestedSchemas' ][ 0 ][ 'schema' ] ) )
         if 'filters' not in qrt[ 'query' ]:
             qrt[ 'query' ][ 'filters' ] = default_params[ 'query' ][ 'filters' ]
         else:
-            flag, err, filters = validate_filters( qrt[ 'query' ][ 'filters' ] )
+            flag, err, filters = validate_filters( qrt[ 'query' ][ 'filters' ], entity )
             if flag: 
                 qrt[ 'query' ][ 'filters' ] = filters
             else:
@@ -69,7 +70,19 @@ async def process_request( request, entity ):
     return qrt
 
 
-def validate_filters( filters ):
+def validate_filters( filters, entity ):
+    # check that all filters provide scope
+    if sum( [ 'scope' in x.keys() for x in filters ] ) != len( filters ):
+        return False, 'Some of the provided filters do not indicate thei scope.', [ ]
+    # check scope - for now only indivisual filters can be used
+    if sum( [ x['scope'] == 'individuals' for x in filters ] ) != len( filters ):
+        return False, 'Some of the provided filters do not indicate thei scope.', [ ]
+    # check that all the filters are valid filters
+    for x in filters:
+        if not x['id'] in config.filters[ 'hpos' ] and not x['id'] in config.filters[ 'ordos' ]:
+            return False, 'Provided fiter "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+    # remove filtes that do not apply
+    filters = [ x[ 'id' ] for x in filters if x[ 'scope' ] ==  entity ]
     return True, '', filters
 
 # filters = {

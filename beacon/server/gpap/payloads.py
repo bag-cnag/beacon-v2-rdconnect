@@ -12,10 +12,16 @@ def ps_to_gpap( qparams, psid = None ):
     fltrs = []
     if psid:
         fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
-    #for qkey in _valid_individuals:
-    #    x = getattr( qparams, qkey )
-    #    if x:
-    #        fltrs.append ({ 'id': qkey, 'value': x } )
+    if len( qparams[ 'query' ][ 'filters' ] ) > 0:
+        for item in qparams[ 'query' ][ 'filters' ]:
+            if item.startswith('HP'):
+                fltrs.append ({ 'id': 'features', 'value': item } )
+            if item.startswith('Or'):
+                fltrs.append ({ 'id': 'diagnosis', 'value': item } )
+            if item == 'NCIT:C16576': # female
+                fltrs.append ({ 'id': 'sex', 'value': 'F' } )
+            if item == 'NCIT:C20197': # male
+                fltrs.append ({ 'id': 'sex', 'value': 'M' } )
     return fltrs
 
 # Function to translate from RequestParameters to DataManagement filtering

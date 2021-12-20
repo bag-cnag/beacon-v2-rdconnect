@@ -51,8 +51,8 @@ def fetch_datsets_by_dataset( qparams, access_token, groups, projects ):
     } ]
 
 
-def fetch_biosamples_by_variant(qparams, access_token, groups, projects):
-    return 0, (x for x in [])
+# def fetch_biosamples_by_variant(qparams, access_token, groups, projects):
+#     return 0, (x for x in [])
 
 def fetch_biosamples_by_biosample(qparams, access_token, groups, projects):
     return _fetch_biosamples( qparams, access_token, groups )

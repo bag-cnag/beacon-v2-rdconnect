@@ -27,6 +27,8 @@ from server.logger import LOG
 from server.framework.endpoints import routes
 
 def main():
+    config.load_filts()
+
     beacon = web.Application()
     beacon.add_routes(routes)
     web.run_app(beacon,
