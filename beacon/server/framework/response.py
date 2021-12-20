@@ -10,12 +10,18 @@ from server.framework.exceptions import BeaconServerError
 
 LOG = logging.getLogger(__name__)
 
-def build_beacon_response(entity, qparams, num_total_results, data, func_response_type):
-    return {
-        'meta': build_meta(entity, qparams),
-        'response': {},
-        'responseSummary': {}
+def build_beacon_response( entity, qparams, num_total_results, data, build_response_func ):
+    rst = { 
+           'meta': build_meta( qparams ),
+           'responseSummary': {
+               'exists': True if num_total_results > 0 else False
+           }
     }
+    if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
+        rst[ 'responseSummary' ][ 'numTotalResults' ] = num_total_results
+    if qparams[ 'query' ][ 'requestedGranularity' ] == 'record':
+        rst[ 'result' ] = build_response( entity, qparams, num_total_results, data, build_response_func )
+    return rst
 
 # def build_beacon_response(proxy, data, num_total_results, qparams_converted, entity, non_accessible_datasets, func_response_type):
 #     """"
@@ -29,12 +35,11 @@ def build_beacon_response(entity, qparams, num_total_results, data, func_respons
 #     return beacon_response
 
 
-def build_meta( entity, qparams ):
+def build_meta( qparams ):
     meta = {
         'beaconId': config.beacon_id,
         'apiVersion': config.api_version,
         'returnedGranularity': qparams[ 'query' ][ 'requestedGranularity' ],
-        #'receivedRequest': build_received_request(entity, qparams),
         'receivedRequestSummary':  build_received_request_summary( qparams ),
         'returnedSchemas': qparams[ 'query' ][ 'requestedSchemas' ],
     }
@@ -60,8 +65,8 @@ def build_received_request_summary( qparams ):
             'skip': qparams[ 'query' ][ 'pagination' ][ 'skip' ],
             'limit': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         },
-        'filters': [],
-        'requestParameters': [],
+        'filters': [],                      # TODO <--------
+        'requestParameters': {},            # TODO <--------
         'includeResultsetResponses': 'HIT', # TODO <--------
         'testMode': False                   # TODO <--------
     }
@@ -71,13 +76,13 @@ def build_received_request_summary( qparams ):
 def build_received_query( entity, qparams ):
     query_part = {}
     if entity == 'datasets':
-        build_datasets_params(qparams)
+        build_datasets_filters( qparams )
     elif entity == 'individuals':
         pass
     elif entity == 'biosamples':
         pass
     else:
-        raise BeaconServerError('Cannout bould response for entity "{}"'.format(entity))
+        raise BeaconServerError( 'Can not build response for entity "{}"'.format( entity ) )
     return query_part
     # g_variant  = None # build_g_variant_params(qparams, entity)
     # individual = None # build_individual_params(qparams, entity)
@@ -124,7 +129,7 @@ def build_received_query( entity, qparams ):
 
 # #     return g_variant_params
 
-def build_datasets_params( qparams ):
+def build_datasets_filters( qparams ):
     datasets_params = {}
     if qparams[ 'parameters' ]:
         if type( qparams.id ) is list:
@@ -156,11 +161,6 @@ def build_datasets_params( qparams ):
 # #     return biosample_params
 
 
-
-
-
-
-
 # def build_error(non_accessible_datasets):
 #     """"
 #     Fills the `error` part in the response.
@@ -177,26 +177,19 @@ def build_datasets_params( qparams ):
 #     }
 
 
-# def build_response(data, num_total_results, qparams, non_accessible_datasets, func, entity):
-#     """"
-#     Fills the `response` part with the correct format in `results`
-#     """
-
-#     response = { 'resultSets': [ {
-#             'id': 'datasetBeacon',
-#             'setType': entity,
-#             'exists': bool(data),
-#             'resultsCount': int(num_total_results),
-#             'results': func(data, qparams),
-#             'info': { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
-#             'resultsHandover': '', # build_results_handover
-#             'beaconHandover': config.beacon_handovers#,
-#         } ] }
-
-#     if non_accessible_datasets:
-#         response['error'] = build_error(non_accessible_datasets)
-
-#     return response
+def build_response( entity, qparams, num_total_results, data, func, ):
+    response = { 
+        'resultSets': [ {
+            'id': 'datasetBeacon',
+            'setType': entity,
+            'exists': True if num_total_results > 0 else False,
+            'resultsCount': num_total_results,
+            'results': func( data, qparams ),
+            'info': { }, # { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
+            #'resultsHandover': [], # build_results_handover
+            #'beaconHandover': config.beacon_handovers#,
+        } ] }
+    return response
 
 
 # # def build_variant_response(data, qparams):

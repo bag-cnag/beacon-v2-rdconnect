@@ -120,57 +120,66 @@ def beacon_dataset_info(row, authorized_datasets=[]):
 #             }
 #         }
 
-def beacon_biosample(row):
+def beacon_biosample( experiments ):
+    one = experiments[ 0 ]
+    formated_experiments = []
+    for row in experiments:
+        formated_experiments.append( {
+            'experimentId':                 row[ 'RD_Connect_ID_Experiment' ],     # EXPERIMENT ID
+            'owner':                        row[ 'Owner'] ,                        # OWNER
+            'tissue':                       row[ 'tissue' ],                       # TISSUE
+            'ega_id':                       row[ 'EGA_ID' ],                       #
+            'in_platform':                  row[ 'in_platform' ],                  # AVAILABLE FOR QUERY
+            'experiment_type':              row[ 'experiment_type' ],              # WES/WGS
+            'library_source':               row[ 'library_source' ],               # LIBRARY
+            'library_selection':            row[ 'library_selection' ],            # LIBRARY
+            'library_strategy':             row[ 'library_strategy' ],             # LIBRARY
+            'library_contruction_protocol': row[ 'library_contruction_protocol' ], # LIBRARY
+            'POSTEMBARGO':                  row[ 'POSTEMBARGO' ],                  # OTHERS THAN OWNER CAN QUERY
+            'kit':                          row[ 'kit' ],                          # KIT
+            'tumour_experiment_id':         row[ 'tumour_experiment_id' ],         # CANCER TUMORAL SAMPLES
+            'design':                       row[ 'design_description' ],           # DESIGN
+        } )
     return {
-        'biosampleId':             row['RD_Connect_ID_Experiment'], # EXPERIMENT ID
-        'subjectId':               row['Participant_ID'],           # PHENOSTORE ID
-        'description':             row['design_description'],       # ''
-        'biosampleStatus':         None,                            # NONE
-        'collectionDate':          None,                            # NONE
-        'subjectAgeAtCollection':  None,                            # NONE
-        'sampleOriginDescriptors': None,                            # NONE
-        'obtentionProcedure':      None,                            # NONE
-        'cancerFeatures': {                                         # MOVED TO info
+        'biosampleId':             'B-' + one[ 'Participant_ID' ],          # EXPERIMENT ID
+        'subjectId':               one[ 'Participant_ID' ],                 # PHENOSTORE ID
+        'description':             '',                                      # ''
+        'biosampleStatus':         None,                                    # NONE
+        'collectionDate':          None,                                    # NONE
+        'subjectAgeAtCollection':  None,                                    # NONE
+        'sampleOriginDescriptors': None,                                    # NONE
+        'obtentionProcedure':      None,                                    # NONE
+        'cancerFeatures': {                                                 # MOVED TO info
             'tumorProgression':    None,
             'tumorGrade':          None,
         },
-        'handovers': [],                                            # []
-        'info': {                                                   # FREE FIELD - NOW EMPTY
-            'owner':                        row['Owner'],                        # OWNER
-            'tissue':                       row['tissue'],                       # TISSUE
-            'ega_id':                       row['EGA_ID'],                       #
-            'in_platform':                  row['in_platform'],                  # AVAILABLE FOR QUERY
-            'experiment_type':              row['experiment_type'],              # WES/WGS
-            'library_source':               row['library_source'],               # LIBRARY
-            'library_selection':            row['library_selection'],            # LIBRARY
-            'library_strategy':             row['library_strategy'],             # LIBRARY
-            'library_contruction_protocol': row['library_contruction_protocol'], # LIBRARY
-            'POSTEMBARGO':                  row['POSTEMBARGO'],                  # OTHERS THAN OWNER CAN QUERY
-            'kit':                          row['kit'],                          # KIT
-            'tumour_experiment_id':         row['tumour_experiment_id'],         # CANCER TUMORAL SAMPLES
+        'handovers': [],                                                    # []
+        'info': {                                                           # INFO FROM THE EXPERIMENTS
+            'experiments_count': len( formated_experiments ),
+            'experiments': formated_experiments
         }
     }
 
-def beacon_individual(row):                                    # PHENOSTORE PERMISION LAYER
+def beacon_individual( ind ):                                      # PHENOSTORE PERMISION LAYER
     return {
-        'id':                 row['report_id'],                    # PHENOSTORE ID
+        'id':                 ind[ 'report_id'] ,                  # PHENOSTORE ID
         'taxonId':            None,                                # NONE
-        'sex':                get_val(row, 'sex', None, lambda x: 'Female' if x == 'F' else 'Male'), #
+        'sex':                get_val(ind, 'sex', None, lambda x: 'Female' if x == 'F' else 'Male'), # Female/Male instead of F/M
         'ethnicity':          None,                                # NONE
         'geographicOrigin':   None,                                # NONE
-        'phenotypicFeatures': get_val(row, 'features', []),        # FEATURES
-        'diseases':           get_val(row, 'diagnosis', []),       # DIAGNOSIS
-        'pedigrees':          [],                                  # ?
+        'phenotypicFeatures': get_val( ind, 'features' , [] ),     # FEATURES
+        'diseases':           get_val( ind, 'diagnosis', [] ),     # DIAGNOSIS
+        'pedigrees':          [],                                  # NOT MAPPED -- TODO NEEDS DISCUSION
         'handovers':          [],                                  # NONE/[]
         'treatments':         [],                                  # NONE/[]
         'interventions':      [],                                  # NONE/[]
-        'measures':           get_val(row, 'measurements', []),    #
+        'measures':           get_val( ind, 'measurements', []),   #
         'exposures':          [],                                  # NONE/[]
         'info': {                                                  # FREE FIELD
-            'family':         get_val(row, 'famid', None),         # PS FAMILY ID
-            'index':          get_val(row, 'index', None),         # RD-CONNECT INDEX CASE
-            'solved':         get_val(row, 'solved', None),        # RD-CONNECT SOLVED STATUS
-            'iid':            get_val(row, 'id', None)             # INTERNAL ID
+            'family':         get_val( ind, 'famid' , None ),      # PS FAMILY ID
+            'index':          get_val( ind, 'index' , None ),      # RD-CONNECT INDEX CASE
+            'solved':         get_val( ind, 'solved', None ),      # RD-CONNECT SOLVED STATUS
+            'iid':            get_val( ind, 'id'    , None )       # INTERNAL ID
         },
     }
 

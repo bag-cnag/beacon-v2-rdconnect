@@ -4,6 +4,7 @@ import server.framework.endpoints.handlers as handler
 #from server.model.parameters import DatasetsParameters, CohortParameters
 from server.framework.response import *
 from server.gpap import *
+from server.gpap.map_entinies import *
 
 
 # MAPINT ROUTES WITH MODEL
@@ -37,10 +38,16 @@ cohorts_by_cohort         = handler.not_implemented_handler('cohorts')
 """
 
 # Test
-query_test                = handler.test('test')
+query_test                = handler.test( 'test' )
 
 # Datasets
-query_datasets_by_dataset = handler.generic('datasets' , fetch_datsets_by_dataset, lambda x: x)
+query_datasets_by_dataset = handler.generic( 'datasets' , fetch_datsets_by_dataset, lambda x, y: x )
+
+# Individuals
+query_individuals_by_individuals = handler.generic( 'individuals', fetch_individuals_by_individual, individuals )
+
+# Biosamples
+query_biosamples_by_biosample = handler.generic( 'biosamples', fetch_biosamples_by_biosample, experiments )
 
 # Cohorts
 #query_cohorts_by_cohort   = handler.not_implemented('cohorts')

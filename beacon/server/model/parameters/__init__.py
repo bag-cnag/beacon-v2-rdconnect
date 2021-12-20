@@ -11,13 +11,7 @@ from server.model.schemas import supported_schemas_by_entity
 
 
 
-# response
-#current_page
-#next_page
-#previous_page
-
-
-async def process_request(request, entity):
+async def process_request( request, entity ):
     default_params = {
         'meta': {
             'apiVersion'           : 'v2.0.0-draft.4',
@@ -25,23 +19,29 @@ async def process_request(request, entity):
         'query': {
             'pagination'           : { 'skip': 1, 'limit': 5 },
             'requestedGranularity' : 'count', #["boolean", "count", "aggregated", "record"]
-            'requestedSchemas'      : [ { 'entityType': entity, 'schema': supported_schemas_by_entity[ entity ] } ]
+            'requestedSchemas'     : [ { 'entityType': entity, 'schema': supported_schemas_by_entity[ entity ] } ],
+            'filters'              : [],
         },
+        'targetIdReq'              :  request.match_info.get('target_id_req')
     }
-
+    # Get query from json or from plain
     if request.headers.get('Content-Type') == 'application/json':
-        qrt = MultiDict(await request.json())
+        qrt = MultiDict( await request.json() )
     else:
-        qrt = MultiDict(await request.post())
-    
-    print(qrt, request, entity)
-
+        qrt = MultiDict( await request.post() )
+    # Add the targetIdReq
+    qrt.add( 'targetIdReq', default_params[ 'targetIdReq' ] )
+    # If no meta, add the default meta (apiVersion)
+    # If meta, check that apiVersion is added an dif not we add it
     if 'meta' not in qrt:
         qrt.add( 'meta', default_params[ 'meta' ] )
     else:
         if 'apiVersion' not in qrt[ 'meta' ]:
             qrt[ 'meta' ][ 'apiVersion' ] = default_params[ 'meta' ][ 'apiVersion' ]
-    
+    # If no query, add query with pagination, granularity, and schema
+    # If query, check that the elements are there and if not add them.
+    # If query, check that the schema requested is available and if not raise error
+    # If filters, validate them and if not raise error
     if 'query' not in qrt:
         qrt.add( 'query', default_params[ 'query' ] )
     else:
@@ -55,33 +55,22 @@ async def process_request(request, entity):
             if len( qrt[ 'query' ][ 'requestedSchemas' ] ) > 1:
                 raise BeaconBadRequest( 'Expected single item in requested schemas but more were received.')
             if qrt[ 'query' ][ 'requestedSchemas' ] != supported_schemas_by_entity[ entity ]:
-                raise BeaconBadRequest( 'For entity "{}", this beacon supports "{}" but not "{}".'.format( entity, supported_schemas_by_entity[ entity ], qrt[ 'query' ][ 'requestedSchemas' ]))
-    
+                raise BeaconBadRequest( 'For entity "{}", this beacon supports "{}" but not "{}".'.format( entity, supported_schemas_by_entity[ entity ], qrt[ 'query' ][ 'requestedSchemas' ] ) )
+        if 'filters' not in qrt[ 'query' ]:
+            qrt[ 'query' ][ 'filters' ] = default_params[ 'query' ][ 'filters' ]
+        else:
+            flag, err, filters = validate_filters( qrt[ 'query' ][ 'filters' ] )
+            if flag: 
+                qrt[ 'query' ][ 'filters' ] = filters
+            else:
+                raise BeaconBadRequest( err ) 
+    # TODO 
+    # check if more than one entity was given in the body
     return qrt
 
 
-# def build(entity, map, qrt):
-#     rst = {}
-#     for key in map.keys():
-#         if key in qrt.keys():
-#             rst[key] = map[key]['valid'](qrt[key])
-#         elif key not in qrt.keys() and map[key]['required']:
-#             raise BeaconBadRequest('Expected argument "{}" in section "{}" from request.'.format(key, entity))
-#     return rst
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def validate_filters( filters ):
+    return True, '', filters
 
 # filters = {
 #     'datasets': {
@@ -119,4 +108,11 @@ async def process_request(request, entity):
 #     }
 # }
 
-
+# def build(entity, map, qrt):
+#     rst = {}
+#     for key in map.keys():
+#         if key in qrt.keys():
+#             rst[key] = map[key]['valid'](qrt[key])
+#         elif key not in qrt.keys() and map[key]['required']:
+#             raise BeaconBadRequest('Expected argument "{}" in section "{}" from request.'.format(key, entity))
+#     return rst
