@@ -14,24 +14,36 @@ import server.framework.endpoints.map as map
 
 routes = [
     # Test endpoints
-    web.get('/api/test'                                      , map.query_test),
-    web.post('/api/test'                                     , map.query_test),
+    web.get(  '/api/test'                                      , map.query_test ),
+    web.post( '/api/test'                                     , map.query_test ),
+    
+    # Info
+    
+    web.get(  '/api'                  , map.api_info ),
+    web.get(  '/api/'                 , map.api_info ),
+    web.get(  '/api/info'             , map.api_info ),
+    web.get(  '/api/service-info'     , map.api_service_info ),
+    web.get(  '/api/map'              , map.api_map ),
+    web.get(  '/api/configuration'    , map.api_config ),
+    web.get(  '/api/entry_types'      , map.api_entry_types ),
+    web.get(  '/api/filtering_terms'  , map.api_filtering_term ),
+    
 
     # Datasets
-    web.post('/api/datasets'                                 , map.query_datasets_by_dataset),
-    #web.post('/api/datasets/{target_id_req}'                 , map.query_datasets_by_dataset),
+    web.post( '/api/datasets'                                 , map.query_datasets_by_dataset ),
+    #web.post( '/api/datasets/{target_id_req}'                 , map.query_datasets_by_dataset ),
     
     # Individuals
-    web.post('/api/individuals'                              , map.query_individuals_by_individuals),
-    web.post('/api/individuals/{target_id_req}'              , map.query_individuals_by_individuals),
+    web.post( '/api/individuals'                              , map.query_individuals_by_individuals ),
+    web.post( '/api/individuals/{target_id_req}'              , map.query_individuals_by_individuals ),
     
     # Biosamples
-    web.post('/api/biosamples'                               , map.query_biosamples_by_biosample),
-    web.post('/api/biosamples/{target_id_req}'               , map.query_biosamples_by_biosample),
+    web.post( '/api/biosamples'                               , map.query_biosamples_by_biosample ),
+    web.post( '/api/biosamples/{target_id_req}'               , map.query_biosamples_by_biosample ),
 
     # Cohorts
-    #web.post('/api/cohorts'                                  , map.query_cohorts_by_cohort),
-    #web.post('/api/cohorts/{target_id_req}'                  , map.query_cohorts_by_cohort),
+    #web.post( '/api/cohorts'                                  , map.query_cohorts_by_cohort ),
+    #web.post( '/api/cohorts/{target_id_req}'                  , map.query_cohorts_by_cohort ),
 ]
 
 
@@ -61,15 +73,5 @@ web.get('/api/genomic_snp'                               , genomic_query.handler
 web.get('/api/genomic_region'                            , genomic_query.handler),
 """
 
-# Info
-"""
-web.get('/api'                  , info_handler.info('api')),
-web.get('/api/'                 , info_handler.info('api')),
-web.get('/api/info'             , info_handler.info('api/info')),
-web.get('/api/service-info'     , info_handler.ga4gh('api/service-info')),
-web.get('/api/map'              , info_handler.map('api/map')),
-web.get('/api/configuration'    , info_handler.config_txt('api/configuration')),
-web.get('/api/entry_types'      , info_handler.entry_types('api/entry_types')),
-web.get('/api/filtering_terms'  , info_handler.filtering_terms('api/filtering_terms')),
-"""
+
 

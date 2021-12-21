@@ -4,17 +4,23 @@ import server.framework.endpoints.handlers as handler
 #from server.model.parameters import DatasetsParameters, CohortParameters
 from server.framework.response import *
 from server.gpap import *
-from server.gpap.map_entinies import *
+from server.gpap.map_entities import *
+import server.framework.endpoints.static_handlers as static_handlers
+
+# MAPINT ROUTES WITH STATIC GET INFO
+############################################################################################################
+
+api_entry_types    = static_handlers.static_entry_types()
+api_map            = static_handlers.static_map()
+api_config         = static_handlers.static_config_txt()
+api_info           = static_handlers.static_info()
+api_filtering_term = static_handlers.static_filtering_terms()
+api_service_info   = static_handlers.static_ga4gh()
 
 
 # MAPINT ROUTES WITH MODEL
 ############################################################################################################
 
-#_datasets_proxy    = None #DatasetsParameters()
-#_cohorts_proxy     = None #CohortParameters()
-
-#biosamples_proxy  = BiosamplesParameters()
-#gvariants_proxy   = GVariantsParameters()
 #individuals_proxy = IndividualsParameters()
 
 """
