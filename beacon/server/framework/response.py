@@ -41,7 +41,7 @@ def build_meta( qparams ):
         'apiVersion': config.api_version,
         'returnedGranularity': qparams[ 'query' ][ 'requestedGranularity' ],
         'receivedRequestSummary':  build_received_request_summary( qparams ),
-        'returnedSchemas': qparams[ 'query' ][ 'requestedSchemas' ],
+        'returnedSchemas': qparams[ 'meta' ][ 'requestedSchemas' ],
     }
     return meta
 
@@ -60,7 +60,7 @@ def build_meta( qparams ):
 def build_received_request_summary( qparams ):
     request = {
         'apiVersion': qparams[ 'meta' ][ 'apiVersion' ],
-        'requestedSchemas': qparams[ 'query' ][ 'requestedSchemas' ],
+        'requestedSchemas': qparams[ 'meta' ][ 'requestedSchemas' ],
         'pagination': {
             'skip': qparams[ 'query' ][ 'pagination' ][ 'skip' ],
             'limit': qparams[ 'query' ][ 'pagination' ][ 'limit' ],

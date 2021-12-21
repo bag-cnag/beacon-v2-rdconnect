@@ -36,11 +36,13 @@ def dm_to_gpap( qparams ):
         elif qparams[ 'targetIdReq' ].startswith('E') or qparams[ 'targetIdReq' ].startswith( 'C' ): # E real experiments, C fake/demo ones
             fltrs.append( { 'id': 'RD_Connect_ID_Experiment', 'value': qparams[ 'targetIdReq' ] } )
         else:
-            raise BeaconBadRequest( 'Invalid provided identifier "{}". It should start by "P" or "E".'.format( qparams[ 'targetIdReq' ] ) )
-    # for qkey in _valid_biosamples:
-    #     x = getattr(qparams, qkey)
-    #     if x:
-    #         fltrs.append({ 'id': qkey, 'value': x})
+            raise BeaconBadRequest( 'Invalid provided identifier "{}". It should start by "B-P" or "B-E".'.format( qparams[ 'targetIdReq' ] ) )
+    if len( qparams[ 'query' ][ 'filters' ] ) > 0:
+        for item in qparams[ 'query' ][ 'filters' ]:
+            if item == 'NCIT:C101294':
+                fltrs.append( { 'id': 'library_strategy', 'value': [ 'WGS' ] } )
+            if item == 'NCIT:C101295':
+                fltrs.append( { 'id': 'library_strategy', 'value': [ 'WES' ] } )
     return fltrs
 
 # For individuals, filtering criteria is expected a dictionary
