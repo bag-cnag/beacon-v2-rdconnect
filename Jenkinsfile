@@ -86,6 +86,24 @@ pipeline {
 	    		sh 'ls'
 	    	}
     	}
+	stage('Sonarqube') {
+		environment {
+			scannerHome = tool 'SQScanner'
+			SONAR_SCANNER_OPTS = '-Djavax.net.ssl.trustStore=/home/ujenkins/cacerts -Djavax.net.ssl.trustStorePassword=changeit -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044'
+		}
+
+		steps {
+			withSonarQubeEnv('SQServer') {
+				withCredentials([string(credentialsId: 'sonar-beaconv2-server', variable: 'sonar_beaconv2_server')]) {
+					sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=beaconv2-server -Dsonar.login=${sonar_beaconv2_server}"
+				}
+			}
+		}
+
+		//timeout(time: 10, unit: 'MINUTES') {
+		//    waitForQualityGate abortPipeline: true
+		//}
+	}   
     }
 
     post {
