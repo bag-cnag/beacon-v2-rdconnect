@@ -39,10 +39,17 @@ def dm_to_gpap( qparams ):
             raise BeaconBadRequest( 'Invalid provided identifier "{}". It should start by "B-P" or "B-E".'.format( qparams[ 'targetIdReq' ] ) )
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
-            if item == 'NCIT:C101294':
+            #Library strategy
+            if item["id"] == 'NCIT:C101294':
                 fltrs.append( { 'id': 'library_strategy', 'value': [ 'WGS' ] } )
-            if item == 'NCIT:C101295':
-                fltrs.append( { 'id': 'library_strategy', 'value': [ 'WES' ] } )
+            if item["id"] == 'NCIT:C101295':
+                fltrs.append( { 'id': 'library_strategy', 'value': [ 'WXS' ] } )
+            
+            #ERN
+            if (item["scope"] == "erns"):
+                fltrs.append( { 'id': 'erns', 'value': [ item["id"] ] } )
+
+
     return fltrs
 
 # For individuals, filtering criteria is expected a dictionary
@@ -64,7 +71,8 @@ def datamanagement_playload( qparams, groups ):
     """
     DataManagement filtering ciretia to be included as playload in each query.
     """
-    return {
+
+    payload = {
         'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
         'pageSize': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'fields': [
@@ -89,3 +97,7 @@ def datamanagement_playload( qparams, groups ):
         'sorted':   [],
         'filtered': dm_to_gpap( qparams )
     }
+
+    print (payload['filtered'])
+
+    return payload

@@ -62,7 +62,8 @@ async def process_request( request, entity ):
         else:
             flag, err, filters = validate_filters( qrt[ 'query' ][ 'filters' ], entity )
             if flag: 
-                qrt[ 'query' ][ 'filters' ] = filters
+                print (filters)
+                #qrt[ 'query' ][ 'filters' ] = filters
             else:
                 raise BeaconBadRequest( err ) 
     # TODO 
@@ -83,7 +84,7 @@ def validate_filters( filters, entity ):
             if not x[ 'id' ] in config.filters_in[ 'hpos' ] and not x[ 'id' ] in config.filters_in[ 'ordos' ] and not x[ 'id' ] in config.filters_in[ 'sex' ]:
                 return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
         if entity == 'biosamples':
-            if not x[ 'id' ] in config.filters_in[ 'tech' ]:
+            if not x[ 'id' ] in config.filters_in[ 'tech' ] and not x[ 'id' ] in config.filters_in[ 'erns' ]:
                 return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
     # remove filters that do not apply
     filters = [ x[ 'id' ] for x in filters if x[ 'scope' ] ==  entity ]
