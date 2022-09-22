@@ -102,7 +102,7 @@ pipeline {
 		//    waitForQualityGate abortPipeline: true
 		//}
 	//}
-    //}
+    }
 
     post {
         always {
