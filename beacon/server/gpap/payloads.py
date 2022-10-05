@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from server.framework.exceptions import BeaconBadRequest
+from server.config import config
+
 
 # List of valid filtering keys per GPAP's endpoint
 # _valid_individuals = [ 'id', 'family_id', 'index', 'solved', 'sex', 'affectedStatus', 'lifeStatus' ]
@@ -14,13 +16,13 @@ def ps_to_gpap( qparams, psid = None ):
         fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
-            if item.startswith('HP'):
-                fltrs.append ({ 'id': 'features', 'value': item } )
-            if item.startswith('Or'):
-                fltrs.append ({ 'id': 'diagnosis', 'value': item } )
-            if item == 'NCIT:C16576': # female
+            if item["id"].startswith('HP'):
+                fltrs.append ({ 'id': 'features', 'value': item["id"] } )
+            if item["id"].startswith('Orpha'):
+                fltrs.append ({ 'id': 'diagnosis', 'value': item["id"] } )
+            if item["id"] == 'NCIT:C16576': # female
                 fltrs.append ({ 'id': 'sex', 'value': 'F' } )
-            if item == 'NCIT:C20197': # male
+            if item["id"] == 'NCIT:C20197': # male
                 fltrs.append ({ 'id': 'sex', 'value': 'M' } )
     return fltrs
 
@@ -46,7 +48,7 @@ def dm_to_gpap( qparams ):
                 fltrs.append( { 'id': 'library_strategy', 'value': [ 'WXS' ] } )
             
             #ERN
-            if (item["scope"] == "erns"):
+            if (item["id"] in config.filters_in[ 'erns' ]):
                 fltrs.append( { 'id': 'erns', 'value': [ item["id"] ] } )
 
 
