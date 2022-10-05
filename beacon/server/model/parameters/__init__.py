@@ -63,6 +63,9 @@ async def process_request( request, entity ):
             flag, err, filters = validate_filters( qrt[ 'query' ][ 'filters' ], entity )
             if flag: 
                 print (filters)
+                if "id" in err and err["id"] == "unsupported":
+                    qrt[ 'query' ][ 'warnings' ] = filters
+
                 #qrt[ 'query' ][ 'filters' ] = filters
             else:
                 raise BeaconBadRequest( err ) 
@@ -81,8 +84,18 @@ def validate_filters( filters, entity ):
     # check that all the filters are valid filters
     for x in filters:
         if entity == 'individuals':
-            if not x[ 'id' ] in config.filters_in[ 'hpos' ] and not x[ 'id' ] in config.filters_in[ 'ordos' ] and not x[ 'id' ] in config.filters_in[ 'sex' ]:
+
+            '''Check if and how to validate HPOs ORDO & OMIM terms'''
+            #if not x[ 'id' ] in config.filters_in[ 'hpos' ] and not x[ 'id' ] in config.filters_in[ 'ordos' ] and not x[ 'id' ] in config.filters_in[ 'sex' ]:
+                #return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+
+            if x['id'].startswith('NCIT') and not x['id'] in config.filters_in['sex']:
                 return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+
+            #Check type and if is supported
+            if "type" in x and x["type"] in config.filters_in["unsupported_type_terms"]:
+                return True, {"id": "unsupported", "value":x["type"]}, [ x["type"] ]
+
         if entity == 'biosamples':
             if not x[ 'id' ] in config.filters_in[ 'tech' ] and not x[ 'id' ] in config.filters_in[ 'erns' ]:
                 return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]

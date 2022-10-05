@@ -16,10 +16,20 @@ def ps_to_gpap( qparams, psid = None ):
         fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
+
+            #HPOs
             if item["id"].startswith('HP'):
                 fltrs.append ({ 'id': 'features', 'value': item["id"] } )
+
+            #Orphanet
             if item["id"].startswith('Orpha'):
                 fltrs.append ({ 'id': 'diagnosis', 'value': item["id"] } )
+
+            #OMIM
+            if item["id"].startswith('OMIM'):
+                fltrs.append ({ 'id': 'disorders', 'value': item["id"] } )
+
+            #Sex
             if item["id"] == 'NCIT:C16576': # female
                 fltrs.append ({ 'id': 'sex', 'value': 'F' } )
             if item["id"] == 'NCIT:C20197': # male

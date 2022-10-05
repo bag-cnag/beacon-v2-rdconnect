@@ -11,8 +11,11 @@ from server.framework.exceptions import BeaconServerError
 LOG = logging.getLogger(__name__)
 
 def build_beacon_response( entity, qparams, num_total_results, data, build_response_func ):
+
+    print (qparams)
     rst = { 
            'meta': build_meta( qparams ),
+           'info': build_info( qparams ),
            'responseSummary': {
                'exists': True if num_total_results > 0 else False
            }
@@ -34,6 +37,13 @@ def build_beacon_response( entity, qparams, num_total_results, data, build_respo
 #     }
 #     return beacon_response
 
+def build_info(qparams):
+    info = {}
+    if "warnings" in qparams[ 'query' ]:
+        info["warnings"] = {}
+        info["warnings"]["unsupportedFilters"] = qparams["query"]["warnings"]
+
+    return info 
 
 def build_meta( qparams ):
     meta = {
