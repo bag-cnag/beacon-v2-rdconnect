@@ -12,7 +12,6 @@ LOG = logging.getLogger(__name__)
 
 def build_beacon_response( entity, qparams, num_total_results, data, build_response_func ):
 
-    print (qparams)
     rst = { 
            'meta': build_meta( qparams ),
            'info': build_info( qparams ),
@@ -39,9 +38,9 @@ def build_beacon_response( entity, qparams, num_total_results, data, build_respo
 
 def build_info(qparams):
     info = {}
-    if "warnings" in qparams[ 'query' ]:
+    if "unsupportedFilters" in qparams[ 'query' ]:
         info["warnings"] = {}
-        info["warnings"]["unsupportedFilters"] = qparams["query"]["warnings"]
+        info["warnings"]["unsupportedFilters"] = qparams["query"]["unsupportedFilters"]
 
     return info 
 

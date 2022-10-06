@@ -63,8 +63,8 @@ async def process_request( request, entity ):
             flag, err, filters = validate_filters( qrt[ 'query' ][ 'filters' ], entity )
             if flag: 
                 print (filters)
-                if "id" in err and err["id"] == "unsupported":
-                    qrt[ 'query' ][ 'warnings' ] = filters
+                if ("id" in err) and (err["id"] == "unsupported_filter"):
+                    qrt[ 'query' ][ 'unsupportedFilters' ] = filters
 
                 #qrt[ 'query' ][ 'filters' ] = filters
             else:
@@ -75,30 +75,39 @@ async def process_request( request, entity ):
 
 
 def validate_filters( filters, entity ):
-    # check that all filters provide scope
+    # Check that all filters provide scope
     if sum( [ 'scope' in x.keys() for x in filters ] ) != len( filters ):
         return False, 'Some of the provided filters do not indicate their scope.', [ ]
+
     # check scope - for now only individuals filters can be used
     # if sum( [ x['scope'] == 'individuals' for x in filters ] ) != len( filters ):
     #     return False, 'Currently, this beacon only accepts filters for "individuals".', [ ]
     # check that all the filters are valid filters
+
+    unsupported_types = []
+
     for x in filters:
         if entity == 'individuals':
 
             '''Check if and how to validate HPOs ORDO & OMIM terms'''
             #if not x[ 'id' ] in config.filters_in[ 'hpos' ] and not x[ 'id' ] in config.filters_in[ 'ordos' ] and not x[ 'id' ] in config.filters_in[ 'sex' ]:
-                #return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+            #    return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
 
             if x['id'].startswith('NCIT') and not x['id'] in config.filters_in['sex']:
                 return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
 
             #Check type and if is supported
             if "type" in x and x["type"] in config.filters_in["unsupported_type_terms"]:
-                return True, {"id": "unsupported", "value":x["type"]}, [ x["type"] ]
+                unsupported_types.append(x["type"])
 
         if entity == 'biosamples':
             if not x[ 'id' ] in config.filters_in[ 'tech' ] and not x[ 'id' ] in config.filters_in[ 'erns' ]:
                 return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+    
+    #Unsupported types
+    if len(unsupported_types) > 0:
+        return True, {"id": "unsupported_filter"}, unsupported_types
+
     # remove filters that do not apply
     filters = [ x[ 'id' ] for x in filters if x[ 'scope' ] ==  entity ]
     return True, '', filters
