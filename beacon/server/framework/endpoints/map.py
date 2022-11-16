@@ -50,7 +50,7 @@ query_test                = handler.test( 'test' )
 query_datasets_by_dataset = handler.generic( 'datasets' , fetch_datsets_by_dataset, lambda x, y: x )
 
 # Individuals
-query_individuals_by_individuals = handler.generic( 'individuals', fetch_individuals_by_individual, individuals )
+query_individuals_by_individuals = handler.handler_fixed_token( 'individuals', fetch_individuals_by_individual, individuals )
 
 # Biosamples
 query_biosamples_by_biosample = handler.generic( 'biosamples', fetch_biosamples_by_biosample, experiments )

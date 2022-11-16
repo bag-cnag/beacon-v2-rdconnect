@@ -71,7 +71,8 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects):
 
 def fetch_individuals_by_individual( qparams, access_token, groups, projects ):
     payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
-    headers = { 'Authorization': access_token, 'Content-Type': 'application/json' }
+    
+    headers = { 'Authorization_Beacon': access_token, 'Content-Type': 'application/json' }
     if qparams[ 'targetIdReq' ]:
         url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
     else:
