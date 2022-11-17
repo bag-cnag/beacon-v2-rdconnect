@@ -94,9 +94,10 @@ def validate_filters( filters, entity ):
             '''Check if and how to validate HPOs ORDO & OMIM terms'''
             #if not x[ 'id' ] in config.filters_in[ 'hpos' ] and not x[ 'id' ] in config.filters_in[ 'ordos' ] and not x[ 'id' ] in config.filters_in[ 'sex' ]:
             #    return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
-
+            
+            '''Check if and how to validate sex NCIT values'''
             if x['id'].startswith('NCIT') and not x['id'] in config.filters_in['sex']:
-                return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+                return False, 'Provided filter "{}"  is not available.'.format( x[ 'id' ]), [ ]
 
             #Check type and if is supported
             if "type" in x and x["type"] in str(config.filters_in["unsupported_type_terms"]):
@@ -104,7 +105,7 @@ def validate_filters( filters, entity ):
 
         if entity == 'biosamples':
             if not x[ 'id' ] in config.filters_in[ 'tech' ] and not x[ 'id' ] in config.filters_in[ 'erns' ]:
-                return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+                return False, 'Provided filters "{}"  is not available.'.format( x[ 'id' ]), [ ]
     
     #Unsupported types
     if len(unsupported_types) > 0:
