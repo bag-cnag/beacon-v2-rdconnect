@@ -30,10 +30,14 @@ def ps_to_gpap( qparams, psid = None ):
                 fltrs.append ({ 'id': 'disorders', 'value': item["id"] } )
 
             #Sex
-            if item["id"] == 'NCIT:C16576': # female
+            if item["id"] == 'NCIT_C16576': # female
                 fltrs.append ({ 'id': 'sex', 'value': 'F' } )
-            if item["id"] == 'NCIT:C20197': # male
+            if item["id"] == 'NCIT_C20197': # male
                 fltrs.append ({ 'id': 'sex', 'value': 'M' } )
+            if item["id"] == 'NCIT_C124294': # unknown
+                fltrs.append ({ 'id': 'sex', 'value': 'U' } )
+            if item["id"] == 'NCIT_C17998': # unknown
+                fltrs.append ({ 'id': 'sex', 'value': 'U' } )
     return fltrs
 
 # Function to translate from RequestParameters to DataManagement filtering
