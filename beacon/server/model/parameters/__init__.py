@@ -75,9 +75,11 @@ async def process_request( request, entity ):
 
 
 def validate_filters( filters, entity ):
+    
+    '''Scope will be optional, so no check here'''
     # Check that all filters provide scope
-    if sum( [ 'scope' in x.keys() for x in filters ] ) != len( filters ):
-        return False, 'Some of the provided filters do not indicate their scope.', [ ]
+    #if sum( [ 'scope' in x.keys() for x in filters ] ) != len( filters ):
+    #    return False, 'Some of the provided filters do not indicate their scope.', [ ]
 
     # check scope - for now only individuals filters can be used
     # if sum( [ x['scope'] == 'individuals' for x in filters ] ) != len( filters ):
@@ -92,17 +94,18 @@ def validate_filters( filters, entity ):
             '''Check if and how to validate HPOs ORDO & OMIM terms'''
             #if not x[ 'id' ] in config.filters_in[ 'hpos' ] and not x[ 'id' ] in config.filters_in[ 'ordos' ] and not x[ 'id' ] in config.filters_in[ 'sex' ]:
             #    return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
-
+            
+            '''Check if and how to validate sex NCIT values'''
             if x['id'].startswith('NCIT') and not x['id'] in config.filters_in['sex']:
-                return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+                return False, 'Provided filter "{}"  is not available.'.format( x[ 'id' ]), [ ]
 
             #Check type and if is supported
-            if "type" in x and x["type"] in config.filters_in["unsupported_type_terms"]:
+            if "type" in x and x["type"] in str(config.filters_in["unsupported_type_terms"]):
                 unsupported_types.append(x["type"])
 
         if entity == 'biosamples':
             if not x[ 'id' ] in config.filters_in[ 'tech' ] and not x[ 'id' ] in config.filters_in[ 'erns' ]:
-                return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
+                return False, 'Provided filters "{}"  is not available.'.format( x[ 'id' ]), [ ]
     
     #Unsupported types
     if len(unsupported_types) > 0:
