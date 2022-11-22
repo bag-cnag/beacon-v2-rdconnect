@@ -69,21 +69,57 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects):
 #def fetch_individuals_by_biosample(qparams, access_token, groups, projects):
 #    return 0, (x for x in [])
 
+
+def check_token(token):
+    beacon_keys = config.beacon_keys
+    keys_list = list(map(lambda x: x['key'], beacon_keys))
+
+
+    print (token)
+
+    try:
+
+        if (token in keys_list):
+            userid = next(item["contact"] for item in beacon_keys if item["key"] == token)
+            print("#### Request submitted by: " + userid)
+            return {'message': 'correct API key'}, 200
+
+        else:
+            print('Request made with wrong token:' + token)
+            return {'message': 'invalid API key'}, 401
+
+    except Exception as e:
+        print('Something went wrong:' + str(e))
+        return {'message': 'something went wrong '+str(e)}, 500
+
+
+
+
 def fetch_individuals_by_individual( qparams, access_token, groups, projects ):
     payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
+
+    token_status = check_token(access_token)
+
+    print (token_status[1])
+
+    if (token_status[1] == 200):
+        headers = { 'Authorization_Beacon': config.pheno_token, 'Content-Type': 'application/json' }
+        if qparams[ 'targetIdReq' ]:
+            url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
+        else:
+            url = config.gpap_base_url + config.ps_participants
+        resp = requests.post( url, headers = headers, data = json.dumps( payload ), verify = False )
+
+        if resp.status_code != 200:
+            raise BeaconServerError( error = resp.json()[ 'message' ] )
+        resp = json.loads( resp.text )
+
+        return resp[ 'total' ], resp[ 'rows' ]
     
-    headers = { 'Authorization_Beacon': access_token, 'Content-Type': 'application/json' }
-    if qparams[ 'targetIdReq' ]:
-        url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
     else:
-        url = config.gpap_base_url + config.ps_participants
-    resp = requests.post( url, headers = headers, data = json.dumps( payload ), verify = False )
+        raise BeaconServerError( error = [ 'Authorization failed' ] )
 
-    if resp.status_code != 200:
-        raise BeaconServerError( error = resp.json()[ 'message' ] )
-    resp = json.loads( resp.text )
 
-    return resp[ 'total' ], resp[ 'rows' ]
 
 def fetch_variants_by_biosample( qparams, access_token, groups, projects ):
     return (x for x in [])
