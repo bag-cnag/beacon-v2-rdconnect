@@ -122,8 +122,8 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
             #projects = _extract_items( decoded, 'group_projects' )
             
             LOG.debug( 'Token was decoded' )
-            groups = "paok"
-            projects = "paok"
+            groups = "beacon"
+            projects = "beacon"
             
         except Exception as e:
             print( 'Exception', e )

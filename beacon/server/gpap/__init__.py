@@ -28,20 +28,32 @@ def get_kc_token():
 # Fetchers for GPAP's API
 
 def _fetch_biosamples( qparams, access_token, groups ):
-    headers = { 'Authorization': 'Bearer {}'.format( access_token ), 'Accept': 'application/json' }
-    payload = datamanagement_playload( qparams, groups )
-    url = config.gpap_base_url + config.dm_experiments
 
-    resp = requests.post( url, headers = headers, data = json.dumps (payload ), verify = False )
-    if resp.status_code != 200:
-        raise BeaconServerError( error = resp.text )
-    resp = resp.json()
-    # print("==" * 20)
-    # print("==" * 20)
-    # print(resp[ 'items' ])
-    # print("==" * 20)
-    # print("==" * 20)
-    return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
+    #Check token
+    token_status = check_token(access_token)
+
+    if (token_status[1] == 200):
+
+        headers = { 'Authorization': 'Token {}'.format( config.datamanagement_token ), 'Accept': 'application/json' }
+
+        payload = datamanagement_playload( qparams, groups )
+        url = config.gpap_base_url + config.dm_experiments
+
+        resp = requests.post( url, headers = headers, data = json.dumps (payload ), verify = False )
+        if resp.status_code != 200:
+            raise BeaconServerError( error = resp.text )
+        resp = resp.json()
+        # print("==" * 20)
+        # print("==" * 20)
+        # print(resp[ 'items' ])
+        # print("==" * 20)
+        # print("==" * 20)
+        return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
+    
+    else:
+        raise BeaconServerError( error = [ 'Authorization failed' ] )
+
+
 
 
 def fetch_datsets_by_dataset( qparams, access_token, groups, projects ):
@@ -74,22 +86,18 @@ def check_token(token):
     beacon_keys = config.beacon_keys
     keys_list = list(map(lambda x: x['key'], beacon_keys))
 
-
-    print (token)
-
     try:
-
         if (token in keys_list):
             userid = next(item["contact"] for item in beacon_keys if item["key"] == token)
-            print("#### Request submitted by: " + userid)
+            LOG.debug("#### Request submitted by: " + userid)
             return {'message': 'correct API key'}, 200
 
         else:
-            print('Request made with wrong token:' + token)
+            LOG.debug('Request made with wrong token:' + token)
             return {'message': 'invalid API key'}, 401
 
     except Exception as e:
-        print('Something went wrong:' + str(e))
+        LOG.debug('Something went wrong:' + str(e))
         return {'message': 'something went wrong '+str(e)}, 500
 
 
@@ -97,10 +105,9 @@ def check_token(token):
 
 def fetch_individuals_by_individual( qparams, access_token, groups, projects ):
     payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
-
+    
+    #Check token
     token_status = check_token(access_token)
-
-    print (token_status[1])
 
     if (token_status[1] == 200):
         headers = { 'Authorization_Beacon': config.pheno_token, 'Content-Type': 'application/json' }

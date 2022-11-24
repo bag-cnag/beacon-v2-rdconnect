@@ -97,7 +97,7 @@ def validate_filters( filters, entity ):
                 return False, 'Provided fiters "{}"  is not available.'.format( x[ 'id' ] ), [ ]
 
             #Check type and if is supported
-            if "type" in x and x["type"] in config.filters_in["unsupported_type_terms"]:
+            if "type" in x and x["type"] in str(config.filters_in["unsupported_type_terms"]):
                 unsupported_types.append(x["type"])
 
         if entity == 'biosamples':
