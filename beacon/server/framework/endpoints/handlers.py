@@ -34,17 +34,17 @@ def _extract_items( token,name) :
 def generic( entity, fetch_func, build_response_func ):
     async def wrapper( request ):
         LOG.info( 'Running a request for {}'.format( entity ) )
-        access_token = request.headers.get( 'Authorization' )
+        access_token = request.headers.get( 'auth-key' )
         
         if not access_token and config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token but validation required.' )
-            raise BeaconForbidden( error = 'No authentication header was provided' )
+            raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )
         elif not config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token and validation not required.' )
             access_token = get_kc_token()[ 'access_token' ]
         else:
             LOG.debug( 'Access token received.' )
-            access_token = access_token[ 7: ]
+            #access_token = access_token[ 7: ]
 
         try:
             decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
@@ -104,17 +104,17 @@ def not_implemented(entity):
 def handler_fixed_token( entity, fetch_func, build_response_func ):
     async def wrapper( request ):
         LOG.info( 'Running a request for {}'.format( entity ) )
-        access_token = request.headers.get( 'Authorization' )
+        access_token = request.headers.get( 'auth-key' )
         
         if not access_token and config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token but validation required.' )
-            raise BeaconForbidden( error = 'No authentication header was provided' )
+            raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )
         elif not config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token and validation not required.' )
             access_token = get_kc_token()[ 'access_token' ]
         else:
             LOG.debug( 'Access token received.' )
-            access_token = access_token[ 7: ]
+            #access_token = access_token[ 7: ]
 
         try:
             #decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
