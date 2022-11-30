@@ -62,7 +62,7 @@ async def process_request( request, entity ):
         else:
             flag, err, filters = validate_filters( qrt[ 'query' ][ 'filters' ], entity )
             if flag: 
-                print (filters)
+                #print (filters)
                 if ("id" in err) and (err["id"] == "unsupported_filter"):
                     qrt[ 'query' ][ 'unsupportedFilters' ] = filters
 
@@ -112,5 +112,7 @@ def validate_filters( filters, entity ):
         return True, {"id": "unsupported_filter"}, unsupported_types
 
     # remove filters that do not apply
-    filters = [ x[ 'id' ] for x in filters if x[ 'scope' ] ==  entity ]
+    #filters = [ x[ 'id' ] for x in filters if x[ 'scope' ] ==  entity ]
+    filters = [ x[ 'id' ] for x in filters ]
+
     return True, '', filters
