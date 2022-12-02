@@ -3,6 +3,7 @@
 
 from server.framework.exceptions import BeaconBadRequest
 from server.config import config
+import re
 
 
 # List of valid filtering keys per GPAP's endpoint
@@ -22,12 +23,14 @@ def ps_to_gpap( qparams, psid = None ):
                 fltrs.append ({ 'id': 'features', 'value': item["id"] } )
 
             #Orphanet
-            if item["id"].startswith('Orpha'):
-                fltrs.append ({ 'id': 'diagnosis', 'value': item["id"] } )
+            if item["id"].lower().startswith('orpha'):
+                ordo_string = "Orphanet:" + re.split('[_ :]', item["id"])[1]
+                fltrs.append ({ 'id': 'diagnosis', 'value': ordo_string } )
 
             #OMIM
-            if item["id"].startswith('OMIM'):
-                fltrs.append ({ 'id': 'disorders', 'value': item["id"] } )
+            if item["id"].lower().startswith('omim'):
+                omim_string = "OMIM:" + re.split('[_ :]', item["id"])[1]
+                fltrs.append ({ 'id': 'disorders', 'value': omim_string } )
 
             #Sex
             if item["id"] == 'NCIT_C16576': # female
@@ -38,6 +41,12 @@ def ps_to_gpap( qparams, psid = None ):
                 fltrs.append ({ 'id': 'sex', 'value': 'U' } )
             if item["id"] == 'NCIT_C17998': # unknown
                 fltrs.append ({ 'id': 'sex', 'value': 'U' } )
+
+            #Genes (check the 'type' property)
+            if "type" in item and "NCIT_C16612" in item["type"]:
+                fltrs.append ({ 'id': 'genes', 'value': item["id"] } )
+
+
     return fltrs
 
 # Function to translate from RequestParameters to DataManagement filtering
