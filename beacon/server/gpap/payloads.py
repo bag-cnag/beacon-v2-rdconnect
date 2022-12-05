@@ -10,6 +10,7 @@ import re
 # _valid_individuals = [ 'id', 'family_id', 'index', 'solved', 'sex', 'affectedStatus', 'lifeStatus' ]
 # _valid_biosamples  = [ 'RD_Connect_ID_Experiment', 'EGA_ID', 'Participant_ID', 'Owner', 'in_platform', 'POSTEMBARGO', 'experiment_type', 'kit', 'tissue', 'library_source', 'library_selection', 'library_strategy', 'library_contruction_protocol', 'erns' ]
 
+
 # Function to translate from RequestParameters to PhenoStore filtering
 def ps_to_gpap( qparams, psid = None ):
     fltrs = []
@@ -19,33 +20,40 @@ def ps_to_gpap( qparams, psid = None ):
         for item in qparams[ 'query' ][ 'filters' ]:
 
             #HPOs
-            if item["id"].startswith('HP'):
+            if ("type" in item) and (item["type"] == "SIO_010056") and (item["id"].startswith('HP')):
                 fltrs.append ({ 'id': 'features', 'value': item["id"] } )
 
-            #Orphanet
-            if item["id"].lower().startswith('orpha'):
+            #ORDO
+            if ("type" in item) and (item["type"] == "SIO_001003") and (item["id"].lower().startswith('orpha')):
                 ordo_string = "Orphanet:" + re.split('[_ :]', item["id"])[1]
                 fltrs.append ({ 'id': 'diagnosis', 'value': ordo_string } )
 
             #OMIM
-            if item["id"].lower().startswith('omim'):
+            if ("type" in item) and (item["type"] == "SIO_001003") and (item["id"].lower().startswith('omim')):
                 omim_string = "OMIM:" + re.split('[_ :]', item["id"])[1]
                 fltrs.append ({ 'id': 'disorders', 'value': omim_string } )
 
             #Sex
-            if item["id"] == 'NCIT_C16576': # female
-                fltrs.append ({ 'id': 'sex', 'value': 'F' } )
-            if item["id"] == 'NCIT_C20197': # male
-                fltrs.append ({ 'id': 'sex', 'value': 'M' } )
-            if item["id"] == 'NCIT_C124294': # unknown
-                fltrs.append ({ 'id': 'sex', 'value': 'U' } )
-            if item["id"] == 'NCIT_C17998': # unknown
-                fltrs.append ({ 'id': 'sex', 'value': 'U' } )
+            if ("type" in item) and (item["type"] == "NCIT_C28421"):
+                if item["id"] == 'NCIT_C16576': # female
+                    fltrs.append ({ 'id': 'sex', 'value': 'F' } )
+                if item["id"] == 'NCIT_C20197': # male
+                    fltrs.append ({ 'id': 'sex', 'value': 'M' } )
+                if item["id"] == 'NCIT_C124294': # unknown
+                    fltrs.append ({ 'id': 'sex', 'value': 'U' } )
+                if item["id"] == 'NCIT_C17998': # unknown
+                    fltrs.append ({ 'id': 'sex', 'value': 'U' } )
 
-            #Genes (check the 'type' property)
-            if "type" in item and "NCIT_C16612" in item["type"]:
+            #Genes
+            if ('type' in item) and (item['type'] == 'NCIT_C16612'):
                 fltrs.append ({ 'id': 'genes', 'value': item["id"] } )
 
+        #If nothing from the above applies
+        if len(fltrs) == 0:
+            fltrs.append ({ 'id': '_no_filter', 'value': '_no_filter' } )
+    
+    else:
+        fltrs.append ({ 'id': '_no_filter', 'value': '_no_filter' } )
 
     return fltrs
 

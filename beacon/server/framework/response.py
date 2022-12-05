@@ -69,15 +69,17 @@ def build_meta( qparams ):
 def build_received_request_summary( qparams ):
     request = {
         'apiVersion': qparams[ 'meta' ][ 'apiVersion' ],
-        'requestedSchemas': qparams[ 'meta' ][ 'requestedSchemas' ],
-        'pagination': {
-            'skip': qparams[ 'query' ][ 'pagination' ][ 'skip' ],
-            'limit': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
-        },
-        'filters': [],                      # TODO <--------
-        'requestParameters': {},            # TODO <--------
-        'includeResultsetResponses': 'HIT', # TODO <--------
-        'testMode': False                   # TODO <--------
+        'requestedSchemas': qparams[ 'meta' ][ 'requestedSchemas' ],          
+        'filters': [qparams['query']['filters']]
+        
+        #Not needed according to meta section from Discovery Nexus
+        #'pagination': {
+        #    'skip': qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+        #    'limit': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        #},            
+        #'requestParameters': {},            # TODO <--------
+        #'includeResultsetResponses': 'HIT', # TODO <--------
+        #'testMode': False                   # TODO <--------
     }
     return request
 
