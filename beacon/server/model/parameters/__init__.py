@@ -96,7 +96,7 @@ def validate_filters( filters, entity ):
             #    return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
             
             '''Check if and how to validate sex NCIT values'''
-            if x['id'].startswith('NCIT') and not x['id'] in config.filters_in['sex']:
+            if (x['id'].startswith('NCIT') or x['id'].startswith('obo:NCIT'))  and not x['id'] in config.filters_in['sex']:
                 return False, 'Provided filter "{}"  is not available.'.format( x[ 'id' ]), [ ]
 
             #Check type and if is supported

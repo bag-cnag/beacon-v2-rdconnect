@@ -13,50 +13,60 @@ import re
 def set_hpo(item):
     """ Set HPO filter """
     hpo = {}
-    if ("type" in item) and ((item["type"] == "SIO_010056") or (item["type"] == "sio:SIO_010056")) and ((item["id"].lower().startswith('hp')) or (item["id"].lower().startswith('obo:hp'))):
+    ontology_id = config.filters_in['ontologies']['phenotype']
+
+    if ("type" in item) and ((item["type"] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])) and ((item["id"].lower().startswith('hp')) or (item["id"].lower().startswith('obo:hp'))):
         hpo_string = "HP:" + re.split('[_ :]', item["id"])[-1]
-        hpo = { 'id': 'features', 'value': hpo_string }
+        hpo = {'id': 'features', 'value': hpo_string}
 
     return hpo
 
 def set_ordo(item):
     """ Set ORDO filter """
     ordo = {}
-    if ("type" in item) and ((item["type"] == "SIO_001003") or (item["type"] == "sio:SIO_001003")) and ((item["id"].lower().startswith('orpha')) or (item["id"].lower().startswith('ordo:orpha'))):
+    ontology_id = config.filters_in['ontologies']['diagnosis']
+
+    if ("type" in item) and ((item["type"] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])) and ((item["id"].lower().startswith('orpha')) or (item["id"].lower().startswith('ordo:orpha'))):
         ordo_string = "Orphanet:" + re.split('[_ :]', item["id"])[-1]
-        ordo = { 'id': 'diagnosis', 'value': ordo_string }
+        ordo = {'id': 'diagnosis', 'value': ordo_string}
     
     return ordo
 
 def set_omim(item):
     """ Set OMIM filter """
     omim = {}
-    if ("type" in item) and ((item["type"] == "SIO_001003") or (item["type"] == "sio:SIO_001003")) and (item["id"].lower().startswith('omim')):
-        omim_string = "OMIM:" + re.split('[_ :]', item["id"])[1]
-        omim = { 'id': 'disorders', 'value': omim_string }
+    ontology_id = config.filters_in['ontologies']['diagnosis']
+
+    if ("type" in item) and ((item["type"] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])) and (item["id"].lower().startswith('omim')):
+        omim_string = "OMIM:" + re.split('[_ :]', item["id"])[-1]
+        omim = {'id': 'disorders', 'value': omim_string}
     
     return omim
 
 def set_gene(item):
     """ Set gene filter """
     gene = {}
-    if ('type' in item) and ((item['type'] == 'NCIT_C16612') or (item["type"] == "obo:NCIT_C16612")):
-        gene = { 'id': 'genes', 'value': item["id"] }
+    ontology_id = config.filters_in['ontologies']['gene']
+    
+    if ('type' in item) and ((item['type'] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])):
+        gene = {'id': 'genes', 'value': item["id"]}
     
     return gene
 
 def set_sex(item):
     """ Set sex filter """
     sex = {}
-    if ("type" in item) and ((item["type"] == "NCIT_C28421") or (item["type"] == "obo:NCIT_C28421")):
+    ontology_id = config.filters_in['ontologies']['sex']
+
+    if ("type" in item) and ((item["type"] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])):
         if item["id"] == 'NCIT_C16576' or item["id"] == 'obo:NCIT_C16576': # female
-            sex = { 'id': 'sex', 'value': 'F' }
+            sex = {'id': 'sex', 'value': 'F'}
         if item["id"] == 'NCIT_C20197' or item["id"] == 'obo:NCIT_C20197': # male
-            sex = { 'id': 'sex', 'value': 'M' }
+            sex = {'id': 'sex', 'value': 'M'}
         if item["id"] == 'NCIT_C124294' or item["id"] == 'obo:NCIT_C124294': # unknown
-            sex = { 'id': 'sex', 'value': 'U' }
+            sex = {'id': 'sex', 'value': 'U'}
         if item["id"] == 'NCIT_C17998' or item["id"] == 'obo:NCIT_C17998': # unknown
-            sex = { 'id': 'sex', 'value': 'U' }
+            sex = {'id': 'sex', 'value': 'U'}
     
     return sex
 
@@ -68,49 +78,18 @@ def ps_to_gpap( qparams, psid = None ):
         fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
-
-            #HPOs
-            #if ("type" in item) and ((item["type"] == "SIO_010056") or (item["type"] == "sio:SIO_010056")) and ((item["id"].lower().startswith('hp')) or (item["id"].lower().startswith('obo:hp'))):
-            #    hpo_string = "HP:" + re.split('[_ :]', item["id"])[-1]
-            #    fltrs.append ({ 'id': 'features', 'value': hpo_string } )
-
-            #ORDO
-            #if ("type" in item) and ((item["type"] == "SIO_001003") or (item["type"] == "sio:SIO_001003")) and ((item["id"].lower().startswith('orpha')) or (item["id"].lower().startswith('ordo:orpha'))):
-            #    ordo_string = "Orphanet:" + re.split('[_ :]', item["id"])[-1]
-            #    fltrs.append ({ 'id': 'diagnosis', 'value': ordo_string } )
-
-            #OMIM
-            #if ("type" in item) and ((item["type"] == "SIO_001003") or (item["type"] == "sio:SIO_001003")) and (item["id"].lower().startswith('omim')):
-            #    omim_string = "OMIM:" + re.split('[_ :]', item["id"])[1]
-            #    fltrs.append ({ 'id': 'disorders', 'value': omim_string } )
-
-            #Sex
-            #if ("type" in item) and ((item["type"] == "NCIT_C28421") or (item["type"] == "obo:NCIT_C28421")):
-            #    if item["id"] == 'NCIT_C16576' or item["id"] == 'obo:NCIT_C16576': # female
-            #        fltrs.append ({ 'id': 'sex', 'value': 'F' } )
-            #    if item["id"] == 'NCIT_C20197' or item["id"] == 'obo:NCIT_C20197': # male
-            #        fltrs.append ({ 'id': 'sex', 'value': 'M' } )
-            #    if item["id"] == 'NCIT_C124294' or item["id"] == 'obo:NCIT_C124294': # unknown
-            #        fltrs.append ({ 'id': 'sex', 'value': 'U' } )
-            #    if item["id"] == 'NCIT_C17998' or item["id"] == 'obo:NCIT_C17998': # unknown
-            #        fltrs.append ({ 'id': 'sex', 'value': 'U' } )
-
-            #Genes
-            #if ('type' in item) and ((item['type'] == 'NCIT_C16612') or (item["type"] == "obo:NCIT_C16612")):
-            #    fltrs.append ({ 'id': 'genes', 'value': item["id"] } )
-
-            
+            #Set filters
+            sex_fltr = set_sex(item)
             hpo_fltr = set_hpo(item)
             ordo_fltr = set_ordo(item)
             omim_fltr = set_omim(item)
             gene_fltr = set_gene(item)
-            sex_fltr = set_sex(item)
             
+            if sex_fltr:  fltrs.append(sex_fltr)
             if hpo_fltr:  fltrs.append(hpo_fltr)
             if ordo_fltr: fltrs.append(ordo_fltr)
             if omim_fltr: fltrs.append(omim_fltr)
             if gene_fltr: fltrs.append(gene_fltr)
-            if sex_fltr:  fltrs.append(sex_fltr)
 
         #If nothing from the above applies
         if len(fltrs) == 0:
