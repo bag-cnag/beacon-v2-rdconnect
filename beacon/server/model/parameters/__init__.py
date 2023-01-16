@@ -60,7 +60,7 @@ async def process_request( request, entity ):
         if 'filters' not in qrt[ 'query' ]:
             qrt[ 'query' ][ 'filters' ] = default_params[ 'query' ][ 'filters' ]
         else:
-            flag, err, filters = validate_filters( qrt[ 'query' ][ 'filters' ], entity )
+            flag, err, filters = validate_filters( qrt[ 'meta' ][ 'apiVersion' ], qrt[ 'query' ][ 'filters' ], entity )
             if flag: 
                 #print (filters)
                 if ("id" in err) and (err["id"] == "unsupported_filter"):
@@ -74,7 +74,7 @@ async def process_request( request, entity ):
     return qrt
 
 
-def validate_filters( filters, entity ):
+def validate_filters(api_version, filters, entity ):
     
     '''Scope will be optional, so no check here'''
     # Check that all filters provide scope
@@ -88,6 +88,12 @@ def validate_filters( filters, entity ):
 
     unsupported_types = []
 
+    #Check requested api version
+    if api_version == "v0.2":
+        filter_key = "id"
+    else:
+        filter_key = "type"
+
     for x in filters:
         if entity == 'individuals':
 
@@ -96,12 +102,12 @@ def validate_filters( filters, entity ):
             #    return False, 'Provided fiters "{}" for scope "{}" is not available.'.format( x[ 'id' ], x[ 'scope' ] ), [ ]
             
             '''Check if and how to validate sex NCIT values'''
-            if (x['id'].startswith('NCIT') or x['id'].startswith('obo:NCIT'))  and not x['id'] in config.filters_in['sex']:
-                return False, 'Provided filter "{}"  is not available.'.format( x[ 'id' ]), [ ]
+            #if (x['id'].startswith('NCIT') or x['id'].startswith('obo:NCIT'))  and not x['id'] in config.filters_in['sex']:
+            #    return False, 'Provided filter "{}"  is not available.'.format( x[ 'id' ]), [ ]
 
             #Check type and if is supported
-            if "type" in x and x["type"] not in (config.filters_in["supported_type_terms"]):
-                unsupported_types.append(x["type"])
+            if filter_key in x and x[filter_key] not in (config.filters_in["supported_type_terms"]):
+                unsupported_types.append(x[filter_key])
 
         if entity == 'biosamples':
             if not x[ 'id' ] in config.filters_in[ 'tech' ] and not x[ 'id' ] in config.filters_in[ 'erns' ]:

@@ -10,80 +10,113 @@ import re
 # _valid_individuals = [ 'id', 'family_id', 'index', 'solved', 'sex', 'affectedStatus', 'lifeStatus' ]
 # _valid_biosamples  = [ 'RD_Connect_ID_Experiment', 'EGA_ID', 'Participant_ID', 'Owner', 'in_platform', 'POSTEMBARGO', 'experiment_type', 'kit', 'tissue', 'library_source', 'library_selection', 'library_strategy', 'library_contruction_protocol', 'erns' ]
 
-def set_hpo(item):
+def set_hpo(item, flt_schema):
     """ Set HPO filter """
     hpo = {}
-    ontology_id = config.filters_in['ontologies']['phenotype']
+    key = flt_schema["key"]
+    value = flt_schema["value"]
+    version = flt_schema["version"]
+    ontology_id = config.filters_in['ontologies_' + version]['phenotype']
 
-    if ("type" in item) and ((item["type"] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])) and ((item["id"].lower().startswith('hp')) or (item["id"].lower().startswith('obo:hp'))):
-        hpo_string = "HP:" + re.split('[_ :]', item["id"])[-1]
+    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and ((item[value].lower().startswith('hp')) or (item[value].lower().startswith('obo:hp'))):
+        hpo_string = "HP:" + re.split('[_ :]', item[value])[-1]
         hpo = {'id': 'features', 'value': hpo_string}
 
     return hpo
 
-def set_ordo(item):
+def set_ordo(item, flt_schema):
     """ Set ORDO filter """
     ordo = {}
-    ontology_id = config.filters_in['ontologies']['diagnosis']
+    key = flt_schema["key"]
+    value = flt_schema["value"]
+    version = flt_schema["version"]
+    ontology_id = config.filters_in['ontologies_' + version]['diagnosis']
 
-    if ("type" in item) and ((item["type"] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])) and ((item["id"].lower().startswith('orpha')) or (item["id"].lower().startswith('ordo:orpha'))):
-        ordo_string = "Orphanet:" + re.split('[_ :]', item["id"])[-1]
+    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and ((item[value].lower().startswith('orpha')) or (item[value].lower().startswith('ordo:orpha'))):
+        ordo_string = "Orphanet:" + re.split('[_ :]', item[value])[-1]
         ordo = {'id': 'diagnosis', 'value': ordo_string}
     
     return ordo
 
-def set_omim(item):
+def set_omim(item, flt_schema):
     """ Set OMIM filter """
     omim = {}
-    ontology_id = config.filters_in['ontologies']['diagnosis']
+    key = flt_schema["key"]
+    value = flt_schema["value"]
+    version = flt_schema["version"]
+    ontology_id = config.filters_in['ontologies_' + version]['diagnosis']
 
-    if ("type" in item) and ((item["type"] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])) and (item["id"].lower().startswith('omim')):
-        omim_string = "OMIM:" + re.split('[_ :]', item["id"])[-1]
+    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and (item[value].lower().startswith('omim')):
+        omim_string = "OMIM:" + re.split('[_ :]', item[value])[-1]
         omim = {'id': 'disorders', 'value': omim_string}
     
     return omim
 
-def set_gene(item):
+def set_gene(item, flt_schema):
     """ Set gene filter """
     gene = {}
-    ontology_id = config.filters_in['ontologies']['gene']
+    key = flt_schema["key"]
+    value = flt_schema["value"]
+    version = flt_schema["version"]
+    ontology_id = config.filters_in['ontologies_' + version]['gene']
     
-    if ('type' in item) and ((item['type'] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])):
-        gene = {'id': 'genes', 'value': item["id"]}
+    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
+        gene = {'id': 'genes', 'value': item[value]}
     
     return gene
 
-def set_sex(item):
+def set_sex(item, flt_schema):
     """ Set sex filter """
     sex = {}
-    ontology_id = config.filters_in['ontologies']['sex']
+    key = flt_schema["key"]
+    value = flt_schema["value"]
+    version = flt_schema["version"]
+    ontology_id = config.filters_in['ontologies_' + version]['sex']
 
-    if ("type" in item) and ((item["type"] == ontology_id) or (item["type"] == ontology_id.split(":")[-1])):
-        if item["id"] == 'NCIT_C16576' or item["id"] == 'obo:NCIT_C16576': # female
+    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
+        if item[value] == 'NCIT_C16576' or item[value] == 'obo:NCIT_C16576': # female
             sex = {'id': 'sex', 'value': 'F'}
-        if item["id"] == 'NCIT_C20197' or item["id"] == 'obo:NCIT_C20197': # male
+        if item[value] == 'NCIT_C20197' or item[value] == 'obo:NCIT_C20197': # male
             sex = {'id': 'sex', 'value': 'M'}
-        if item["id"] == 'NCIT_C124294' or item["id"] == 'obo:NCIT_C124294': # unknown
+        if item[value] == 'NCIT_C124294' or item[value] == 'obo:NCIT_C124294': # unknown
             sex = {'id': 'sex', 'value': 'U'}
-        if item["id"] == 'NCIT_C17998' or item["id"] == 'obo:NCIT_C17998': # unknown
+        if item[value] == 'NCIT_C17998' or item[value] == 'obo:NCIT_C17998': # unknown
             sex = {'id': 'sex', 'value': 'U'}
     
     return sex
 
 
+def requested_api_version(qparams):
+    """ Check api version from request and return corresponding body schema """
+    api_version = qparams["meta"]["apiVersion"]
+
+    if api_version == "v0.2":
+        ontology_filter_schema = {"version":"v0.2", "key":"id", "value":"value"}
+    
+    else:
+        ontology_filter_schema = {"version":"v0.1","key":"type", "value":"id"}
+    
+    return ontology_filter_schema
+
+
 # Function to translate from RequestParameters to PhenoStore filtering
 def ps_to_gpap( qparams, psid = None ):
     fltrs = []
+    
+    #Filters schema keys depending on api version (0.1 & 0.2)
+    ontology_filter_schema = requested_api_version(qparams)
+    print (ontology_filter_schema)
+
     if psid:
         fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
             #Set filters
-            sex_fltr = set_sex(item)
-            hpo_fltr = set_hpo(item)
-            ordo_fltr = set_ordo(item)
-            omim_fltr = set_omim(item)
-            gene_fltr = set_gene(item)
+            sex_fltr = set_sex(item, ontology_filter_schema)
+            hpo_fltr = set_hpo(item, ontology_filter_schema)
+            ordo_fltr = set_ordo(item, ontology_filter_schema)
+            omim_fltr = set_omim(item, ontology_filter_schema)
+            gene_fltr = set_gene(item, ontology_filter_schema)
             
             if sex_fltr:  fltrs.append(sex_fltr)
             if hpo_fltr:  fltrs.append(hpo_fltr)
