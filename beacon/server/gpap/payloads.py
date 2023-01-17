@@ -17,8 +17,16 @@ def set_hpo(item, flt_schema):
     value = flt_schema["value"]
     version = flt_schema["version"]
     ontology_id = config.filters_in['ontologies_' + version]['phenotype']
+    
+    #For v0.1
+    cond = (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and ((item[value].lower().startswith('hp')) or (item[value].lower().startswith('obo:hp')))
 
-    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and ((item[value].lower().startswith('hp')) or (item[value].lower().startswith('obo:hp'))):
+    #For v0.2
+    if version == "v0.2":
+        key = value = "id"
+        cond = (key in item) and ((item[value].lower().startswith('hp')) or (item[value].lower().startswith('obo:hp')))
+
+    if cond:
         hpo_string = "HP:" + re.split('[_ :]', item[value])[-1]
         hpo = {'id': 'features', 'value': hpo_string}
 
@@ -31,8 +39,16 @@ def set_ordo(item, flt_schema):
     value = flt_schema["value"]
     version = flt_schema["version"]
     ontology_id = config.filters_in['ontologies_' + version]['diagnosis']
+    
+    #For v0.1
+    cond = (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and ((item[value].lower().startswith('orpha')) or (item[value].lower().startswith('ordo:orpha')))
 
-    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and ((item[value].lower().startswith('orpha')) or (item[value].lower().startswith('ordo:orpha'))):
+    #For v0.2
+    if version == "v0.2":
+        key = value = "id"
+        cond = (key in item) and ((item[value].lower().startswith('orpha')) or (item[value].lower().startswith('ordo:orpha')))
+        
+    if cond:
         ordo_string = "Orphanet:" + re.split('[_ :]', item[value])[-1]
         ordo = {'id': 'diagnosis', 'value': ordo_string}
     

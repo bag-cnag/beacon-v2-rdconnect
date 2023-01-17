@@ -88,6 +88,9 @@ def validate_filters(api_version, filters, entity ):
 
     unsupported_types = []
 
+    if api_version != "v0.1" and api_version != "v0.2":
+        return False, 'Provided apiVersion "{}" is not supported (provide one from: [v0.1, v0.2])'.format(api_version), [ ]
+
     #Check requested api version
     if api_version == "v0.2":
         filter_key = "id"
@@ -106,7 +109,7 @@ def validate_filters(api_version, filters, entity ):
             #    return False, 'Provided filter "{}"  is not available.'.format( x[ 'id' ]), [ ]
 
             #Check type and if is supported
-            if filter_key in x and x[filter_key] not in (config.filters_in["supported_type_terms"]):
+            if (filter_key in x) and (x[filter_key] not in (config.filters_in["supported_type_terms"])) and ("orpha" not in x[filter_key].lower()) and ("hp" not in x[filter_key].lower()):
                 unsupported_types.append(x[filter_key])
 
         if entity == 'biosamples':
