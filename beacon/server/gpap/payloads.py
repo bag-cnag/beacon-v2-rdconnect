@@ -17,18 +17,26 @@ def set_hpo(item, flt_schema):
     value = flt_schema["value"]
     version = flt_schema["version"]
     ontology_id = config.filters_in['ontologies_' + version]['phenotype']
-    
-    #For v0.1
-    cond = (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and ((item[value].lower().startswith('hp')) or (item[value].lower().startswith('obo:hp')))
 
     #For v0.2
     if version == "v0.2":
         key = value = "id"
-        cond = (key in item) and ((item[value].lower().startswith('hp')) or (item[value].lower().startswith('obo:hp')))
 
-    if cond:
-        hpo_string = "HP:" + re.split('[_ :]', item[value])[-1]
-        hpo = {'id': 'features', 'value': hpo_string}
+    if not isinstance(item["id"], list):
+        if (key in item) and ((item[value].lower().startswith('hp')) or (item[value].lower().startswith('obo:hp'))):
+            hpo_string = "HP:" + re.split('[_ :]', item[value])[-1]
+            hpo = {'id': 'features', 'value': hpo_string}
+    
+    else:
+        mult_values = []
+        if key in item:
+            for obj in item[key]:
+                if ((obj.lower().startswith('hp')) or (obj.lower().startswith('obo:hp'))):
+                    hpo_string = "HP:" + re.split('[_ :]', obj)[-1]
+                    mult_values.append(hpo_string)
+
+        if len(mult_values) > 0:
+            hpo = {'id': 'features', 'value': mult_values}
 
     return hpo
 
@@ -39,19 +47,28 @@ def set_ordo(item, flt_schema):
     value = flt_schema["value"]
     version = flt_schema["version"]
     ontology_id = config.filters_in['ontologies_' + version]['diagnosis']
-    
-    #For v0.1
-    cond = (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and ((item[value].lower().startswith('orpha')) or (item[value].lower().startswith('ordo:orpha')))
 
     #For v0.2
     if version == "v0.2":
         key = value = "id"
-        cond = (key in item) and ((item[value].lower().startswith('orpha')) or (item[value].lower().startswith('ordo:orpha')))
-        
-    if cond:
-        ordo_string = "Orphanet:" + re.split('[_ :]', item[value])[-1]
-        ordo = {'id': 'diagnosis', 'value': ordo_string}
     
+    if not isinstance(item["id"], list):
+        if (key in item) and ((item[value].lower().startswith('orpha')) or (item[value].lower().startswith('ordo:orpha'))):
+            ordo_string = "Orphanet:" + re.split('[_ :]', item[value])[-1]
+            ordo = {'id': 'diagnosis', 'value': ordo_string}
+    
+    #If input is an array we are in v0.2
+    else:        
+        mult_values = []
+        if key in item:
+            for obj in item[key]:
+                if ((obj.lower().startswith('orpha')) or (obj.lower().startswith('ordo:orpha'))):
+                    ordo_string = "Orphanet:" + re.split('[_ :]', obj)[-1]
+                    mult_values.append(ordo_string)
+        
+        if len(mult_values) > 0:
+            ordo = {'id': 'diagnosis', 'value': mult_values}
+        
     return ordo
 
 def set_omim(item, flt_schema):
@@ -77,7 +94,14 @@ def set_gene(item, flt_schema):
     ontology_id = config.filters_in['ontologies_' + version]['gene']
     
     if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
-        gene = {'id': 'genes', 'value': item[value]}
+        if not isinstance(item["value"], list):
+            gene = {'id': 'genes', 'value': item[value]}
+        else:
+            mult_values = []
+            for obj in item["value"]:
+                mult_values.append(obj)
+            if len(mult_values) > 0:
+                gene = {'id': 'genes', 'value': mult_values}
     
     return gene
 
@@ -90,14 +114,32 @@ def set_sex(item, flt_schema):
     ontology_id = config.filters_in['ontologies_' + version]['sex']
 
     if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
-        if item[value] == 'NCIT_C16576' or item[value] == 'obo:NCIT_C16576': # female
-            sex = {'id': 'sex', 'value': 'F'}
-        if item[value] == 'NCIT_C20197' or item[value] == 'obo:NCIT_C20197': # male
-            sex = {'id': 'sex', 'value': 'M'}
-        if item[value] == 'NCIT_C124294' or item[value] == 'obo:NCIT_C124294': # unknown
-            sex = {'id': 'sex', 'value': 'U'}
-        if item[value] == 'NCIT_C17998' or item[value] == 'obo:NCIT_C17998': # unknown
-            sex = {'id': 'sex', 'value': 'U'}
+        if not isinstance(item["value"], list):
+            sex = map_sex(item["value"])
+        else:
+            mult_values = []
+            for obj in item["value"]:
+                sex = map_sex(obj)
+                mult_values.append(sex["value"])
+            if len(mult_values) > 0:
+                    sex = {'id': 'sex', 'value': mult_values}
+    return sex
+
+
+def map_sex(item):
+    """ Sex mapper """
+    sex = {}
+
+    if item == 'NCIT_C16576' or item == 'obo:NCIT_C16576': # female
+        sex = {'id': 'sex', 'value': 'F'}
+    elif item == 'NCIT_C20197' or item == 'obo:NCIT_C20197': # male
+        sex = {'id': 'sex', 'value': 'M'}
+    elif item == 'NCIT_C124294' or item == 'obo:NCIT_C124294': # unknown
+        sex = {'id': 'sex', 'value': 'U'}
+    elif item == 'NCIT_C17998' or item == 'obo:NCIT_C17998': # unknown
+        sex = {'id': 'sex', 'value': 'U'}
+    else:
+        sex = {'id': 'sex', 'value': 'None'}
     
     return sex
 
@@ -106,11 +148,10 @@ def requested_api_version(qparams):
     """ Check api version from request and return corresponding body schema """
     api_version = qparams["meta"]["apiVersion"]
 
-    if api_version == "v0.2":
-        ontology_filter_schema = {"version":"v0.2", "key":"id", "value":"value"}
-    
-    else:
+    if api_version == "v0.1":
         ontology_filter_schema = {"version":"v0.1","key":"type", "value":"id"}
+    else:
+        ontology_filter_schema = {"version":"v0.2", "key":"id", "value":"value"}
     
     return ontology_filter_schema
 
@@ -121,7 +162,6 @@ def ps_to_gpap( qparams, psid = None ):
     
     #Filters schema keys depending on api version (0.1 & 0.2)
     ontology_filter_schema = requested_api_version(qparams)
-    print (ontology_filter_schema)
 
     if psid:
         fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
