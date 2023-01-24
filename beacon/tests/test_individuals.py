@@ -54,10 +54,10 @@ def test_biosamples_biosample(token):
     assert len(cnt['response']['results']) == 1
     assert  cnt['response']['results'][0]['biosampleId'] == ind'''
 
-def test_individuals_individual():
+def test_individuals_endpoint():
     token = config.beacon_keys[0]['key']
     headers = {'Content-Type': content_type, 'auth-key': token}
-
+    
     url = '{}/api/individuals'.format(config.server_api_url)
      
 

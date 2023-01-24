@@ -93,7 +93,7 @@ pipeline {
 					//sh 'docker run --net=host --name postgres_test_flask -e POSTGRES_PASSWORD=mysecretpassword -d postgres'
 					//sh "rm -rf beacon-v2-config"
 					getConfigFromGitea(env.BRANCH_NAME,"gitea_config","beacon-v2-config")
-					sh 'pytest beacon/test_*'
+					sh 'pytest beacon/tests/test_*'
 					//sh 'pytest --cov-report xml:phenostore_server/tests/coverage.xml --cov=. phenostore_server/tests/test_*'
 					}
 
