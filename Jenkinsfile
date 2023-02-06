@@ -43,7 +43,6 @@ def getConfigFromGitea(branch, credentials,project_folder) {
 			println(e1);
 		}
         
-        //sh "cp -r "+project_folder+"/config_test.py ./phenostore_server/config/."
         sh "cp -r "+project_folder+"/config.py ./beacon/server/config/."
 	}
 }
@@ -86,22 +85,38 @@ pipeline {
 	    		sh 'ls'
 	    	}
     	}
-	//stage('Sonarqube') {
-		//environment {
-		//	scannerHome = tool 'SQScanner'
-		//	SONAR_SCANNER_OPTS = '-Djavax.net.ssl.trustStore=/home/ujenkins/cacerts -Djavax.net.ssl.trustStorePassword=changeit -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044'
+
+		stage('run test') {
+			steps {
+				withPythonEnv('python3'){
+					withCredentials([string(credentialsId: 'gitea_config', variable: 'gitea_token')]) {
+					//sh 'docker run --net=host --name postgres_test_flask -e POSTGRES_PASSWORD=mysecretpassword -d postgres'
+					//sh "rm -rf beacon-v2-config"
+					getConfigFromGitea(env.BRANCH_NAME,"gitea_config","beacon-v2-config")
+					sh 'pytest beacon/tests/test_*'
+					//sh 'pytest --cov-report xml:phenostore_server/tests/coverage.xml --cov=. phenostore_server/tests/test_*'
+					}
+
+				}
+			}
+        }
+
+		//stage('Sonarqube') {
+			//environment {
+			//	scannerHome = tool 'SQScanner'
+			//	SONAR_SCANNER_OPTS = '-Djavax.net.ssl.trustStore=/home/ujenkins/cacerts -Djavax.net.ssl.trustStorePassword=changeit -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044'
+			//}
+			//steps {
+			//	withSonarQubeEnv('SQServer') {
+			//		withCredentials([string(credentialsId: 'sonar-beaconv2-server', variable: 'sonar_beaconv2_server')]) {
+			//			sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=beaconv2-server -Dsonar.login=${sonar_beaconv2_server}"
+			//		}
+			//	}
+			//}
+			//timeout(time: 10, unit: 'MINUTES') {
+			//    waitForQualityGate abortPipeline: true
+			//}
 		//}
-		//steps {
-		//	withSonarQubeEnv('SQServer') {
-		//		withCredentials([string(credentialsId: 'sonar-beaconv2-server', variable: 'sonar_beaconv2_server')]) {
-		//			sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=beaconv2-server -Dsonar.login=${sonar_beaconv2_server}"
-		//		}
-		//	}
-		//}
-		//timeout(time: 10, unit: 'MINUTES') {
-		//    waitForQualityGate abortPipeline: true
-		//}
-	//}
     }
 
     post {
