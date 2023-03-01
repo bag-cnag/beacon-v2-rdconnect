@@ -10,7 +10,19 @@ from server.framework.exceptions import BeaconServerError
 
 LOG = logging.getLogger(__name__)
 
+def handle_results_ranges(num_total_results):
+    c_threshold = config.filters_in['counts_threshold']
+    f_num_total_results = num_total_results
+
+    if (num_total_results > 0) and (num_total_results < c_threshold):
+        f_num_total_results = c_threshold - 1
+    
+    return f_num_total_results
+
+
 def build_beacon_response( entity, qparams, num_total_results, data, build_response_func ):
+    
+    num_total_results = handle_results_ranges(num_total_results)
 
     rst = { 
            'meta': build_meta( qparams ),
@@ -21,8 +33,8 @@ def build_beacon_response( entity, qparams, num_total_results, data, build_respo
     }
     if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
         rst[ 'responseSummary' ][ 'numTotalResults' ] = num_total_results
-    if qparams[ 'query' ][ 'requestedGranularity' ] == 'record':
-        rst[ 'result' ] = build_response( entity, qparams, num_total_results, data, build_response_func )
+    if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
+        rst[ 'response' ] = build_response( entity, qparams, num_total_results, data, build_response_func )
     return rst
 
 # def build_beacon_response(proxy, data, num_total_results, qparams_converted, entity, non_accessible_datasets, func_response_type):
@@ -188,15 +200,28 @@ def build_datasets_filters( qparams ):
 #     }
 
 
+def build_resultSets_info(num_total_results):
+    c_threshold = config.filters_in['counts_threshold']
+    info = {}
+
+    if (num_total_results > 0) and (num_total_results < c_threshold):
+        info["resultCountDescription"] = {}
+        info["resultCountDescription"]["minRange"] = 1
+        info["resultCountDescription"]["maxRange"] = c_threshold - 1
+
+    return info 
+
+
 def build_response( entity, qparams, num_total_results, data, func, ):
     response = { 
         'resultSets': [ {
             'id': 'datasetBeacon',
-            'setType': entity,
+            'type': entity,
             'exists': True if num_total_results > 0 else False,
-            'resultsCount': num_total_results,
-            'results': func( data, qparams ),
-            'info': { }, # { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
+            'resultCount': num_total_results,
+            'info': build_resultSets_info(num_total_results)
+            #'results':[], #'results': func( data, qparams ),
+            # { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
             #'resultsHandover': [], # build_results_handover
             #'beaconHandover': config.beacon_handovers#,
         } ] }
