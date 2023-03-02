@@ -26,15 +26,18 @@ def build_beacon_response( entity, qparams, num_total_results, data, build_respo
 
     rst = { 
            'meta': build_meta( qparams ),
-           'info': build_info( qparams ),
            'responseSummary': {
                'exists': True if num_total_results > 0 else False
            }
     }
+
+    info = build_info(qparams)
+    if info: rst['info'] = info
+
     if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
         rst[ 'responseSummary' ][ 'numTotalResults' ] = num_total_results
-    if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
         rst[ 'response' ] = build_response( entity, qparams, num_total_results, data, build_response_func )
+
     return rst
 
 # def build_beacon_response(proxy, data, num_total_results, qparams_converted, entity, non_accessible_datasets, func_response_type):
@@ -219,12 +222,16 @@ def build_response( entity, qparams, num_total_results, data, func, ):
             'type': entity,
             'exists': True if num_total_results > 0 else False,
             'resultCount': num_total_results,
-            'info': build_resultSets_info(num_total_results)
+            #'info': build_resultSets_info(num_total_results)
             #'results':[], #'results': func( data, qparams ),
             # { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
             #'resultsHandover': [], # build_results_handover
             #'beaconHandover': config.beacon_handovers#,
         } ] }
+    
+    info = build_resultSets_info(num_total_results)
+    if info: response['resultSets'][0]['info'] = info
+
     return response
 
 
