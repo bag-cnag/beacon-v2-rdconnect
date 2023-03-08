@@ -112,4 +112,4 @@ def test_individuals_endpoint():
     cnt = json.loads(rsp.text)
     assert rsp.status_code == 200
     assert cnt['responseSummary']['exists'] == True
-    assert cnt['responseSummary']['numTotalResults'] == 1
+    assert cnt['responseSummary']['numTotalResults'] == 9
