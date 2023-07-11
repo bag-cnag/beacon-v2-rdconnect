@@ -44,6 +44,12 @@ routes = [
     # Cohorts
     #web.post( '/api/cohorts'                                  , map.query_cohorts_by_cohort ),
     #web.post( '/api/cohorts/{target_id_req}'                  , map.query_cohorts_by_cohort ),
+
+
+    # Beacon v1 for variants
+    web.post( '/api/variants'                                  , map.query_variants_by_variant ),
+
+
 ]
 
 

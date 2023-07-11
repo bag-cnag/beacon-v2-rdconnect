@@ -141,3 +141,60 @@ def fetch_variants_by_individual( qparams, access_token, groups, projects ):
 
 def fetch_cohorts_by_cohort( qparams, access_token, groups, projects ):
     return (x for x in [])
+
+
+
+
+'''Beacon v1 purposes'''
+def fetch_variants_by_variant( qparams, access_token, groups, projects, request ):
+
+    #Get parameters from request
+    chrom = request.rel_url.query['referenceName']
+    start = int(request.rel_url.query["start"]) + 1
+    ref =  request.rel_url.query['referenceBases']
+    alt =  request.rel_url.query['alternateBases']
+
+    if chrom=="MT":
+        chrom="23"
+    elif chrom=="X":
+        chrom="24"
+    elif chrom=="Y":
+        chrom=25
+    else:
+        pass
+    
+    print ("Fetch variants by variant")
+    print (chrom)
+    print (start)
+    print (ref)
+    print (alt)
+
+    variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
+
+    print (variants_dict)
+
+    payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
+    
+    #print (qparams)
+
+    elastic_res = elastic_resp_handling(qparams, variants_dict)
+
+    #Check token
+    token_status = check_token(access_token)
+
+    if (token_status[1] == 200):
+        headers = { 'Authorization_Beacon': config.pheno_token, 'Content-Type': 'application/json' }
+        if qparams[ 'targetIdReq' ]:
+            url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
+        else:
+            url = config.gpap_base_url + config.ps_participants
+        resp = requests.post( url, headers = headers, data = json.dumps( payload ), verify = False )
+
+        if resp.status_code != 200:
+            raise BeaconServerError( error = resp.json()[ 'message' ] )
+        resp = json.loads( resp.text )
+
+        return resp[ 'total' ], resp[ 'rows' ]
+    
+    else:
+        raise BeaconServerError( error = [ 'Authorization failed' ] )

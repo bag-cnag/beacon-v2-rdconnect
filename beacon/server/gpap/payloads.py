@@ -3,6 +3,7 @@
 
 from server.framework.exceptions import BeaconBadRequest
 from server.config import config
+from elasticsearch import Elasticsearch
 import re
 
 
@@ -267,3 +268,140 @@ def datamanagement_playload( qparams, groups ):
     print (payload['filtered'])
 
     return payload
+
+
+
+#Beacon v1 for variants
+
+# Function to translate from RequestParameters to Elastic filtering
+def elastic_to_gpap( qparams, psid = None ):
+    fltrs = []
+
+    '''NEEDS handling'''
+    
+    #Filters schema keys depending on api version (0.1 & 0.2)
+    ontology_filter_schema = requested_api_version(qparams)
+
+    if psid:
+        fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
+    if len( qparams[ 'query' ][ 'filters' ] ) > 0:
+        for item in qparams[ 'query' ][ 'filters' ]:
+            #Set filters
+            sex_fltr = set_sex(item, ontology_filter_schema)
+            hpo_fltr = set_hpo(item, ontology_filter_schema)
+            ordo_fltr = set_ordo(item, ontology_filter_schema)
+            omim_fltr = set_omim(item, ontology_filter_schema)
+            gene_fltr = set_gene(item, ontology_filter_schema)
+            
+            if sex_fltr:  fltrs.append(sex_fltr)
+            if hpo_fltr:  fltrs.append(hpo_fltr)
+            if ordo_fltr: fltrs.append(ordo_fltr)
+            if omim_fltr: fltrs.append(omim_fltr)
+            if gene_fltr: fltrs.append(gene_fltr)
+
+        #If nothing from the above applies
+        if len(fltrs) == 0:
+            fltrs.append ({ 'id': '_no_filter', 'value': '_no_filter' } )
+    
+    else:
+        fltrs.append ({ 'id': '_no_filter', 'value': '_no_filter' } )
+    
+    print (fltrs)
+    return fltrs
+
+
+
+def elastic_playload(chrom, start):
+    
+    #es_body = elastic_to_gpap( qparams, psid )
+
+    es_body = {
+          "query": {
+            "bool": {
+              "must": [
+                 {"term" : { "chrom" : chrom }
+          },
+          {"term" : { "pos" : start }
+          }
+          ]
+        }
+      }
+    }
+
+
+    return es_body
+
+
+def query_elastic(chrom,start):
+    elastic_user  = config.elastic_user
+    elastic_passwd= config.elastic_password
+    elastic_host  = config.elastic_host
+    elastic_index = config.elastic_index
+    es = Elasticsearch(elastic_host, http_auth=(elastic_user,elastic_passwd))
+    res = es.search(index=elastic_index, body=elastic_playload(chrom,start))
+
+    print (res)
+    return res
+
+
+def elastic_resp_handling(qparams, variants_dict):
+  #import pdb;pdb.set_trace()
+  '''chrom=request.args.get("referenceName")
+  if chrom=="MT":
+     chrom="23"
+  elif chrom=="X":
+     chrom="24"
+  elif chrom=="Y":
+     chrom=25
+  start=int(request.args.get("start"))+1
+  ref=request.args.get("referenceBases")
+  alt=request.args.get("alternateBases")'''
+
+  #Get from variants dicts
+  chrom = variants_dict["chrom"]
+  start = variants_dict["start"]
+
+  print ("Ftanoume?")
+  print (chrom)
+  print (start)
+
+  #Query elastic
+  res = query_elastic(chrom,start)
+
+  found=0
+  if res['hits']['total'] >=1:
+    for result in res['hits']['hits']:
+        if result['_source']['alt']==alt and result["_source"]['ref']==ref:
+           found=1
+  data={
+    "beaconId": "eu.crg.cnag.sweden.b1mg-pilot",
+    "apiVersion": "0.4",
+    "exists": found==1,
+    "error": None,
+    "alleleRequest": {
+        "referenceName": chrom,
+        "start": start,
+        "end": 0,
+        "referenceBases": ref,
+        "alternateBases": alt,
+        "assemblyId": "GRCh37"
+    },
+    "datasetAlleleResponses": [
+        {
+            "exists": found==1,
+            "variantCount": found,
+            "callCount": found,
+            "sampleCount": found,
+            "note": "",
+            "externalUrl": "https://b1mg-pilot.sweden.cnag.crg.eu/genomics/",
+            "info": {"accessType":"REGISTERED"},
+            "error": None
+        }
+    ]
+}
+  response = app.response_class(
+        response=json.dumps(data),
+        status=200,
+        mimetype='application/json'
+    )
+  return response
