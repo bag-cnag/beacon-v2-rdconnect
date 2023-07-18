@@ -229,10 +229,33 @@ def build_response( entity, qparams, num_total_results, data, func, ):
             #'beaconHandover': config.beacon_handovers#,
         } ] }
     
-    info = build_resultSets_info(num_total_results)
-    if info: response['resultSets'][0]['info'] = info
+
+    #In case of variants do not return ranges
+    if (entity != "variants"):
+        info = build_resultSets_info(num_total_results)
+        if info: response['resultSets'][0]['info'] = info
 
     return response
+
+
+#Variants endpoint directly
+def build_variant_response(entity, qparams, num_total_results, data, build_response_func):
+
+    rst = { 
+           'meta': build_meta( qparams ),
+           'responseSummary': {
+               'exists': True if num_total_results > 0 else False
+           }
+    }
+
+
+    if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
+        rst[ 'responseSummary' ][ 'numTotalResults' ] = num_total_results
+        rst[ 'response' ] = build_response( entity, qparams, num_total_results, data, build_response_func )
+
+    return rst
+
+
 
 
 # # def build_variant_response(data, qparams):

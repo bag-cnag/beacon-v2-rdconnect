@@ -5,7 +5,7 @@ import jwt
 from server.config import config
 from server.framework.utils import json_response
 from server.framework.exceptions import  BeaconServerError, BeaconForbidden, BeaconEndPointNotImplemented
-from server.framework.response import build_beacon_response
+from server.framework.response import build_beacon_response, build_variant_response
 from server.gpap import get_kc_token
 from server.logger import LOG
 
@@ -185,14 +185,14 @@ def handler_variants( entity, fetch_func, build_response_func ):
         qparams = await process_request( request, entity )
 
 
-        qparams["mperta"] = "SARPELIESSS"
-
         num_total_results, response = fetch_func( qparams, access_token, groups, projects, request )
 
-        #print (qparams)
                 
         # Create reponse
-        response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func )
+        #response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func )
+        
+        #Return directly the variant response
+        response_converted = build_variant_response( entity, qparams, num_total_results, response, build_response_func )
         
         LOG.info( 'Formatting the response for %s', entity )
         return await json_response( request, response_converted )

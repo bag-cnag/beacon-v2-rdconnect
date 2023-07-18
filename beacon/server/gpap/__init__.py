@@ -147,54 +147,38 @@ def fetch_cohorts_by_cohort( qparams, access_token, groups, projects ):
 
 '''Beacon v1 purposes'''
 def fetch_variants_by_variant( qparams, access_token, groups, projects, request ):
-
-    #Get parameters from request
-    chrom = request.rel_url.query['referenceName']
-    start = int(request.rel_url.query["start"]) + 1
-    ref =  request.rel_url.query['referenceBases']
-    alt =  request.rel_url.query['alternateBases']
-
-    if chrom=="MT":
-        chrom="23"
-    elif chrom=="X":
-        chrom="24"
-    elif chrom=="Y":
-        chrom=25
-    else:
-        pass
-    
-    print ("Fetch variants by variant")
-    print (chrom)
-    print (start)
-    print (ref)
-    print (alt)
-
-    variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
-
-    print (variants_dict)
-
-    payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
-    
-    #print (qparams)
-
-    elastic_res = elastic_resp_handling(qparams, variants_dict)
-
     #Check token
     token_status = check_token(access_token)
 
     if (token_status[1] == 200):
-        headers = { 'Authorization_Beacon': config.pheno_token, 'Content-Type': 'application/json' }
-        if qparams[ 'targetIdReq' ]:
-            url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
+        #Get parameters from request
+        chrom = request.rel_url.query['referenceName']
+        start = int(request.rel_url.query["start"]) + 1
+        ref =  request.rel_url.query['referenceBases']
+        alt =  request.rel_url.query['alternateBases']
+
+        if chrom=="MT":
+            chrom="23"
+        elif chrom=="X":
+            chrom="24"
+        elif chrom=="Y":
+            chrom=25
         else:
-            url = config.gpap_base_url + config.ps_participants
-        resp = requests.post( url, headers = headers, data = json.dumps( payload ), verify = False )
+            pass
 
-        if resp.status_code != 200:
-            raise BeaconServerError( error = resp.json()[ 'message' ] )
-        resp = json.loads( resp.text )
+        print ("Fetch variants by variant")
 
-        return resp[ 'total' ], resp[ 'rows' ]
+        variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
+
+        print (variants_dict)
+
+        #Elastic
+        elastic_res = elastic_resp_handling(qparams, variants_dict)
+
+        variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
+
+        #return resp[ 'total' ], resp[ 'rows' ]
+        return variants_hits, variants_hits
     
     else:
         raise BeaconServerError( error = [ 'Authorization failed' ] )
