@@ -149,36 +149,40 @@ def fetch_cohorts_by_cohort( qparams, access_token, groups, projects ):
 def fetch_variants_by_variant( qparams, access_token, groups, projects, request ):
     #Check token
     token_status = check_token(access_token)
-
-    if (token_status[1] == 200):
-        #Get parameters from request
-        chrom = request.rel_url.query['referenceName']
-        start = int(request.rel_url.query["start"]) + 1
-        ref =  request.rel_url.query['referenceBases']
-        alt =  request.rel_url.query['alternateBases']
-
-        if chrom=="MT":
-            chrom="23"
-        elif chrom=="X":
-            chrom="24"
-        elif chrom=="Y":
-            chrom=25
-        else:
-            pass
-
-        print ("Fetch variants by variant")
-
-        variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
-
-        print (variants_dict)
-
-        #Elastic
-        elastic_res = elastic_resp_handling(qparams, variants_dict)
-
-        variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
-
-        #return resp[ 'total' ], resp[ 'rows' ]
-        return variants_hits, variants_hits
     
+
+    #Do not check token for now as Beacon v1 was Public
+    #if (token_status[1] == 200):
+
+    #Get parameters from request
+    chrom = request.rel_url.query['referenceName']
+    start = int(request.rel_url.query["start"]) + 1
+    ref =  request.rel_url.query['referenceBases']
+    alt =  request.rel_url.query['alternateBases']
+
+    if chrom=="MT":
+        chrom="23"
+    elif chrom=="X":
+        chrom="24"
+    elif chrom=="Y":
+        chrom=25
     else:
-        raise BeaconServerError( error = [ 'Authorization failed' ] )
+        pass
+
+    print ("Fetch variants by variant")
+
+    variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
+
+    print (variants_dict)
+
+    #Elastic
+    elastic_res = elastic_resp_handling(qparams, variants_dict)
+
+    #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
+    variants_hits = elastic_res
+
+    #return resp[ 'total' ], resp[ 'rows' ]
+    return variants_hits, variants_hits
+    
+    #else:
+    #    raise BeaconServerError( error = [ 'Authorization failed' ] )

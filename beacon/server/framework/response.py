@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import json
 
 from server.config import config
 #from server.validation.fields import SchemaField
@@ -256,6 +257,33 @@ def build_variant_response(entity, qparams, num_total_results, data, build_respo
     return rst
 
 
+#Variants with v1 response
+def build_variant_v1_response(entity, qparams, num_total_results, data, build_response_func, genomic_params):
+
+
+    #For Beacon v1 we have to return it in this format
+    rst = {
+        "beaconId": config.beacon_id,
+        "apiVersion": "1.0.0",
+        "exists": num_total_results > 0,
+        "error": None,
+        "alleleRequest": dict(genomic_params),
+        "datasetAlleleResponses": [
+            {
+                "exists": num_total_results > 0,
+                "variantCount": num_total_results,
+                "callCount": num_total_results,
+                "sampleCount": num_total_results,
+                "note": "",
+                "externalUrl": config.gpap_base_url + "/genomics/",
+                "info": {"accessType":"ANONYMOUS"},
+                "error": None
+            }
+        ]
+    }
+
+
+    return rst
 
 
 # # def build_variant_response(data, qparams):

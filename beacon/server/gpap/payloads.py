@@ -320,39 +320,8 @@ def elastic_resp_handling(qparams, variants_dict):
     if res['hits']['total']['value'] >=1:
         for result in res['hits']['hits']:
             if result['_source']['alt']==alt and result["_source"]['ref']==ref:
-                print ("Found in Elastic!")
                 found+=1
     
-    #For Beacon v1 we have to return it in this format?
-    data= {
-        "beaconId": "eu.crg.cnag.sweden.b1mg-pilot",
-        "apiVersion": "0.4",
-        "exists": found==1,
-        "error": None,
-        "alleleRequest": {
-            "referenceName": chrom,
-            "start": start,
-            "end": 0,
-            "referenceBases": ref,
-            "alternateBases": alt,
-            "assemblyId": "GRCh37"
-        },
-        "datasetAlleleResponses": [
-            {
-                "exists": found==1,
-                "variantCount": found,
-                "callCount": found,
-                "sampleCount": found,
-                "note": "",
-                "externalUrl": "https://b1mg-pilot.sweden.cnag.crg.eu/genomics/",
-                "info": {"accessType":"REGISTERED"},
-                "error": None
-            }
-        ]
-        }
-
-    #response = json.dumps(data)
-
-    print (found)
-
-    return data
+  
+    #return data
+    return found
