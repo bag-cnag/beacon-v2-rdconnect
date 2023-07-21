@@ -59,6 +59,13 @@ query_biosamples_by_biosample = handler.handler_fixed_token( 'biosamples', fetch
 #query_cohorts_by_cohort   = handler.not_implemented('cohorts')
 
 
+'''Beacon v1'''
+# Variants
+query_variants_by_variant = handler.handler_variants( 'variants', fetch_variants_by_variant, variants )
+
+
+
+
 """
 # Individuals
 query_individuals_by_individual
