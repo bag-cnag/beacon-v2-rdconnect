@@ -5,9 +5,7 @@ from server.framework.exceptions import BeaconBadRequest
 from server.config import config
 import re
 import json
-
-#Comment as it has to be installed in the docker
-#from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch
 
 
 # List of valid filtering keys per GPAP's endpoint

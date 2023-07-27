@@ -54,7 +54,7 @@ def test_biosamples_biosample(token):
     assert len(cnt['response']['results']) == 1
     assert  cnt['response']['results'][0]['biosampleId'] == ind'''
 
-'''def test_individuals_endpoint():
+def test_individuals_endpoint():
     token = config.beacon_keys[0]['key']
     headers = {'Content-Type': content_type, 'auth-key': token}
     
@@ -112,4 +112,4 @@ def test_biosamples_biosample(token):
     cnt = json.loads(rsp.text)
     assert rsp.status_code == 200
     assert cnt['responseSummary']['exists'] == True
-    assert cnt['responseSummary']['numTotalResults'] == 9'''
+    assert cnt['responseSummary']['numTotalResults'] == 9
