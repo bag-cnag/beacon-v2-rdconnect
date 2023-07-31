@@ -4,6 +4,8 @@
 from server.framework.exceptions import BeaconBadRequest
 from server.config import config
 import re
+import json
+from elasticsearch import Elasticsearch
 
 
 # List of valid filtering keys per GPAP's endpoint
@@ -267,3 +269,59 @@ def datamanagement_playload( qparams, groups ):
     print (payload['filtered'])
 
     return payload
+
+
+
+
+#Beacon v1 for variants
+def elastic_playload(chrom, start):
+    
+    es_body = {
+          "query": {
+            "bool": {
+              "must": [
+                 {"term" : { "chrom" : chrom }
+          },
+          {"term" : { "pos" : start }
+          }
+          ]
+        }
+      }
+    }
+
+
+    return es_body
+
+
+def query_elastic(chrom, start):
+
+    elastic_user  = config.elastic_user
+    elastic_passwd= config.elastic_password
+    elastic_host  = config.elastic_host
+    elastic_index = config.elastic_index
+    es = Elasticsearch(elastic_host, http_auth=(elastic_user,elastic_passwd))
+    res = es.search(index=elastic_index, body=elastic_playload(chrom,start))
+
+    return res
+
+
+def elastic_resp_handling(qparams, variants_dict):
+
+    #Get from variants dicts
+    chrom = variants_dict["chrom"]
+    start = variants_dict["start"]
+    ref = variants_dict["ref"]
+    alt = variants_dict["alt"]
+
+    #Query elastic
+    res = query_elastic(chrom,start)
+
+    found=0
+    if res['hits']['total']['value'] >=1:
+        for result in res['hits']['hits']:
+            if result['_source']['alt']==alt and result["_source"]['ref']==ref:
+                found+=1
+    
+  
+    #return data
+    return found

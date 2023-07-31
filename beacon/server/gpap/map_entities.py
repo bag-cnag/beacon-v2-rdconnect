@@ -14,3 +14,7 @@ def experiments( exp_list, qparams ):
         part_exps = [ x for x in exp_list if x[ 'Participant_ID' ] == part_id ]
         biosamples.append( beacon_biosample( part_exps ) )
     return biosamples
+
+
+def variants( ind_list, qparmas ):
+    return [ beacon_individual( x ) for x in ind_list ]

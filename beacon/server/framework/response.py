@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import json
 
 from server.config import config
 #from server.validation.fields import SchemaField
@@ -229,10 +230,60 @@ def build_response( entity, qparams, num_total_results, data, func, ):
             #'beaconHandover': config.beacon_handovers#,
         } ] }
     
-    info = build_resultSets_info(num_total_results)
-    if info: response['resultSets'][0]['info'] = info
+
+    #In case of variants do not return ranges
+    if (entity != "variants"):
+        info = build_resultSets_info(num_total_results)
+        if info: response['resultSets'][0]['info'] = info
 
     return response
+
+
+#Variants endpoint directly
+def build_variant_response(entity, qparams, num_total_results, data, build_response_func):
+
+    rst = { 
+           'meta': build_meta( qparams ),
+           'responseSummary': {
+               'exists': True if num_total_results > 0 else False
+           }
+    }
+
+
+    if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
+        rst[ 'responseSummary' ][ 'numTotalResults' ] = num_total_results
+        rst[ 'response' ] = build_response( entity, qparams, num_total_results, data, build_response_func )
+
+    return rst
+
+
+#Variants with v1 response
+def build_variant_v1_response(entity, qparams, num_total_results, data, build_response_func, genomic_params):
+
+
+    #For Beacon v1 we have to return it in this format
+    rst = {
+        "beaconId": config.beacon_id,
+        "apiVersion": "1.0.0",
+        "exists": num_total_results > 0,
+        "error": None,
+        "alleleRequest": dict(genomic_params),
+        "datasetAlleleResponses": [
+            {
+                "exists": num_total_results > 0,
+                "variantCount": num_total_results,
+                "callCount": num_total_results,
+                "sampleCount": num_total_results,
+                "note": "",
+                "externalUrl": config.gpap_base_url + "/genomics/",
+                "info": {"accessType":"ANONYMOUS"},
+                "error": None
+            }
+        ]
+    }
+
+
+    return rst
 
 
 # # def build_variant_response(data, qparams):

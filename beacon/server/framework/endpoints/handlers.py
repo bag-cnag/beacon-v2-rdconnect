@@ -5,7 +5,7 @@ import jwt
 from server.config import config
 from server.framework.utils import json_response
 from server.framework.exceptions import  BeaconServerError, BeaconForbidden, BeaconEndPointNotImplemented
-from server.framework.response import build_beacon_response
+from server.framework.response import build_beacon_response, build_variant_response, build_variant_v1_response
 from server.gpap import get_kc_token
 from server.logger import LOG
 
@@ -136,9 +136,71 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
         qparams = await process_request( request, entity )
 
         num_total_results, response = fetch_func( qparams, access_token, groups, projects )
-        
+
         # Create reponse
         response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func )
+        
+        LOG.info( 'Formatting the response for %s', entity )
+        return await json_response( request, response_converted )
+    return wrapper
+
+
+
+# Beacon v1
+def handler_variants( entity, fetch_func, build_response_func ):
+    async def wrapper( request ):
+        LOG.info( 'Running a request for {}'.format( entity ) )
+
+        #access_token = request.headers.get( 'auth-key' )
+        access_token = "beaconv1"
+        
+
+        print ("Requesttt Variantss")
+        
+        if not access_token and config.gpap_token_required[ 0 ]:
+            LOG.debug( 'No access token but validation required.' )
+            raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )
+        elif not config.gpap_token_required[ 0 ]:
+            LOG.debug( 'No access token and validation not required.' )
+            access_token = get_kc_token()[ 'access_token' ]
+        else:
+            LOG.debug( 'Access token received.' )
+            #access_token = access_token[ 7: ]
+
+        try:
+            #decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
+            #groups   = _extract_items( decoded, 'group' )
+            #projects = _extract_items( decoded, 'group_projects' )
+            
+            LOG.debug( 'Token was decoded' )
+            groups = "beacon"
+            projects = "beacon"
+            
+        except Exception as e:
+            print( 'Exception', e )
+            LOG.debug( 'Invalid validation of token. {}'.format( str( e ) ) )
+            raise BeaconServerError( error = 'Invalid validation of token. {}.'.format( str( e ) ) )
+
+        if len( projects ) == 0:
+            projects.append( 'no_project' )
+
+        qparams = await process_request( request, entity )
+
+
+        num_total_results, response = fetch_func( qparams, access_token, groups, projects, request )
+
+        # Create reponse
+        #response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func )
+        
+        #Query parameters
+        genomic_params = request.rel_url.query
+        
+        #Return directly the variant response
+        if "v1" in str(request.url):
+            response_converted = build_variant_v1_response( entity, qparams, num_total_results, response, build_response_func, genomic_params )
+        else:
+            response_converted = build_variant_response( entity, qparams, num_total_results, response, build_response_func )
+
         
         LOG.info( 'Formatting the response for %s', entity )
         return await json_response( request, response_converted )
