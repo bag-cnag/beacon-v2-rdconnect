@@ -86,6 +86,15 @@ pipeline {
 	    	}
     	}
 
+		stage('install requirements') {
+            steps {    
+                withPythonEnv('python3'){
+					sh 'pip install pip == 23.2.1'
+					sh 'pip install -r requirements.txt'
+                }
+            }
+        }
+
 		stage('run test') {
 			steps {
 				withPythonEnv('python3'){
