@@ -164,9 +164,12 @@ def ps_to_gpap( qparams, psid = None ):
     
     #Filters schema keys depending on api version (0.1 & 0.2)
     ontology_filter_schema = requested_api_version(qparams)
-
-    if psid:
-        fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
+    
+    #Most probably no case of asking with specific id
+    #if psid:
+    #    fltrs.append( { 'id': 'phenotips_id', 'value': psid } )
+    
+    #Filters
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
             #Set filters
@@ -186,9 +189,10 @@ def ps_to_gpap( qparams, psid = None ):
         if len(fltrs) == 0:
             fltrs.append ({ 'id': '_no_filter', 'value': '_no_filter' } )
     
+    #No filters
     else:
-        fltrs.append ({ 'id': '_no_filter', 'value': '_no_filter' } )
-    
+        fltrs = []
+
     print (fltrs)
     return fltrs
 
