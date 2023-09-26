@@ -26,23 +26,23 @@ def map():
                 'endpointSets': {
                     'dataset': {
                         'entryType': 'dataset',
-                        'rootUrl': '{}/datasets'.format( config.server_api_url ),
-                        'singleEntryUrl': '{}/datasets/"id"'.format( config.server_api_url ),
-                        'endpints': {}
+                        'rootUrl': '{}api/datasets'.format( config.server_api_url ),
+                        'singleEntryUrl': '{}api/datasets/"id"'.format( config.server_api_url ),
+                        'endpoints': {}
                     },
                     'biosample': {
                         'entryType': 'biosample',
-                        'rootUrl': '{}/biosamples'.format( config.server_api_url ),
-                        'singleEntryUrl': '{}/biosamples/"id"'.format( config.server_api_url ),
-                        'endpints': {
+                        'rootUrl': '{}api/biosamples'.format( config.server_api_url ),
+                        'singleEntryUrl': '{}api/biosamples/"id"'.format( config.server_api_url ),
+                        'endpoints': {
                             #'biosamples': { 'returnEntryType': 'biosample', 'url': '{}/api/individuals/"target_id_req"/biosamples'.format( config.server_api_url ) }
                         }
                     },
                     'individual': {
                         'entryType': 'individual',
-                        'rootUrl': '{}/individuals'.format( config.server_api_url ),
-                        'singleEntryUrl': '{}/individuals/"id"'.format( config.server_api_url ),
-                        'endpints': {}
+                        'rootUrl': '{}api/individuals'.format( config.server_api_url ),
+                        'singleEntryUrl': '{}api/individuals/"id"'.format( config.server_api_url ),
+                        'endpoints': {}
                     }
                 }
             }
