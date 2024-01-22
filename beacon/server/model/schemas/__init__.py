@@ -19,5 +19,9 @@ supported_schemas_by_entity = {
     'datasets'    : 'beacon-dataset-v2.0.0-draft.4',
     'variants'    : 'beacon-variant-v2.0.0-draft.4',
     'biosamples'  : 'beacon-biosample-v2.0.0-draft.4',
-    'individuals' : 'beacon-individual-v2.0.0-draft.4'
+    'individuals' : 'beacon-individual-v2.0.0-draft.4',
+    'cohorts'     : 'beacon-cohort-v2.0.0-draft.4',
+    'analyses'    : 'beacon-analyses-v2.0.0-draft.4',
+    'runs'        : 'beacon-run-v2.0.0-draft.4'
+
 }

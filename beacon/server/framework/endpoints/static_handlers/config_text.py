@@ -22,7 +22,7 @@ def config_txt():
             'response': {
                 '$schema': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconConfigurationResponse.json',
                 'maturityAttributes': {
-                    'productionStatus': '{}'.format( config.environment )
+                    'productionStatus': '{}'.format( config.production_status )
                 },
                 'securityAttributes': {
                     'description': 'Default granularity. Some responses could return higher detail, but this would be the granularity by default.- `boolean`: returns "true/false" responses.\n\n - `count`: adds the total number of positive results found.\n\n - `aggregated`: returns summary, aggregated or distribution like responses.\n\n. - `record`: returns details for every row. The cases where a Beacon prefers to return records with less, not all attributes, different strategies have been considered, e.g.: keep non-mandatory attributes empty, or Beacon to provide a minimal record definition, but these strategies still need to be tested in real world cases and hence no design decision has been taken yet.\n\n',

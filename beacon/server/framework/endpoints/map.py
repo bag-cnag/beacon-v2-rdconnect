@@ -47,7 +47,7 @@ cohorts_by_cohort         = handler.not_implemented_handler('cohorts')
 query_test                = handler.test( 'test' )
 
 # Datasets
-query_datasets_by_dataset = handler.generic( 'datasets' , fetch_datsets_by_dataset, lambda x, y: x )
+#query_datasets_by_dataset = handler.handler_fixed_token( 'datasets' , fetch_datsets_by_dataset, lambda x, y: x )
 
 # Individuals
 query_individuals_by_individuals = handler.handler_fixed_token( 'individuals', fetch_individuals_by_individual, individuals )
@@ -55,14 +55,17 @@ query_individuals_by_individuals = handler.handler_fixed_token( 'individuals', f
 # Biosamples
 query_biosamples_by_biosample = handler.handler_fixed_token( 'biosamples', fetch_biosamples_by_biosample, experiments )
 
-# Cohorts
-#query_cohorts_by_cohort   = handler.not_implemented('cohorts')
-
 
 '''Beacon v1'''
 # Variants
 query_variants_by_variant = handler.handler_variants( 'variants', fetch_variants_by_variant, variants )
 
+
+# Additional endpoints for the Beacon verifier to pass (not actually implemented)
+query_runs_by_run = handler.handler_fixed_token( 'runs' , fetch_rest_by_type, lambda x, y: x )
+query_analyses_by_analyses = handler.handler_fixed_token( 'analyses' , fetch_rest_by_type, lambda x, y: x )
+query_cohorts_by_cohort = handler.handler_fixed_token( 'cohorts' , fetch_rest_by_type, lambda x, y: x )
+query_datasets_by_dataset = handler.handler_fixed_token( 'datasets' , fetch_rest_by_type, lambda x, y: x )
 
 
 
