@@ -36,7 +36,7 @@ def beacon_info():
                 'welcomeUrl': config.org_welcome_url,
                 'contactUrl': config.org_contact_url,
                 'logoUrl': config.org_logo_url,
-                'info': config.org_info,
+                #'info': config.org_info,
             },
             'description': config.description,
             'version': config.version,
@@ -48,6 +48,6 @@ def beacon_info():
             'serviceUrl': config.service_url,
             'entryPoint': config.entry_point,
             'open': config.is_open,
-            'info': None,
+            #'info': None,
         }
     }

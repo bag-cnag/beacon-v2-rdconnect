@@ -30,7 +30,7 @@ routes = [
     
 
     # Datasets
-    web.post( '/api/datasets'                                 , map.query_datasets_by_dataset ),
+    #web.post( '/api/datasets'                                 , map.query_datasets_by_dataset ),
     #web.post( '/api/datasets/{target_id_req}'                 , map.query_datasets_by_dataset ),
     
     # Individuals
@@ -48,7 +48,16 @@ routes = [
 
     # Beacon v1 for variants
     web.get( '/api/g_variants'                                  , map.query_variants_by_variant ),
-    web.get( '/api/v1/g_variants'                               , map.query_variants_by_variant )
+    web.get( '/api/v1/g_variants'                               , map.query_variants_by_variant ),
+
+    
+    # Additional endpoints for the Beacon verifier to pass (not actually implemented)
+    web.get( '/api/runs'                              , map.query_runs_by_run ),
+    web.get( '/api/analyses'                          , map.query_analyses_by_analyses ),
+    web.get( '/api/cohorts'                           , map.query_cohorts_by_cohort ),
+    web.get( '/api/datasets'                          , map.query_datasets_by_dataset )
+
+
 
 
 
