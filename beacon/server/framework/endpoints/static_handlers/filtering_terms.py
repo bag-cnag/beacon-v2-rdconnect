@@ -5,7 +5,7 @@ from server.config import config
 from server.logger import LOG
 from server.framework.utils import json_response
 
-vivify_filters = [{
+ejp_spec_filters = [{
         "id": "NCIT_C28421",
         "label": "Sex. Permitted values: NCIT_C16576, NCIT_C20197, NCIT_C124294, NCIT_C17998",
         "type": "alphanumeric"
@@ -61,7 +61,7 @@ def filtering_terms():
             },
             'response': {
                 #'filteringTerms': config.filters_out,
-                'filteringTerms': vivify_filters
+                'filteringTerms': ejp_spec_filters
             }
         }
         return await json_response( request, rsp )
