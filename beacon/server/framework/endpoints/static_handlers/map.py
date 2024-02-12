@@ -24,25 +24,25 @@ def map():
                 'title': 'Beacon Map',
                 'description': 'Map of a Beacon, its entry types and endpoints. It is conceptually similar to a website sitemap.',
                 'endpointSets': {
-                    'dataset': {
-                        'entryType': 'dataset',
-                        'rootUrl': '{}api/datasets'.format( config.server_api_url ),
-                        'singleEntryUrl': '{}api/datasets/"id"'.format( config.server_api_url ),
-                        'endpoints': {}
-                    },
-                    'biosample': {
-                        'entryType': 'biosample',
+                    #'dataset': {
+                    #    'entryType': 'dataset',
+                    #    'rootUrl': '{}api/datasets'.format( config.server_api_url ),
+                    #    'singleEntryUrl': '{}api/datasets/"id"'.format( config.server_api_url ),
+                    #    'endpoints': {}
+                    #},
+                    'biosamples': {
+                        'entryType': 'biosamples',
                         'rootUrl': '{}api/biosamples'.format( config.server_api_url ),
-                        'singleEntryUrl': '{}api/biosamples/"id"'.format( config.server_api_url ),
-                        'endpoints': {
-                            #'biosamples': { 'returnEntryType': 'biosample', 'url': '{}/api/individuals/"target_id_req"/biosamples'.format( config.server_api_url ) }
-                        }
+                        #'singleEntryUrl': '{}api/biosamples/"id"'.format( config.server_api_url ),
+                        #'endpoints': {
+                        #    #'biosamples': { 'returnEntryType': 'biosample', 'url': '{}/api/individuals/"target_id_req"/biosamples'.format( config.server_api_url ) }
+                        #}
                     },
-                    'individual': {
-                        'entryType': 'individual',
+                    'individuals': {
+                        'entryType': 'individuals',
                         'rootUrl': '{}api/individuals'.format( config.server_api_url ),
-                        'singleEntryUrl': '{}api/individuals/"id"'.format( config.server_api_url ),
-                        'endpoints': {}
+                        #'singleEntryUrl': '{}api/individuals/"id"'.format( config.server_api_url ),
+                        #'endpoints': {}
                     }
                 }
             }
