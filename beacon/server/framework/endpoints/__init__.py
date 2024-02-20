@@ -35,11 +35,16 @@ routes = [
     
     # Individuals
     web.post( '/api/individuals'                              , map.query_individuals_by_individuals ),
-    web.post( '/api/individuals/{target_id_req}'              , map.query_individuals_by_individuals ),
+    web.get( '/api/individuals'                              , map.query_individuals_by_individuals ),
+    #web.post( '/api/individuals/{target_id_req}'              , map.query_individuals_by_individuals ),
+
+    #web.post('/api/individuals', handle_individuals_post),
+    #web.get('/api/individuals', handle_individuals_get)
     
     # Biosamples
     web.post( '/api/biosamples'                               , map.query_biosamples_by_biosample ),
-    web.post( '/api/biosamples/{target_id_req}'               , map.query_biosamples_by_biosample ),
+    web.get( '/api/biosamples'                               , map.query_biosamples_by_biosample ),
+    #web.post( '/api/biosamples/{target_id_req}'               , map.query_biosamples_by_biosample ),
 
     # Cohorts
     #web.post( '/api/cohorts'                                  , map.query_cohorts_by_cohort ),
