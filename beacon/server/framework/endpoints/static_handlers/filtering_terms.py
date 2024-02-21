@@ -14,14 +14,14 @@ ejp_spec_filters = [
         "scope": "individuals"
       },
       {
-        "id": "A single value or an array of orphanet terms.",
+        "id": "A single Orphanet id or an array of Orphanet ids.",
         "label": "Disease or disorder",
         "type": "ontology",
         "scope": "individuals"
 
       },
       {
-        "id": "A single value or an array of HPO terms.",
+        "id": "A single HPO id or an array of HPO ids.",
         "label": "Phenotype",
         "type": "ontology",
         "scope": "individuals"
@@ -29,43 +29,43 @@ ejp_spec_filters = [
       },
       {
         "id": "data_2295",
-        "label": "Causative genes. Permitted values: a HGNC gene symbol",
+        "label": "Causative genes. Permitted values: a single value or an array of HGNC gene symbols",
         "type": "alphanumeric",
         "scope": "individuals"
       },
 
       #Currently not supported
-      {
-        "id": "NCIT_C83164",
-        "label": "Age this year",
-        "type": "numeric",
-        "scope": "individuals"
-      },
-      {
-        "id": "NCIT_C124353",
-        "label": "Symptom Onset",
-        "type": "numeric",
-        "scope": "individuals"
-      },
-      {
-        "id": "NCIT_C156420",
-        "label": "Age at diagnosis",
-        "type": "numeric",
-        "scope": "individuals"
-      },
-      {
-        "id": "Available Materials",
-        "label": "Available materials",
-        "type": "alphanumeric",
-        "scope": "individuals"
-      },
+      #{
+      #  "id": "NCIT_C83164",
+      #  "label": "Age this year",
+      #  "type": "numeric",
+      #  "scope": "individuals"
+      #},
+      #{
+      #  "id": "NCIT_C124353",
+      #  "label": "Symptom Onset",
+      #  "type": "numeric",
+      #  "scope": "individuals"
+      #},
+      #{
+      #  "id": "NCIT_C156420",
+      #  "label": "Age at diagnosis",
+      #  "type": "numeric",
+      #  "scope": "individuals"
+      #},
+      #{
+      #  "id": "Available Materials",
+      #  "label": "Available materials",
+      #  "type": "alphanumeric",
+      #  "scope": "individuals"
+      #},
 
       #Biosamples filters
       {  
 
         #Id "DNA sequencing class"
         "id": "NCIT_C153598",
-        "label": "Libary strategy. Permitted values: NCIT_C101294, NCIT_C101295",
+        "label": "Library strategy. Permitted values: NCIT_C101294, NCIT_C101295",
         "type": "alphanumeric",
         "scope": "biosamples"
       },
@@ -108,6 +108,13 @@ ejp_spec_filters = [
 # def filtering_terms(request):    
 def filtering_terms():
     async def wrapper( request ):
+
+        scope_endpoint = str(request.url).split("/")[-2]
+
+        if scope_endpoint == "g_variants": scope_endpoint = "genomicVariations"
+        f_ejp_spec_filters = [d for d in ejp_spec_filters if d.get("scope") == scope_endpoint]
+        if not f_ejp_spec_filters: f_ejp_spec_filters = ejp_spec_filters
+
         rsp = {
             'meta': {
                 'beaconId':	config.beacon_id,
@@ -120,7 +127,7 @@ def filtering_terms():
             },
             'response': {
                 #'filteringTerms': config.filters_out,
-                'filteringTerms': ejp_spec_filters
+                'filteringTerms': f_ejp_spec_filters
             }
         }
         return await json_response( request, rsp )

@@ -30,19 +30,26 @@ def map():
                     #    'singleEntryUrl': '{}api/datasets/"id"'.format( config.server_api_url ),
                     #    'endpoints': {}
                     #},
-                    'biosamples': {
-                        'entryType': 'biosamples',
+                    'biosample': {
+                        'entryType': 'biosample',
                         'rootUrl': '{}api/biosamples'.format( config.server_api_url ),
+                        'filteringTermsUrl': '{}api/biosamples/filtering_terms'.format( config.server_api_url ),
                         #'singleEntryUrl': '{}api/biosamples/"id"'.format( config.server_api_url ),
                         #'endpoints': {
                         #    #'biosamples': { 'returnEntryType': 'biosample', 'url': '{}/api/individuals/"target_id_req"/biosamples'.format( config.server_api_url ) }
                         #}
                     },
-                    'individuals': {
-                        'entryType': 'individuals',
-                        'rootUrl': '{}api/individuals'.format( config.server_api_url ),
+                    'individual': {
+                        'entryType': 'individual',
+                        'rootUrl': '{}api/individuals'.format( config.server_api_url ),                        
+                        'filteringTermsUrl': '{}api/individuals/filtering_terms'.format( config.server_api_url ),
                         #'singleEntryUrl': '{}api/individuals/"id"'.format( config.server_api_url ),
                         #'endpoints': {}
+                    },
+                    'genomicVariant': {
+                        'entryType': 'genomicVariant',
+                        'rootUrl': '{}api/g_variants'.format( config.server_api_url ),
+                        'filteringTermsUrl': '{}api/g_variants/filtering_terms'.format( config.server_api_url ),
                     }
                 }
             }

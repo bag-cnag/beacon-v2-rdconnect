@@ -212,14 +212,16 @@ def dm_to_gpap( qparams ):
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
             #Library strategy
-            if item["id"] == 'NCIT_C101294':
-                fltrs.append( { 'id': 'library_strategy', 'value': [ 'WGS' ] } )
-            if item["id"] == 'NCIT_C101295':
-                fltrs.append( { 'id': 'library_strategy', 'value': [ 'WXS' ] } )
+            if item["id"] == 'NCIT_C153598':
+                if item["value"] == 'NCIT_C101294':
+                    fltrs.append( { 'id': 'library_strategy', 'value': [ 'WGS' ] } )
+                if item["value"] == 'NCIT_C101295':
+                    fltrs.append( { 'id': 'library_strategy', 'value': [ 'WXS' ] } )
             
             #ERN
-            if (item["id"] in config.filters_in[ 'erns' ]):
-                fltrs.append( { 'id': 'erns', 'value': [ item["id"] ] } )
+            if item["id"] == 'ERN':
+                if (item["value"] in config.filters_in[ 'erns' ]):
+                    fltrs.append( { 'id': 'erns', 'value': [ item["value"] ] } )
 
 
     return fltrs

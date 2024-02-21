@@ -27,7 +27,11 @@ routes = [
     web.get(  '/api/configuration'    , map.api_config ),
     web.get(  '/api/entry_types'      , map.api_entry_types ),
     web.get(  '/api/filtering_terms'  , map.api_filtering_term ),
-    
+
+    web.get(  '/api/individuals/filtering_terms'  , map.api_filtering_term ),
+    web.get(  '/api/biosamples/filtering_terms'  , map.api_filtering_term ),
+    web.get(  '/api/g_variants/filtering_terms'  , map.api_filtering_term ),
+
 
     # Datasets
     #web.post( '/api/datasets'                                 , map.query_datasets_by_dataset ),
@@ -38,10 +42,7 @@ routes = [
     web.get( '/api/individuals'                              , map.query_individuals_by_individuals ),
     #web.post( '/api/individuals/{target_id_req}'              , map.query_individuals_by_individuals ),
 
-    #web.post('/api/individuals', handle_individuals_post),
-    #web.get('/api/individuals', handle_individuals_get)
-    
-    # Biosamples
+        # Biosamples
     web.post( '/api/biosamples'                               , map.query_biosamples_by_biosample ),
     web.get( '/api/biosamples'                               , map.query_biosamples_by_biosample ),
     #web.post( '/api/biosamples/{target_id_req}'               , map.query_biosamples_by_biosample ),
