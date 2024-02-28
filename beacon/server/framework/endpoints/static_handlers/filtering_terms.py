@@ -4,6 +4,7 @@
 from server.config import config
 from server.logger import LOG
 from server.framework.utils import json_response
+from server.utils.request_origin import check_request_origin
 
 ejp_spec_filters = [
       #Individuals filters 
@@ -105,15 +106,96 @@ ejp_spec_filters = [
       }
 ]
 
+
+beacon_spec_filters = [
+      #Individuals filters 
+      {
+        "id": "NCIT:C20197",
+        "label": "male",
+        "type": "ontology",
+        "scope": "individuals"
+      },
+      {
+        "id": "NCIT:C16576",
+        "label": "female",
+        "type": "ontology",
+        "scope": "individuals"
+      },
+      {
+        "id": "NCIT:C17998",
+        "label": "unknown",
+        "type": "ontology",
+        "scope": "individuals"
+      },
+      {
+        "id": "A single Orphanet id or an array of Orphanet ids.",
+        "label": "Disease or disorder",
+        "type": "ontology",
+        "scope": "individuals"
+
+      },
+      {
+        "id": "A single HPO id or an array of HPO ids.",
+        "label": "Phenotype",
+        "type": "ontology",
+        "scope": "individuals"
+
+      },
+      #Biosamples filters
+      {  
+
+        #Id "DNA sequencing class"
+        "id": "NCIT:C153598",
+        "label": "Library strategy. Permitted values: NCIT:C101294, NCIT:C101295",
+        "type": "alphanumeric",
+        "scope": "biosamples"
+      },
+      {
+        "id": "ERN",
+        "label": "ERN. Permitted values: any existing ERN",
+        "type": "alphanumeric",
+        "scope": "biosamples"
+      },
+      #G_variants filters
+      {  
+        #Id "DNA sequencing class"
+        "id": "referenceName",
+        "label": "Chromosome",
+        "type": "alphanumeric",
+        "scope": "genomicVariations"
+      },
+      {
+        "id": "start",
+        "label": "Chromosome position",
+        "type": "numeric",
+        "scope": "genomicVariations"
+      },
+      {  
+        "id": "referenceBases",
+        "label": "Reference allele",
+        "type": "alphanumeric",
+        "scope": "genomicVariations"
+      },
+      {  
+        "id": "alternateBases",
+        "label": "Alternate allele",
+        "type": "alphanumeric",
+        "scope": "genomicVariations"
+      }
+]
+
 # def filtering_terms(request):    
 def filtering_terms():
     async def wrapper( request ):
-
+         
+        req_origin = check_request_origin()
+        spec_filters =  ejp_spec_filters if req_origin == 'ejp' else beacon_spec_filters
+  
         scope_endpoint = str(request.url).split("/")[-2]
 
         if scope_endpoint == "g_variants": scope_endpoint = "genomicVariations"
-        f_ejp_spec_filters = [d for d in ejp_spec_filters if d.get("scope") == scope_endpoint]
-        if not f_ejp_spec_filters: f_ejp_spec_filters = ejp_spec_filters
+        f_spec_filters = [d for d in spec_filters if d.get("scope") == scope_endpoint]
+        if not f_spec_filters: f_spec_filters = spec_filters
 
         rsp = {
             'meta': {
@@ -127,7 +209,7 @@ def filtering_terms():
             },
             'response': {
                 #'filteringTerms': config.filters_out,
-                'filteringTerms': f_ejp_spec_filters
+                'filteringTerms': f_spec_filters
             }
         }
         return await json_response( request, rsp )

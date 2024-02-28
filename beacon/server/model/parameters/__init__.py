@@ -108,6 +108,10 @@ def validate_filters(api_version, filters, entity ):
             '''Check if and how to validate sex NCIT values'''
             #if (x['id'].startswith('NCIT') or x['id'].startswith('obo:NCIT'))  and not x['id'] in config.filters_in['sex']:
             #    return False, 'Provided filter "{}"  is not available.'.format( x[ 'id' ]), [ ]
+              
+            #Check sex if it is alphanumeric as in EJP
+            if (x['id'] == "NCIT_C28421" or x['id'] == "NCIT:C28421")  and not x['value'] in config.filters_in['sex']:
+                return False, 'Provided filter "{}"  is not available.'.format( x[ 'value' ]), [ ]
 
             #Check type and if is supported
             if (filter_key in x) and (x[filter_key] not in (config.filters_in["supported_type_terms"])) and ("orpha" not in str(x[filter_key]).lower()) and ("hp" not in str(x[filter_key]).lower()):

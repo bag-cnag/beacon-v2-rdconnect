@@ -6,6 +6,7 @@ from server.config import config
 import re
 import json
 from elasticsearch import Elasticsearch
+from server.utils.request_origin import check_request_origin
 
 
 # List of valid filtering keys per GPAP's endpoint
@@ -114,17 +115,30 @@ def set_sex(item, flt_schema):
     value = flt_schema["value"]
     version = flt_schema["version"]
     ontology_id = config.filters_in['ontologies_' + version]['sex']
+    
+    req_origin = check_request_origin()
 
-    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
-        if not isinstance(item["value"], list):
-            sex = map_sex(item["value"])
-        else:
-            mult_values = []
-            for obj in item["value"]:
-                sex = map_sex(obj)
-                mult_values.append(sex["value"])
-            if len(mult_values) > 0:
-                    sex = {'id': 'sex', 'value': mult_values}
+    #For EJP sex is alphanumeric
+    if (req_origin == 'ejp'):
+        if (item[key] == "NCIT:C28421"):
+            item[key] = "NCIT_C28421"
+
+        if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
+            if not isinstance(item["value"], list):
+                sex = map_sex(item["value"])
+            else:
+                mult_values = []
+                for obj in item["value"]:
+                    sex = map_sex(obj)
+                    mult_values.append(sex["value"])
+                if len(mult_values) > 0:
+                        sex = {'id': 'sex', 'value': mult_values}
+
+    # For generic Beacon it is an ontology
+    else:
+        if (item[key] in config.filters_in['sex']):
+            sex = map_sex(item["id"])
+
     return sex
 
 
@@ -132,13 +146,13 @@ def map_sex(item):
     """ Sex mapper """
     sex = {}
 
-    if item == 'NCIT_C16576' or item == 'obo:NCIT_C16576': # female
+    if item == 'NCIT_C16576' or item == 'obo:NCIT_C16576' or item == 'NCIT:C16576': # female
         sex = {'id': 'sex', 'value': 'F'}
-    elif item == 'NCIT_C20197' or item == 'obo:NCIT_C20197': # male
+    elif item == 'NCIT_C20197' or item == 'obo:NCIT_C20197' or item == 'NCIT:C20197': # male
         sex = {'id': 'sex', 'value': 'M'}
-    elif item == 'NCIT_C124294' or item == 'obo:NCIT_C124294': # unknown
+    elif item == 'NCIT_C124294' or item == 'obo:NCIT_C124294' or item == 'NCIT:C124294': # unknown
         sex = {'id': 'sex', 'value': 'U'}
-    elif item == 'NCIT_C17998' or item == 'obo:NCIT_C17998': # unknown
+    elif item == 'NCIT_C17998' or item == 'obo:NCIT_C17998' or item == 'NCIT:C17998': # unknown
         sex = {'id': 'sex', 'value': 'U'}
     else:
         sex = {'id': 'sex', 'value': 'None'}
