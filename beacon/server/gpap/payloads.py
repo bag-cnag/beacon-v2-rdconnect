@@ -142,6 +142,15 @@ def set_sex(item, flt_schema):
     return sex
 
 
+def set_unsupported_filter(item):
+    if "value" not in item:
+        obj = {"id": item["id"], "value": "no_value"}
+    else:
+        obj = item
+
+    return obj
+
+
 def map_sex(item):
     """ Sex mapper """
     sex = {}
@@ -198,6 +207,10 @@ def ps_to_gpap( qparams, psid = None ):
             if ordo_fltr: fltrs.append(ordo_fltr)
             if omim_fltr: fltrs.append(omim_fltr)
             if gene_fltr: fltrs.append(gene_fltr)
+            
+            #If the filter is none from the above
+            if not sex_fltr and not hpo_fltr and not ordo_fltr and not omim_fltr and not gene_fltr:
+                fltrs.append(set_unsupported_filter(item))
 
         #If nothing from the above applies
         if len(fltrs) == 0:
