@@ -39,7 +39,17 @@ def set_hpo(item, flt_schema):
                     mult_values.append(hpo_string)
 
         if len(mult_values) > 0:
-            hpo = {'id': 'features', 'value': mult_values}
+            req_origin = check_request_origin()
+
+            #For EJP, if we have an array the logic is OR
+            if (req_origin == 'ejp'):
+                hpo = {'id': 'features', 'value': mult_values}
+            
+            #Otherwise, the logic is AND as in Beaconv2 spec
+            else:
+                hpo = []
+                for i in mult_values:
+                    hpo.append({'id': 'features', 'value': i})
 
     return hpo
 
@@ -70,7 +80,17 @@ def set_ordo(item, flt_schema):
                     mult_values.append(ordo_string)
         
         if len(mult_values) > 0:
-            ordo = {'id': 'diagnosis', 'value': mult_values}
+            req_origin = check_request_origin()
+
+            #For EJP, if we have an array the logic is OR
+            if (req_origin == 'ejp'):
+                ordo = {'id': 'diagnosis', 'value': mult_values}
+            
+            #Otherwise, the logic is AND as in Beaconv2 spec
+            else:
+                ordo = []
+                for i in mult_values:
+                    ordo.append({'id': 'diagnosis', 'value': i})
         
     return ordo
 
@@ -120,9 +140,6 @@ def set_sex(item, flt_schema):
 
     #For EJP sex is alphanumeric
     if (req_origin == 'ejp'):
-        if (item[key] == "NCIT:C28421"):
-            item[key] = "NCIT_C28421"
-
         if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
             if not isinstance(item["value"], list):
                 sex = map_sex(item["value"])
@@ -201,15 +218,30 @@ def ps_to_gpap( qparams, psid = None ):
             ordo_fltr = set_ordo(item, ontology_filter_schema)
             omim_fltr = set_omim(item, ontology_filter_schema)
             gene_fltr = set_gene(item, ontology_filter_schema)
+
+            if hpo_fltr:  
+                if isinstance(hpo_fltr, list) and hpo_fltr[0]["id"] == "features":
+                  for i in hpo_fltr:
+                    fltrs.append(i)
+                else:
+                    fltrs.append(hpo_fltr)
             
+            if ordo_fltr:  
+                if isinstance(ordo_fltr, list) and ordo_fltr[0]["id"] == "diagnosis":
+                  for i in ordo_fltr:
+                    fltrs.append(i)
+                else:
+                    fltrs.append(ordo_fltr)
+                
+            #if hpo_fltr:  fltrs.append(hpo_fltr)
+            #if ordo_fltr: fltrs.append(ordo_fltr)
             if sex_fltr:  fltrs.append(sex_fltr)
-            if hpo_fltr:  fltrs.append(hpo_fltr)
-            if ordo_fltr: fltrs.append(ordo_fltr)
             if omim_fltr: fltrs.append(omim_fltr)
             if gene_fltr: fltrs.append(gene_fltr)
             
-            #If the filter is none from the above
-            if not sex_fltr and not hpo_fltr and not ordo_fltr and not omim_fltr and not gene_fltr:
+            #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
+            req_origin = check_request_origin()
+            if (req_origin != "ejp") and (not sex_fltr and not hpo_fltr and not ordo_fltr and not omim_fltr and not gene_fltr):
                 fltrs.append(set_unsupported_filter(item))
 
         #If nothing from the above applies
