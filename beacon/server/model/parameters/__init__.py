@@ -114,12 +114,16 @@ def validate_filters(api_version, filters, entity ):
                 return False, 'Provided filter "{}"  is not available.'.format( x[ 'value' ]), [ ]
 
             #Check type and if is supported
-            if (filter_key in x) and (x[filter_key] not in (config.filters_in["supported_type_terms"])) and ("orpha" not in str(x[filter_key]).lower()) and ("hp" not in str(x[filter_key]).lower()):
+            if (filter_key in x) and (x[filter_key] not in (config.filters_in["individuals_supported_type_terms"])) and ("orpha" not in str(x[filter_key]).lower()) and ("hp" not in str(x[filter_key]).lower()):
                 unsupported_types.append(x[filter_key])
 
         if entity == 'biosamples':
             if not x[ 'value' ] in config.filters_in[ 'tech' ] and not x[ 'value' ] in config.filters_in[ 'erns' ]:
                 return False, 'Provided filters "{}"  is not available.'.format( x[ 'value' ]), [ ]
+            
+            #Check type and if is supported
+            if (filter_key in x) and (x[filter_key] not in (config.filters_in["biosamples_supported_type_terms"])):
+                unsupported_types.append(x[filter_key])
     
     #Unsupported types
     if len(unsupported_types) > 0:

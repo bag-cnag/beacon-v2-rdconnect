@@ -159,11 +159,41 @@ def set_sex(item, flt_schema):
     return sex
 
 
-def set_unsupported_filter(item):
-    if "value" not in item:
-        obj = {"id": item["id"], "value": "no_value"}
+
+def set_library_strategy(item):
+    """ Set Library strategy (WXS or WGS)"""
+    library_strategy = {}
+    if item["id"] == 'NCIT_C153598' or item["id"] == 'NCIT:C153598':
+        if item["value"] == 'NCIT_C101294' or item["value"] == 'NCIT:C101294':
+            library_strategy = { 'id': 'library_strategy', 'value': [ 'WGS' ] }
+        elif item["value"] == 'NCIT_C101295' or item["value"] == 'NCIT:C101295':
+            library_strategy = { 'id': 'library_strategy', 'value': [ 'WXS' ] }
+        else:
+            library_strategy = { 'id': 'library_strategy', 'value': [ 'no_value' ] }
+    
+    return library_strategy
+
+
+def set_ern(item):
+    """ Set ERN """
+    ern = {}
+    if item["id"] == 'ERN':
+        if (item["value"] in config.filters_in[ 'erns' ]):
+            ern = { 'id': 'erns', 'value': [ item["value"] ] } 
+    
+    return ern
+
+        
+def set_unsupported_filter(item, service):
+    if service == "ps":
+        if "value" not in item:
+            obj = {"id": item["id"], "value": "no_value"}
+        else:
+            obj = item
+    
+    #In case of DM set to arbitrary filter which is accepted from the API
     else:
-        obj = item
+        obj = {"id": "subproject", "value": ["no_value"]}
 
     return obj
 
@@ -242,7 +272,7 @@ def ps_to_gpap( qparams, psid = None ):
             #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
             req_origin = check_request_origin()
             if (req_origin != "ejp") and (not sex_fltr and not hpo_fltr and not ordo_fltr and not omim_fltr and not gene_fltr):
-                fltrs.append(set_unsupported_filter(item))
+                fltrs.append(set_unsupported_filter(item, "ps"))
 
         #If nothing from the above applies
         if len(fltrs) == 0:
@@ -270,19 +300,18 @@ def dm_to_gpap( qparams ):
             raise BeaconBadRequest( 'Invalid provided identifier "{}". It should start by "B-P" or "B-E".'.format( qparams[ 'targetIdReq' ] ) )
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
-            #Library strategy
-            if item["id"] == 'NCIT_C153598':
-                if item["value"] == 'NCIT_C101294':
-                    fltrs.append( { 'id': 'library_strategy', 'value': [ 'WGS' ] } )
-                if item["value"] == 'NCIT_C101295':
-                    fltrs.append( { 'id': 'library_strategy', 'value': [ 'WXS' ] } )
+            #Set filters
+            ern_fltr = set_ern(item)
+            library_strategy_fltr = set_library_strategy(item)
+
+            if ern_fltr:  fltrs.append(ern_fltr)
+            if library_strategy_fltr: fltrs.append(library_strategy_fltr)
+
+            #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
+            req_origin = check_request_origin()
+            if (req_origin != "ejp") and (not ern_fltr and not library_strategy_fltr):
+                fltrs.append(set_unsupported_filter(item, "dm"))
             
-            #ERN
-            if item["id"] == 'ERN':
-                if (item["value"] in config.filters_in[ 'erns' ]):
-                    fltrs.append( { 'id': 'erns', 'value': [ item["value"] ] } )
-
-
     return fltrs
 
 # For individuals, filtering criteria is expected a dictionary
@@ -306,7 +335,9 @@ def datamanagement_playload( qparams, groups ):
     """
 
     payload = {
-        'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+        # In the case of 0 results and with page set to 2, DM API returns a 500. Setting to 1 solves it.
+        #'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+        'page':     1,
         'pageSize': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'fields': [
             'RD_Connect_ID_Experiment',
