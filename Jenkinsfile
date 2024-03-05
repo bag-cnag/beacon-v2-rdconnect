@@ -98,7 +98,7 @@ pipeline {
 		stage('run test') {
 			steps {
 				withPythonEnv('python3'){
-					withCredentials([string(credentialsId: 'gitea_config', variable: 'gitea_token')]) {
+					withCredentials([string(credentialsId: 'gitea_apapakon_token', variable: 'gitea_token')]) {
 					//sh 'docker run --net=host --name postgres_test_flask -e POSTGRES_PASSWORD=mysecretpassword -d postgres'
 					//sh "rm -rf beacon-v2-config"
 					getConfigFromGitea(env.BRANCH_NAME,"gitea_apapakon_token","beacon-v2-config")
