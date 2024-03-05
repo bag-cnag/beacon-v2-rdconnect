@@ -49,7 +49,7 @@ def getConfigFromGitea(branch, credentials,project_folder) {
  
 def BuildAndCopyMibsHere(branch, credentials,project_folder,content) {
 	sh "rm -r -f "+project_folder
-    withCredentials([string(credentialsId: credentials, variable: 'gitea_apapakon_token')]) {
+    withCredentials([string(credentialsId: credentials, variable: 'gitea_token')]) {
     	// some block
 		sh "git clone -c http.sslVerify=false -b " + "develop" + " https://" + gitea_token + ":x-oauth-basic@172.16.10.100/gitea/platform/"+project_folder+" "+project_folder
         sh "cd "+project_folder+" && git fetch --all"
