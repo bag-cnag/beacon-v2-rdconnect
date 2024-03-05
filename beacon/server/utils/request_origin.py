@@ -1,7 +1,6 @@
-def check_request_origin():
-    current_options = ["impact", "ejp"]
+from server.config import config
 
-    #Probably get from proxy endpoint
-    #Need to check the condition
-          
-    return "impact" 
+def check_request_origin():
+    #project_instance = "generic"
+    project_instance = config.project_instance 
+    return project_instance

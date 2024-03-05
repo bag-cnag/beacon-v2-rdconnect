@@ -15,14 +15,14 @@ ejp_spec_filters = [
         "scope": "individuals"
       },
       {
-        "id": "A single Orphanet id or an array of Orphanet ids.",
+        "id": "A single Orphanet id or an array of Orphanet ids (e.g. Orphanet_141091)",
         "label": "Disease or disorder",
         "type": "ontology",
         "scope": "individuals"
 
       },
       {
-        "id": "A single HPO id or an array of HPO ids.",
+        "id": "A single HPO id or an array of HPO ids (e.g. HP_0000957)",
         "label": "Phenotype",
         "type": "ontology",
         "scope": "individuals"
@@ -128,14 +128,14 @@ beacon_spec_filters = [
         "scope": "individuals"
       },
       {
-        "id": "A single Orphanet id or an array of Orphanet ids.",
+        "id": "A single Orphanet id or an array of Orphanet ids (e.g. Orphanet:141091)",
         "label": "Disease or disorder",
         "type": "ontology",
         "scope": "individuals"
 
       },
       {
-        "id": "A single HPO id or an array of HPO ids.",
+        "id": "A single HPO id or an array of HPO ids (e.g. HP:0000957)",
         "label": "Phenotype",
         "type": "ontology",
         "scope": "individuals"
