@@ -78,9 +78,7 @@ def BuildAndCopyMibsHere(branch, credentials,project_folder,content) {
 
 
 pipeline {
-    agent {
-        label 'any'
-    }
+    agent any
     stages {
     	stage("none") {
 	    	steps{
