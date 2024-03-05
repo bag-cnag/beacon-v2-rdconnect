@@ -68,8 +68,8 @@ def BuildAndCopyMibsHere(branch, credentials,project_folder,content) {
 			println(e1);
 		}
 	    
-        sh ''' git config --global user.email "davide.piscia@cnag.eu"
-              git config --global user.name "davide.piscia@cnag.eu" '''
+        sh ''' git config user.email "davide.piscia@cnag.eu"
+              git config user.name "davide.piscia@cnag.eu" '''
         sh "cp "+content+" "+project_folder+"/."
         sh "cd "+project_folder+" && if [ \$(git status --porcelain | wc -l) -gt 0 ]; then git add * && git commit -m 'Latest build' -i * && git push origin " + branch + "; else echo 'No chanegs to commit'; fi"
             
