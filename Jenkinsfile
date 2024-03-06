@@ -131,11 +131,17 @@ pipeline {
     post {
         always {
         	archiveArtifacts artifacts: '*.*', fingerprint: true
+	}
+	    success{
         	withPythonEnv('python3') {
                 sh 'tar -zcvf beacon_v2_server.tgz --exclude=__pycache__ beacon'
                 BuildAndCopyMibsHere(env.BRANCH_NAME, 'gitea_apapakon_token','beacon_v2_artifact','beacon_v2_server.tgz')
+               }
+               slackSend color: "good", message: "Job: ${env.JOB_NAME} with buildnumber ${env.BUILD_NUMBER} was successful"
+	    }
+	    
+	    failure {
+              slackSend color: "danger", message: "Job: ${env.JOB_NAME} with buildnumber ${env.BUILD_NUMBER} was failed"
             }
-            slackSend color: "good", message: "Job: ${env.JOB_NAME} with buildnumber ${env.BUILD_NUMBER} was successful"
         }
-    }
 }
