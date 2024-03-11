@@ -8,6 +8,7 @@ from server.config import config
 #from server.validation.fields import SchemaField
 #from server.model.parameters import paramaters_to_entity
 from server.framework.exceptions import BeaconServerError
+from server.utils.request_origin import check_request_origin
 
 LOG = logging.getLogger(__name__)
 
@@ -86,7 +87,13 @@ def build_received_request_summary( qparams ):
     request = {
         'apiVersion': qparams[ 'meta' ][ 'apiVersion' ],
         'requestedSchemas': qparams[ 'meta' ][ 'requestedSchemas' ],          
-        'filters': [qparams['query']['filters']]
+        #'filters': [qparams['query']['filters']],
+        'requestedGranularity': qparams[ 'query' ][ 'requestedGranularity' ],
+        'pagination': {
+            'skip': qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+            'limit': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        }
+
         
         #Not needed according to meta section from Discovery Nexus
         #'pagination': {
@@ -217,12 +224,17 @@ def build_resultSets_info(num_total_results):
 
 
 def build_response( entity, qparams, num_total_results, data, func, ):
+
+    req_origin = check_request_origin()
+
+    resCount =  'resultCount' if req_origin == 'ejp' else 'resultsCount'
+
     response = { 
         'resultSets': [ {
             'id': 'datasetBeacon',
             'type': entity,
             'exists': True if num_total_results > 0 else False,
-            'resultCount': num_total_results,
+            resCount : num_total_results,
             #'info': build_resultSets_info(num_total_results)
             #'results':[], #'results': func( data, qparams ),
             # { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },

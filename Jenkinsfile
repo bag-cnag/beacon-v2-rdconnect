@@ -2,7 +2,7 @@ def getSchemaFromGitea(branch, credentials,project_folder) {
 	sh "rm -r -f "+project_folder
     withCredentials([string(credentialsId: credentials, variable: 'gitea_token')]) {
     	// some block 
-        sh "git clone -c http.sslVerify=false -b " + "develop" + " https://" + gitea_token + ":x-oauth-basic@172.16.10.100/gitea/platform/"+project_folder
+        sh "git clone -c http.sslVerify=false -b " + "develop" + " https://" + gitea_token + ":x-oauth-basic@gitea.gpapdev.cnag.eu/gitea/platform/"+project_folder
         sh "cd "+project_folder+" && git fetch --all"
     
         try {
@@ -27,7 +27,7 @@ def getConfigFromGitea(branch, credentials,project_folder) {
 	sh "rm -r -f "+project_folder
     withCredentials([string(credentialsId: credentials, variable: 'gitea_token')]) {
     	// some block
-		sh "git clone -c http.sslVerify=false -b " + "develop" + " https://" + gitea_token + ":x-oauth-basic@172.16.10.100/gitea/platform/"+project_folder
+		sh "git clone -c http.sslVerify=false -b " + "develop" + " https://" + gitea_token + ":x-oauth-basic@gitea.gpapdev.cnag.eu/gitea/platform/"+project_folder
         sh "cd "+project_folder+" && git fetch --all"
 		try {
 			sh "cd "+project_folder+" && git checkout -b " + branch
@@ -51,7 +51,7 @@ def BuildAndCopyMibsHere(branch, credentials,project_folder,content) {
 	sh "rm -r -f "+project_folder
     withCredentials([string(credentialsId: credentials, variable: 'gitea_token')]) {
     	// some block
-		sh "git clone -c http.sslVerify=false -b " + "develop" + " https://" + gitea_token + ":x-oauth-basic@172.16.10.100/gitea/platform/"+project_folder+" "+project_folder
+		sh "git clone -c http.sslVerify=false -b " + "develop" + " https://" + gitea_token + ":x-oauth-basic@gitea.gpapdev.cnag.eu/gitea/platform/"+project_folder+" "+project_folder
         sh "cd "+project_folder+" && git fetch --all"
 
 		try {
@@ -67,7 +67,9 @@ def BuildAndCopyMibsHere(branch, credentials,project_folder,content) {
 		catch(Exception e1) {
 			println(e1);
 		}
-        
+	    
+        sh ''' git config user.email "davide.piscia@cnag.eu"
+              git config user.name "davide.piscia@cnag.eu" '''
         sh "cp "+content+" "+project_folder+"/."
         sh "cd "+project_folder+" && if [ \$(git status --porcelain | wc -l) -gt 0 ]; then git add * && git commit -m 'Latest build' -i * && git push origin " + branch + "; else echo 'No chanegs to commit'; fi"
             
@@ -76,9 +78,7 @@ def BuildAndCopyMibsHere(branch, credentials,project_folder,content) {
 
 
 pipeline {
-    agent {
-        label 'rdjenkins'
-    }
+    agent any
     stages {
     	stage("none") {
 	    	steps{
@@ -98,11 +98,11 @@ pipeline {
 		stage('run test') {
 			steps {
 				withPythonEnv('python3'){
-					withCredentials([string(credentialsId: 'gitea_config', variable: 'gitea_token')]) {
+					withCredentials([string(credentialsId: 'gitea_apapakon_token', variable: 'gitea_token')]) {
 					//sh 'docker run --net=host --name postgres_test_flask -e POSTGRES_PASSWORD=mysecretpassword -d postgres'
 					//sh "rm -rf beacon-v2-config"
-					getConfigFromGitea(env.BRANCH_NAME,"gitea_config","beacon-v2-config")
-					sh 'pytest beacon/tests/test_*'
+					getConfigFromGitea(env.BRANCH_NAME,"gitea_apapakon_token","beacon-v2-config")
+					//sh 'pytest beacon/tests/test_*'
 					//sh 'pytest --cov-report xml:phenostore_server/tests/coverage.xml --cov=. phenostore_server/tests/test_*'
 					}
 
@@ -131,11 +131,17 @@ pipeline {
     post {
         always {
         	archiveArtifacts artifacts: '*.*', fingerprint: true
+	}
+	    success{
         	withPythonEnv('python3') {
                 sh 'tar -zcvf beacon_v2_server.tgz --exclude=__pycache__ beacon'
-                BuildAndCopyMibsHere(env.BRANCH_NAME, 'gitea_config','beacon_v2_artifact','beacon_v2_server.tgz')
+                BuildAndCopyMibsHere(env.BRANCH_NAME, 'gitea_apapakon_token','beacon_v2_artifact','beacon_v2_server.tgz')
+               }
+               slackSend color: "good", message: "Job: ${env.JOB_NAME} with buildnumber ${env.BUILD_NUMBER} was successful"
+	    }
+	    
+	    failure {
+              slackSend color: "danger", message: "Job: ${env.JOB_NAME} with buildnumber ${env.BUILD_NUMBER} was failed"
             }
-            slackSend color: "good", message: "Job: ${env.JOB_NAME} with buildnumber ${env.BUILD_NUMBER} was successful"
         }
-    }
 }

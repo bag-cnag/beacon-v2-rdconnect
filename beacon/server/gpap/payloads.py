@@ -6,6 +6,7 @@ from server.config import config
 import re
 import json
 from elasticsearch import Elasticsearch
+from server.utils.request_origin import check_request_origin
 
 
 # List of valid filtering keys per GPAP's endpoint
@@ -38,7 +39,17 @@ def set_hpo(item, flt_schema):
                     mult_values.append(hpo_string)
 
         if len(mult_values) > 0:
-            hpo = {'id': 'features', 'value': mult_values}
+            req_origin = check_request_origin()
+
+            #For EJP, if we have an array the logic is OR
+            if (req_origin == 'ejp'):
+                hpo = {'id': 'features', 'value': mult_values}
+            
+            #Otherwise, the logic is AND as in Beaconv2 spec
+            else:
+                hpo = []
+                for i in mult_values:
+                    hpo.append({'id': 'features', 'value': i})
 
     return hpo
 
@@ -69,7 +80,17 @@ def set_ordo(item, flt_schema):
                     mult_values.append(ordo_string)
         
         if len(mult_values) > 0:
-            ordo = {'id': 'diagnosis', 'value': mult_values}
+            req_origin = check_request_origin()
+
+            #For EJP, if we have an array the logic is OR
+            if (req_origin == 'ejp'):
+                ordo = {'id': 'diagnosis', 'value': mult_values}
+            
+            #Otherwise, the logic is AND as in Beaconv2 spec
+            else:
+                ordo = []
+                for i in mult_values:
+                    ordo.append({'id': 'diagnosis', 'value': i})
         
     return ordo
 
@@ -114,31 +135,80 @@ def set_sex(item, flt_schema):
     value = flt_schema["value"]
     version = flt_schema["version"]
     ontology_id = config.filters_in['ontologies_' + version]['sex']
+    
+    req_origin = check_request_origin()
 
-    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
-        if not isinstance(item["value"], list):
-            sex = map_sex(item["value"])
-        else:
-            mult_values = []
-            for obj in item["value"]:
-                sex = map_sex(obj)
-                mult_values.append(sex["value"])
-            if len(mult_values) > 0:
-                    sex = {'id': 'sex', 'value': mult_values}
+    #For EJP sex is alphanumeric
+    if (req_origin == 'ejp'):
+        if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
+            if not isinstance(item["value"], list):
+                sex = map_sex(item["value"])
+            else:
+                mult_values = []
+                for obj in item["value"]:
+                    sex = map_sex(obj)
+                    mult_values.append(sex["value"])
+                if len(mult_values) > 0:
+                        sex = {'id': 'sex', 'value': mult_values}
+
+    # For generic Beacon it is an ontology
+    else:
+        if (item[key] in config.filters_in['sex']):
+            sex = map_sex(item["id"])
+
     return sex
+
+
+
+def set_library_strategy(item):
+    """ Set Library strategy (WXS or WGS)"""
+    library_strategy = {}
+    if item["id"] == 'NCIT_C153598' or item["id"] == 'NCIT:C153598':
+        if item["value"] == 'NCIT_C101294' or item["value"] == 'NCIT:C101294':
+            library_strategy = { 'id': 'library_strategy', 'value': [ 'WGS' ] }
+        elif item["value"] == 'NCIT_C101295' or item["value"] == 'NCIT:C101295':
+            library_strategy = { 'id': 'library_strategy', 'value': [ 'WXS' ] }
+        else:
+            library_strategy = { 'id': 'library_strategy', 'value': [ 'no_value' ] }
+    
+    return library_strategy
+
+
+def set_ern(item):
+    """ Set ERN """
+    ern = {}
+    if item["id"] == 'ERN':
+        if (item["value"] in config.filters_in[ 'erns' ]):
+            ern = { 'id': 'erns', 'value': [ item["value"] ] } 
+    
+    return ern
+
+        
+def set_unsupported_filter(item, service):
+    if service == "ps":
+        if "value" not in item:
+            obj = {"id": item["id"], "value": "no_value"}
+        else:
+            obj = item
+    
+    #In case of DM set to arbitrary filter which is accepted from the API
+    else:
+        obj = {"id": "subproject", "value": ["no_value"]}
+
+    return obj
 
 
 def map_sex(item):
     """ Sex mapper """
     sex = {}
 
-    if item == 'NCIT_C16576' or item == 'obo:NCIT_C16576': # female
+    if item == 'NCIT_C16576' or item == 'obo:NCIT_C16576' or item == 'NCIT:C16576': # female
         sex = {'id': 'sex', 'value': 'F'}
-    elif item == 'NCIT_C20197' or item == 'obo:NCIT_C20197': # male
+    elif item == 'NCIT_C20197' or item == 'obo:NCIT_C20197' or item == 'NCIT:C20197': # male
         sex = {'id': 'sex', 'value': 'M'}
-    elif item == 'NCIT_C124294' or item == 'obo:NCIT_C124294': # unknown
+    elif item == 'NCIT_C124294' or item == 'obo:NCIT_C124294' or item == 'NCIT:C124294': # unknown
         sex = {'id': 'sex', 'value': 'U'}
-    elif item == 'NCIT_C17998' or item == 'obo:NCIT_C17998': # unknown
+    elif item == 'NCIT_C17998' or item == 'obo:NCIT_C17998' or item == 'NCIT:C17998': # unknown
         sex = {'id': 'sex', 'value': 'U'}
     else:
         sex = {'id': 'sex', 'value': 'None'}
@@ -178,12 +248,31 @@ def ps_to_gpap( qparams, psid = None ):
             ordo_fltr = set_ordo(item, ontology_filter_schema)
             omim_fltr = set_omim(item, ontology_filter_schema)
             gene_fltr = set_gene(item, ontology_filter_schema)
+
+            if hpo_fltr:  
+                if isinstance(hpo_fltr, list) and hpo_fltr[0]["id"] == "features":
+                  for i in hpo_fltr:
+                    fltrs.append(i)
+                else:
+                    fltrs.append(hpo_fltr)
             
+            if ordo_fltr:  
+                if isinstance(ordo_fltr, list) and ordo_fltr[0]["id"] == "diagnosis":
+                  for i in ordo_fltr:
+                    fltrs.append(i)
+                else:
+                    fltrs.append(ordo_fltr)
+                
+            #if hpo_fltr:  fltrs.append(hpo_fltr)
+            #if ordo_fltr: fltrs.append(ordo_fltr)
             if sex_fltr:  fltrs.append(sex_fltr)
-            if hpo_fltr:  fltrs.append(hpo_fltr)
-            if ordo_fltr: fltrs.append(ordo_fltr)
             if omim_fltr: fltrs.append(omim_fltr)
             if gene_fltr: fltrs.append(gene_fltr)
+            
+            #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
+            req_origin = check_request_origin()
+            if (req_origin != "ejp") and (not sex_fltr and not hpo_fltr and not ordo_fltr and not omim_fltr and not gene_fltr):
+                fltrs.append(set_unsupported_filter(item, "ps"))
 
         #If nothing from the above applies
         if len(fltrs) == 0:
@@ -211,17 +300,18 @@ def dm_to_gpap( qparams ):
             raise BeaconBadRequest( 'Invalid provided identifier "{}". It should start by "B-P" or "B-E".'.format( qparams[ 'targetIdReq' ] ) )
     if len( qparams[ 'query' ][ 'filters' ] ) > 0:
         for item in qparams[ 'query' ][ 'filters' ]:
-            #Library strategy
-            if item["id"] == 'NCIT_C101294':
-                fltrs.append( { 'id': 'library_strategy', 'value': [ 'WGS' ] } )
-            if item["id"] == 'NCIT_C101295':
-                fltrs.append( { 'id': 'library_strategy', 'value': [ 'WXS' ] } )
+            #Set filters
+            ern_fltr = set_ern(item)
+            library_strategy_fltr = set_library_strategy(item)
+
+            if ern_fltr:  fltrs.append(ern_fltr)
+            if library_strategy_fltr: fltrs.append(library_strategy_fltr)
+
+            #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
+            req_origin = check_request_origin()
+            if (req_origin != "ejp") and (not ern_fltr and not library_strategy_fltr):
+                fltrs.append(set_unsupported_filter(item, "dm"))
             
-            #ERN
-            if (item["id"] in config.filters_in[ 'erns' ]):
-                fltrs.append( { 'id': 'erns', 'value': [ item["id"] ] } )
-
-
     return fltrs
 
 # For individuals, filtering criteria is expected a dictionary
@@ -245,7 +335,9 @@ def datamanagement_playload( qparams, groups ):
     """
 
     payload = {
-        'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+        # In the case of 0 results and with page set to 2, DM API returns a 500. Setting to 1 solves it.
+        #'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+        'page':     1,
         'pageSize': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'fields': [
             'RD_Connect_ID_Experiment',
