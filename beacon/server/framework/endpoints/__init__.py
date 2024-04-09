@@ -54,6 +54,7 @@ routes = [
 
     # Beacon v1 for variants
     web.get( '/api/g_variants'                                  , map.query_variants_by_variant ),
+    web.post( '/api/g_variants'                                  , map.query_variants_by_variant ),
     web.get( '/api/v1/g_variants'                               , map.query_variants_by_variant ),
 
     

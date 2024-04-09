@@ -118,7 +118,7 @@ def validate_filters(api_version, filters, entity ):
                 unsupported_types.append(x[filter_key])
 
         if entity == 'biosamples':
-            if not x[ 'value' ] in config.filters_in[ 'tech' ] and not x[ 'value' ] in config.filters_in[ 'erns' ]:
+            if 'value' in x and not x[ 'value' ] in config.filters_in[ 'tech' ] and not x[ 'value' ] in config.filters_in[ 'erns' ]:
                 return False, 'Provided filters "{}"  is not available.'.format( x[ 'value' ]), [ ]
             
             #Check type and if is supported

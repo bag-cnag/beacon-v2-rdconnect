@@ -65,7 +65,9 @@ def build_meta( qparams ):
     meta = {
         'beaconId': config.beacon_id,
         'apiVersion': config.api_version,
-        'returnedGranularity': qparams[ 'query' ][ 'requestedGranularity' ],
+        #Currently we always return 'count'
+        #'returnedGranularity': qparams[ 'query' ][ 'requestedGranularity' ],
+        'returnedGranularity': 'count',
         'receivedRequestSummary':  build_received_request_summary( qparams ),
         'returnedSchemas': qparams[ 'meta' ][ 'requestedSchemas' ],
     }
@@ -214,11 +216,14 @@ def build_datasets_filters( qparams ):
 def build_resultSets_info(num_total_results):
     c_threshold = config.filters_in['counts_threshold']
     info = {}
+    
+    req_origin = check_request_origin()
+    resCountDesc =  'resultCountDescription' if req_origin == 'ejp' else 'resultsCountDescription'
 
     if (num_total_results > 0) and (num_total_results < c_threshold):
-        info["resultCountDescription"] = {}
-        info["resultCountDescription"]["minRange"] = 1
-        info["resultCountDescription"]["maxRange"] = c_threshold - 1
+        info[resCountDesc] = {}
+        info[resCountDesc]["minRange"] = 1
+        info[resCountDesc]["maxRange"] = c_threshold - 1
 
     return info 
 
@@ -244,15 +249,22 @@ def build_response( entity, qparams, num_total_results, data, func, ):
     
 
     #In case of variants do not return ranges
-    if (entity != "variants"):
-        info = build_resultSets_info(num_total_results)
-        if info: response['resultSets'][0]['info'] = info
+    #if (entity != "variants"):
+    #    info = build_resultSets_info(num_total_results)
+    #    if info: response['resultSets'][0]['info'] = info
+
+
+    info = build_resultSets_info(num_total_results)
+    if info: response['resultSets'][0]['info'] = info
 
     return response
 
 
 #Variants endpoint directly
 def build_variant_response(entity, qparams, num_total_results, data, build_response_func):
+
+    #Ranges also for variants
+    num_total_results = handle_results_ranges(num_total_results)
 
     rst = { 
            'meta': build_meta( qparams ),
