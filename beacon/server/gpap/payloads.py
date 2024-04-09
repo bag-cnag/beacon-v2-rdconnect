@@ -271,7 +271,7 @@ def ps_to_gpap( qparams, psid = None ):
             
             #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
             req_origin = check_request_origin()
-            if (req_origin != "ejp") and (not sex_fltr and not hpo_fltr and not ordo_fltr and not omim_fltr and not gene_fltr):
+            if (req_origin != "ejp") and (not sex_fltr and not hpo_fltr and not ordo_fltr and not omim_fltr and not gene_fltr) and ("id" in item and item["id"] != ""):
                 fltrs.append(set_unsupported_filter(item, "ps"))
 
         #If nothing from the above applies
@@ -309,7 +309,7 @@ def dm_to_gpap( qparams ):
 
             #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
             req_origin = check_request_origin()
-            if (req_origin != "ejp") and (not ern_fltr and not library_strategy_fltr):
+            if (req_origin != "ejp") and (not ern_fltr and not library_strategy_fltr) and ("id" in item and item["id"] != ""):
                 fltrs.append(set_unsupported_filter(item, "dm"))
             
     return fltrs
