@@ -237,9 +237,12 @@ def build_response( entity, qparams, num_total_results, data, func, ):
     response = { 
         'resultSets': [ {
             'id': 'datasetBeacon',
-            'type': entity,
+            'setType': entity,
             'exists': True if num_total_results > 0 else False,
             resCount : num_total_results,
+            'results': [{"info":"Currently only counts are returned"}]
+            #Return actual results 'results': func( data, qparams ),
+
             #'info': build_resultSets_info(num_total_results)
             #'results':[], #'results': func( data, qparams ),
             # { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
