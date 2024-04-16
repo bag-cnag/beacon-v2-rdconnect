@@ -12,27 +12,27 @@ ejp_spec_filters = [
         "id": "NCIT_C28421",
         "label": "Sex. Permitted values: NCIT_C16576, NCIT_C20197, NCIT_C124294, NCIT_C17998",
         "type": "alphanumeric",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
       },
       {
         "id": "A single Orphanet id or an array of Orphanet ids (e.g. Orphanet_141091)",
         "label": "Disease or disorder",
         "type": "ontology",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
 
       },
       {
         "id": "A single HPO id or an array of HPO ids (e.g. HP_0000957)",
         "label": "Phenotype",
         "type": "ontology",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
 
       },
       {
         "id": "data_2295",
         "label": "Causative genes. Permitted values: a single value or an array of HGNC gene symbols",
         "type": "alphanumeric",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
       },
 
       #Currently not supported
@@ -68,13 +68,13 @@ ejp_spec_filters = [
         "id": "NCIT_C153598",
         "label": "Library strategy. Permitted values: NCIT_C101294, NCIT_C101295",
         "type": "alphanumeric",
-        "scope": ["biosamples"]
+        "scopes": ["biosamples"]
       },
       {
         "id": "ERN",
         "label": "ERN. Permitted values: any existing ERN",
         "type": "alphanumeric",
-        "scope": ["biosamples"]
+        "scopes": ["biosamples"]
       },
 
 
@@ -84,25 +84,25 @@ ejp_spec_filters = [
         "id": "referenceName",
         "label": "Chromosome",
         "type": "alphanumeric",
-        "scope": ["genomicVariations"]
+        "scopes": ["genomicVariations"]
       },
       {
         "id": "start",
         "label": "Chromosome position",
         "type": "numeric",
-        "scope": ["genomicVariations"]
+        "scopes": ["genomicVariations"]
       },
       {  
         "id": "referenceBases",
         "label": "Reference allele",
         "type": "alphanumeric",
-        "scope": ["genomicVariations"]
+        "scopes": ["genomicVariations"]
       },
       {  
         "id": "alternateBases",
         "label": "Alternate allele",
         "type": "alphanumeric",
-        "scope": ["genomicVariations"]
+        "scopes": ["genomicVariations"]
       }
 ]
 
@@ -113,32 +113,32 @@ beacon_spec_filters = [
         "id": "NCIT:C20197",
         "label": "male",
         "type": "ontology",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
       },
       {
         "id": "NCIT:C16576",
         "label": "female",
         "type": "ontology",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
       },
       {
         "id": "NCIT:C17998",
         "label": "unknown",
         "type": "ontology",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
       },
       {
         "id": "A single Orphanet id or an array of Orphanet ids (e.g. Orphanet:141091)",
         "label": "Disease or disorder",
         "type": "ontology",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
 
       },
       {
         "id": "A single HPO id or an array of HPO ids (e.g. HP:0000957)",
         "label": "Phenotype",
         "type": "ontology",
-        "scope": ["individuals"]
+        "scopes": ["individuals"]
 
       },
       #Biosamples filters
@@ -148,13 +148,13 @@ beacon_spec_filters = [
         "id": "NCIT:C153598",
         "label": "Library strategy. Permitted values: NCIT:C101294, NCIT:C101295",
         "type": "alphanumeric",
-        "scope": ["biosamples"]
+        "scopes": ["biosamples"]
       },
       {
         "id": "ERN",
         "label": "ERN. Permitted values: any existing ERN",
         "type": "alphanumeric",
-        "scope": ["biosamples"]
+        "scopes": ["biosamples"]
       },
       #G_variants filters
       {  
@@ -162,25 +162,25 @@ beacon_spec_filters = [
         "id": "referenceName",
         "label": "Chromosome",
         "type": "alphanumeric",
-        "scope": ["genomicVariations"]
+        "scopes": ["genomicVariations"]
       },
       {
         "id": "start",
         "label": "Chromosome position",
         "type": "numeric",
-        "scope": ["genomicVariations"]
+        "scopes": ["genomicVariations"]
       },
       {  
         "id": "referenceBases",
         "label": "Reference allele",
         "type": "alphanumeric",
-        "scope": ["genomicVariations"]
+        "scopes": ["genomicVariations"]
       },
       {  
         "id": "alternateBases",
         "label": "Alternate allele",
         "type": "alphanumeric",
-        "scope": ["genomicVariations"]
+        "scopes": ["genomicVariations"]
       }
 ]
 

@@ -240,7 +240,7 @@ def build_response( entity, qparams, num_total_results, data, func, ):
             'setType': entity,
             'exists': True if num_total_results > 0 else False,
             resCount : num_total_results,
-            'results': [{"info":"Currently only counts are returned"}]
+            'results': [{"info":"Currently only counts are returned"}] if num_total_results > 0 else []
             #Return actual results 'results': func( data, qparams ),
 
             #'info': build_resultSets_info(num_total_results)
