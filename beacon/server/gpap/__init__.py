@@ -152,26 +152,29 @@ def fetch_cohorts_by_cohort( qparams, access_token, groups, projects ):
 
 
 '''Beacon v1 purposes'''
-def fetch_variants_by_variant( qparams, access_token, groups, projects, request ):
+async def fetch_variants_by_variant( qparams, access_token, groups, projects, request ):
     #Check token
     token_status = check_token(access_token)
     
-
     #Do not check token for now as Beacon v1 was Public
     #if (token_status[1] == 200):
 
-    #Get parameters from request
-    #chrom = request.rel_url.query['referenceName']
-    #start = int(request.rel_url.query["start"]) + 1
-    #ref =  request.rel_url.query['referenceBases']
-    #alt =  request.rel_url.query['alternateBases']
     
-    #If no params are include set to arbitraty values for the Beacon verifier to pass
-    chrom = request.rel_url.query.get('referenceName', '25')
-    start = int(request.rel_url.query.get("start", 0)) + 1
-    ref = request.rel_url.query.get('referenceBases', 'AB')
-    alt = request.rel_url.query.get('alternateBases', 'AB')
+    #POST case
+    if request.body_exists:
+        req_body = await request.json()
+        st_params = req_body["query"]["requestParameters"]
 
+    #GET case
+    else:
+        st_params = request.rel_url.query
+
+    
+    #If no params are included set to arbitraty values for the Beacon verifier to pass    
+    chrom = st_params.get('referenceName', '25')
+    start = int(st_params.get("start", 0)) + 1
+    ref = st_params.get('referenceBases', 'AB')
+    alt = st_params.get('alternateBases', 'AB')
 
     if chrom=="MT":
         chrom="23"

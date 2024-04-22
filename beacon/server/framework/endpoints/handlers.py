@@ -187,7 +187,7 @@ def handler_variants( entity, fetch_func, build_response_func ):
         qparams = await process_request( request, entity )
 
 
-        num_total_results, response = fetch_func( qparams, access_token, groups, projects, request )
+        num_total_results, response = await fetch_func( qparams, access_token, groups, projects, request )
 
         # Create reponse
         #response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func )
