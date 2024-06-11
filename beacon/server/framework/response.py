@@ -225,6 +225,13 @@ def build_resultSets_info(num_total_results):
         info[resCountDesc]["minRange"] = 1
         info[resCountDesc]["maxRange"] = c_threshold - 1
 
+        #EJP-related
+        if req_origin == "ejp": 
+            info["countType"] = "VCF file" 
+            #info["contactPoint"] = "to_check" 
+            #info["contactEmail"] = "to_check" 
+            #info["contactURL"] = "to_check" 
+
     return info 
 
 
@@ -233,11 +240,12 @@ def build_response( entity, qparams, num_total_results, data, func, ):
     req_origin = check_request_origin()
 
     resCount =  'resultCount' if req_origin == 'ejp' else 'resultsCount'
+    resType = 'type' if req_origin == 'ejp' else 'setType'
 
     response = { 
         'resultSets': [ {
             'id': 'datasetBeacon',
-            'setType': entity,
+            resType : entity,
             'exists': True if num_total_results > 0 else False,
             resCount : num_total_results,
             'results': [{"info":"Currently only counts are returned"}] if num_total_results > 0 else []
