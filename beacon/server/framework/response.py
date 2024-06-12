@@ -218,19 +218,21 @@ def build_resultSets_info(num_total_results):
     info = {}
     
     req_origin = check_request_origin()
+
+    #EJP-related
+    if (req_origin == "ejp") and (num_total_results > 0): 
+        info["countType"] = "VCF file" 
+        #info["contactPoint"] = "to_check" 
+        #info["contactEmail"] = "to_check" 
+        #info["contactURL"] = "to_check" 
+
+    #Ranges
     resCountDesc =  'resultCountDescription' if req_origin == 'ejp' else 'resultsCountDescription'
 
     if (num_total_results > 0) and (num_total_results < c_threshold):
         info[resCountDesc] = {}
         info[resCountDesc]["minRange"] = 1
         info[resCountDesc]["maxRange"] = c_threshold - 1
-
-        #EJP-related
-        if req_origin == "ejp": 
-            info["countType"] = "VCF file" 
-            #info["contactPoint"] = "to_check" 
-            #info["contactEmail"] = "to_check" 
-            #info["contactURL"] = "to_check" 
 
     return info 
 
