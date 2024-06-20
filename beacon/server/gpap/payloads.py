@@ -140,7 +140,9 @@ def set_sex(item, flt_schema):
 
     #For EJP sex is alphanumeric
     if (req_origin == 'ejp'):
-        if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])):
+
+        if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split("obo:")[1])):
+
             if not isinstance(item["value"], list):
                 sex = map_sex(item["value"])
             else:
@@ -202,13 +204,13 @@ def map_sex(item):
     """ Sex mapper """
     sex = {}
 
-    if item == 'NCIT_C16576' or item == 'obo:NCIT_C16576' or item == 'NCIT:C16576': # female
+    if item == 'NCIT_C16576' or item == 'obo:NCIT_C16576' or item == 'NCIT:C16576' or item == 'ncit:C16576': # female
         sex = {'id': 'sex', 'value': 'F'}
-    elif item == 'NCIT_C20197' or item == 'obo:NCIT_C20197' or item == 'NCIT:C20197': # male
+    elif item == 'NCIT_C20197' or item == 'obo:NCIT_C20197' or item == 'NCIT:C20197' or item == 'ncit:C20197': # male
         sex = {'id': 'sex', 'value': 'M'}
-    elif item == 'NCIT_C124294' or item == 'obo:NCIT_C124294' or item == 'NCIT:C124294': # unknown
+    elif item == 'NCIT_C124294' or item == 'obo:NCIT_C124294' or item == 'NCIT:C124294' or item == 'ncit:C124294': # unknown
         sex = {'id': 'sex', 'value': 'U'}
-    elif item == 'NCIT_C17998' or item == 'obo:NCIT_C17998' or item == 'NCIT:C17998': # unknown
+    elif item == 'NCIT_C17998' or item == 'obo:NCIT_C17998' or item == 'NCIT:C17998' or item == 'ncit:C17998' : # unknown
         sex = {'id': 'sex', 'value': 'U'}
     else:
         sex = {'id': 'sex', 'value': 'None'}
