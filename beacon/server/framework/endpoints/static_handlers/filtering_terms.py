@@ -9,27 +9,27 @@ from server.utils.request_origin import check_request_origin
 ejp_spec_filters = [
       #Individuals filters 
       {
-        "id": "NCIT_C28421",
-        "label": "Sex. Permitted values: NCIT_C16576, NCIT_C20197, NCIT_C124294, NCIT_C17998",
+        "id": "ncit_C28421",
+        "label": "Sex. Permitted values: ncit_C16576, ncit_C20197, ncit_C124294, ncit_C17998",
         "type": "alphanumeric",
         "scopes": ["individuals"]
       },
       {
-        "id": "A single Orphanet id or an array of Orphanet ids (e.g. Orphanet_141091)",
+        "id": "A single Orphanet id or an array of Orphanet ids (e.g. ordo:Orphanet_141091)",
         "label": "Disease or disorder",
         "type": "ontology",
         "scopes": ["individuals"]
 
       },
       {
-        "id": "A single HPO id or an array of HPO ids (e.g. HP_0000957)",
+        "id": "A single HPO id or an array of HPO ids (e.g. hp:0000957)",
         "label": "Phenotype",
         "type": "ontology",
         "scopes": ["individuals"]
 
       },
       {
-        "id": "data_2295",
+        "id": "edam:data_2295",
         "label": "Causative genes. Permitted values: a single value or an array of HGNC gene symbols",
         "type": "alphanumeric",
         "scopes": ["individuals"]

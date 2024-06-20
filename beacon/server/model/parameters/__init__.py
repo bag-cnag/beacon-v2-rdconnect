@@ -110,7 +110,7 @@ def validate_filters(api_version, filters, entity ):
             #    return False, 'Provided filter "{}"  is not available.'.format( x[ 'id' ]), [ ]
               
             #Check sex if it is alphanumeric as in EJP
-            if (x['id'] == "NCIT_C28421" or x['id'] == "NCIT:C28421")  and not x['value'] in config.filters_in['sex']:
+            if (x['id'] == "NCIT_C28421" or x['id'] == "NCIT:C28421" or x['id'] == "ncit:C28421")  and not x['value'] in config.filters_in['sex']:
                 return False, 'Provided filter "{}"  is not available.'.format( x[ 'value' ]), [ ]
 
             #Check type and if is supported
