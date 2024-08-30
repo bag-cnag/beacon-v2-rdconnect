@@ -176,12 +176,18 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, re
     ref = st_params.get('referenceBases', 'AB')
     alt = st_params.get('alternateBases', 'AB')
 
-    if chrom=="MT":
-        chrom="23"
-    elif chrom=="X":
-        chrom="24"
-    elif chrom=="Y":
-        chrom=25
+     
+    #RefSeq chrom mapping, hg37
+    if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
+        chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
+    
+
+    if chrom == "MT":
+        chrom = 23
+    elif chrom == "X":
+        chrom = 24
+    elif chrom == "Y":
+        chrom = 25
     else:
         pass
 
