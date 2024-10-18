@@ -108,7 +108,7 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
         
         if not access_token and config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token but validation required.' )
-            raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )
+            #raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )
         elif not config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token and validation not required.' )
             access_token = get_kc_token()[ 'access_token' ]
@@ -135,7 +135,7 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
 
         qparams = await process_request( request, entity )
 
-        num_total_results, response = fetch_func( qparams, access_token, groups, projects )
+        num_total_results, response = fetch_func( qparams, access_token, groups, projects, request )
 
         # Create reponse
         response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func )
@@ -159,7 +159,7 @@ def handler_variants( entity, fetch_func, build_response_func ):
         
         if not access_token and config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token but validation required.' )
-            raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )
+            #raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )
         elif not config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token and validation not required.' )
             access_token = get_kc_token()[ 'access_token' ]

@@ -68,14 +68,16 @@ async def db_session_middleware(request, handler):
                 user_name = next(item["contact"] for item in beacon_keys if item["key"] == token)
                 institution = next(item["institution"] for item in beacon_keys if item["key"] == token)
             else:
-                user_name = "request_with_no_token"
-                institution = "request_with_no_token"
+                if token:
+                    user_name = institution = "invalid_token"
+                else:
+                    user_name = institution = "missing_token"
 
             timestamp = datetime.datetime.now()
             splitted = str(request.url).split("/")
             entity_id = splitted[len(splitted)-1]            
             content = await request.json() if request.method in ['POST', 'PUT'] else {} 
-            
+
             await create_history_entry(request, entity_id, timestamp, user_name, institution, content)
 
             return response

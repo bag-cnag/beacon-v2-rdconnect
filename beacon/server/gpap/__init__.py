@@ -11,7 +11,9 @@ from server.config import config
 from server.gpap.payloads import *
 from server.framework.exceptions import BeaconEndPointNotImplemented, BeaconForbidden, BeaconServerError, BeaconUnauthorised
 from server.logger import LOG
-
+#from app import create_history_entry
+from server.db_model import History
+import datetime
 
 def get_kc_token():
     keycloak_openid = KeycloakOpenID(
@@ -23,69 +25,6 @@ def get_kc_token():
     )
     token = keycloak_openid.token( config.gpap_token_required[ 1 ], config.gpap_token_required[ 2 ] )
     return token
-
-
-# Fetchers for GPAP's API
-
-def _fetch_biosamples( qparams, access_token, groups ):
-
-    #Check token
-    token_status = check_token(access_token)
-
-    if (token_status[1] == 200):
-
-        headers = { 'Authorization': 'Token {}'.format( config.datamanagement_token ), 'Accept': 'application/json' }
-
-        payload = datamanagement_playload( qparams, groups )
-        url = config.gpap_base_url + config.dm_experiments
-
-        resp = requests.post( url, headers = headers, data = json.dumps (payload ), verify = False )
-        if resp.status_code != 200:
-            raise BeaconServerError( error = resp.text )
-        resp = resp.json()
-        # print("==" * 20)
-        # print("==" * 20)
-        # print(resp[ 'items' ])
-        # print("==" * 20)
-        # print("==" * 20)
-        return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
-    
-    else:
-        raise BeaconServerError( error = [ 'Authorization failed' ] )
-
-
-#Common fetch for rest of the endpoints
-def fetch_rest_by_type( qparams, access_token, groups, projects ):
-    return 0, [ {
-        'id': 'verifBeacon',
-        'type': 'Fake abstracted level for beacon v2 implementation (in test)'
-    } ]
-
-
-def fetch_datsets_by_dataset( qparams, access_token, groups, projects ):
-    return 1, [ {
-        'id': 'datasetBeacon',
-        'type': 'Fake abstracted level for beacon v2 implementation (in test)'
-    } ]
-
-
-# def fetch_biosamples_by_variant(qparams, access_token, groups, projects):
-#     return 0, (x for x in [])
-
-def fetch_biosamples_by_biosample(qparams, access_token, groups, projects):
-    return _fetch_biosamples( qparams, access_token, groups )
-
-#def fetch_biosamples_by_individual(qparams, access_token, groups, projects):
-#    return _fetch_biosamples(qparams, access_token, groups)
-
-#def fetch_variants_by_variant(qparams, access_token, groups, projects):
-#    return 0, (x for x in [])
-
-#def fetch_individuals_by_variant(qparams, access_token, groups, projects):
-#    return 0, (x for x in [])
-
-#def fetch_individuals_by_biosample(qparams, access_token, groups, projects):
-#    return 0, (x for x in [])
 
 
 def check_token(token):
@@ -113,12 +52,69 @@ def check_token(token):
         return {'message': 'no key required'}, 200
 
 
+def create_history_entry(request, entity_id, user_name, institution, content):
+    history = History(
+        entity_id=entity_id,
+        timestamp = datetime.datetime.now(),
+        username=user_name,
+        groups=institution,
+        endpoint=str(request.url),
+        method=request.method,
+        content=content
+    )
 
-def fetch_individuals_by_individual( qparams, access_token, groups, projects ):
-    payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
-    
+    # Save the history entry to the database
+    with request.db.begin(): 
+        request.db.add(history)
+        request.db.commit()
+
+
+def log_history(request, qparams, request_url, access_token, content):
+    user_name = "request_with_invalid_token"
+    institution = "request_with_invalid_token" 
+    splitted = str(request_url).split("/")
+    entity_id = splitted[len(splitted)-1] 
+    #content = content if request.method in ['POST', 'PUT'] else {} 
+    content = {}
+
+    create_history_entry(request, entity_id, user_name, institution, content)
+
+
+# Fetchers for GPAP's API
+def fetch_rest_by_type( qparams, access_token, groups, projects, request ):
+    return 0, [ {
+        'id': 'verifBeacon',
+        'type': 'Fake abstracted level for beacon v2 implementation (in test)'
+    } ]
+
+
+def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, request):
     #Check token
     token_status = check_token(access_token)
+
+    payload = datamanagement_playload( qparams, groups )
+
+    if (token_status[1] == 200):
+        headers = { 'Authorization': 'Token {}'.format( config.datamanagement_token ), 'Accept': 'application/json' }
+
+        url = config.gpap_base_url + config.dm_experiments
+
+        resp = requests.post( url, headers = headers, data = json.dumps (payload ), verify = False )
+        if resp.status_code != 200:
+            raise BeaconServerError( error = resp.text )
+        resp = resp.json()
+        return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
+    
+    else:
+        log_history(request, qparams, request.url, access_token, payload)
+        raise BeaconServerError( error = [ 'Authorization failed' ] )
+
+
+def fetch_individuals_by_individual( qparams, access_token, groups, projects, request ):    
+    #Check token
+    token_status = check_token(access_token)
+
+    payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
 
     if (token_status[1] == 200):
         headers = { 'Authorization_Beacon': config.pheno_token, 'Content-Type': 'application/json' }
@@ -135,20 +131,8 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects ):
         return resp[ 'total' ], resp[ 'rows' ]
     
     else:
+        log_history(request, qparams, request.url, access_token, payload)
         raise BeaconServerError( error = [ 'Authorization failed' ] )
-
-
-
-def fetch_variants_by_biosample( qparams, access_token, groups, projects ):
-    return (x for x in [])
-
-def fetch_variants_by_individual( qparams, access_token, groups, projects ):
-    return (x for x in [])
-
-def fetch_cohorts_by_cohort( qparams, access_token, groups, projects ):
-    return (x for x in [])
-
-
 
 
 '''Beacon v1 purposes'''
@@ -202,8 +186,35 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, re
     #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
     variants_hits = elastic_res
 
-    #return resp[ 'total' ], resp[ 'rows' ]
-    return variants_hits, variants_hits
+    return resp[ 'total' ], resp[ 'rows' ]
     
     #else:
     #    raise BeaconServerError( error = [ 'Authorization failed' ] )
+
+
+
+
+'''Unused currently'''
+#def fetch_biosamples_by_individual(qparams, access_token, groups, projects):
+#    return _fetch_biosamples(qparams, access_token, groups)
+
+#def fetch_variants_by_variant(qparams, access_token, groups, projects):
+#    return 0, (x for x in [])
+
+#def fetch_individuals_by_variant(qparams, access_token, groups, projects):
+#    return 0, (x for x in [])
+
+#def fetch_individuals_by_biosample(qparams, access_token, groups, projects):
+#    return 0, (x for x in [])
+
+# def fetch_biosamples_by_variant(qparams, access_token, groups, projects):
+#     return 0, (x for x in [])
+
+#def fetch_variants_by_biosample( qparams, access_token, groups, projects, request ):
+#    return (x for x in [])
+
+#def fetch_variants_by_individual( qparams, access_token, groups, projects ):
+#    return (x for x in [])
+
+#def fetch_cohorts_by_cohort( qparams, access_token, groups, projects ):
+#    return (x for x in [])
