@@ -73,19 +73,24 @@ async def db_session_middleware(request, handler):
                 else:
                     user_name = institution = "missing_token"
 
+            if not (config.gpap_token_required[0]):
+                user_name = institution = "no_token_required"
+
             timestamp = datetime.datetime.now()
             splitted = str(request.url).split("/")
             entity_id = splitted[len(splitted)-1]            
             content = await request.json() if request.method in ['POST', 'PUT'] else {} 
+            res_status_code = response.status
 
-            await create_history_entry(request, entity_id, timestamp, user_name, institution, content)
+
+            await create_history_entry(request, entity_id, timestamp, user_name, institution, content, res_status_code)
 
             return response
     finally:
         request.db.close()
         
 
-async def create_history_entry(request, entity_id, timestamp, user_name, institution, content):
+async def create_history_entry(request, entity_id, timestamp, user_name, institution, content, res_status_code):
     history = History(
         entity_id=entity_id,
         timestamp=timestamp,
@@ -93,7 +98,8 @@ async def create_history_entry(request, entity_id, timestamp, user_name, institu
         groups=institution,
         endpoint=str(request.url),
         method=request.method,
-        content=content
+        content=content,
+        response_status_code = res_status_code
     )
 
     # Save the history entry to the database

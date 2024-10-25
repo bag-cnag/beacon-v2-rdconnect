@@ -151,12 +151,9 @@ def handler_variants( entity, fetch_func, build_response_func ):
     async def wrapper( request ):
         LOG.info( 'Running a request for {}'.format( entity ) )
 
-        #access_token = request.headers.get( 'auth-key' )
-        access_token = "beaconv1"
-        
-
-        print ("Requesttt Variantss")
-        
+        access_token = request.headers.get( 'auth-key' )
+        #access_token = "beaconv1"
+                
         if not access_token and config.gpap_token_required[ 0 ]:
             LOG.debug( 'No access token but validation required.' )
             #raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )

@@ -52,7 +52,7 @@ def check_token(token):
         return {'message': 'no key required'}, 200
 
 
-def create_history_entry(request, entity_id, user_name, institution, content):
+def create_history_entry(request, entity_id, user_name, institution, content, res_status_code):
     history = History(
         entity_id=entity_id,
         timestamp = datetime.datetime.now(),
@@ -60,24 +60,27 @@ def create_history_entry(request, entity_id, user_name, institution, content):
         groups=institution,
         endpoint=str(request.url),
         method=request.method,
-        content=content
+        content=content,
+        response_status_code = res_status_code
+
     )
 
-    # Save the history entry to the database
+    # Save the history entry to the database 
     with request.db.begin(): 
         request.db.add(history)
         request.db.commit()
 
 
-def log_history(request, qparams, request_url, access_token, content):
-    user_name = "request_with_invalid_token"
-    institution = "request_with_invalid_token" 
+def log_history(request, qparams, request_url, access_token, res_status_code):
+    if res_status_code == 401:
+        user_name = institution = "invalid_token"
+    else:
+        user_name = institution = "missing_token" 
     splitted = str(request_url).split("/")
     entity_id = splitted[len(splitted)-1] 
-    #content = content if request.method in ['POST', 'PUT'] else {} 
-    content = {}
+    content = dict(qparams) if request.method in ['POST', 'PUT'] else {} 
 
-    create_history_entry(request, entity_id, user_name, institution, content)
+    create_history_entry(request, entity_id, user_name, institution, content, res_status_code)
 
 
 # Fetchers for GPAP's API
@@ -106,8 +109,11 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
         return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
     
     else:
-        log_history(request, qparams, request.url, access_token, payload)
-        raise BeaconServerError( error = [ 'Authorization failed' ] )
+        log_history(request, qparams, request.url, access_token, token_status[1])
+        if token_status[1] == 401:
+            raise BeaconUnauthorised( error = [ 'Invalid auth token' ] )
+        else:
+            raise BeaconServerError( error = [ 'No auth token provided' ] )
 
 
 def fetch_individuals_by_individual( qparams, access_token, groups, projects, request ):    
@@ -131,8 +137,11 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
         return resp[ 'total' ], resp[ 'rows' ]
     
     else:
-        log_history(request, qparams, request.url, access_token, payload)
-        raise BeaconServerError( error = [ 'Authorization failed' ] )
+        log_history(request, qparams, request.url, access_token, token_status[1])
+        if token_status[1] == 401:
+            raise BeaconUnauthorised( error = [ 'Invalid auth token' ] )
+        else:
+            raise BeaconServerError( error = [ 'No auth token provided' ] )
 
 
 '''Beacon v1 purposes'''
@@ -141,55 +150,57 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, re
     token_status = check_token(access_token)
     
     #Do not check token for now as Beacon v1 was Public
-    #if (token_status[1] == 200):
+    if (token_status[1] == 200):
 
-    
-    #POST case
-    if request.body_exists:
-        req_body = await request.json()
-        st_params = req_body["query"]["requestParameters"]
+        #POST case
+        if request.body_exists:
+            req_body = await request.json()
+            st_params = req_body["query"]["requestParameters"]
 
-    #GET case
+        #GET case
+        else:
+            st_params = request.rel_url.query
+
+        
+        #If no params are included set to arbitraty values for the Beacon verifier to pass    
+        chrom = st_params.get('referenceName', '25')
+        start = int(st_params.get("start", 0)) + 1
+        ref = st_params.get('referenceBases', 'AB')
+        alt = st_params.get('alternateBases', 'AB')
+
+        
+        #RefSeq chrom mapping, hg37
+        if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
+            chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
+        
+
+        if chrom == "MT":
+            chrom = 23
+        elif chrom == "X":
+            chrom = 24
+        elif chrom == "Y":
+            chrom = 25
+        else:
+            pass
+
+        variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
+
+        #print ("Fetch variants by variant")
+        #print (variants_dict)
+
+        #Elastic
+        elastic_res = elastic_resp_handling(qparams, variants_dict)
+
+        #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
+        #variants_hits = elastic_res
+
+        #return resp[ 'total' ], resp[ 'rows' ]
     else:
-        st_params = request.rel_url.query
-
-    
-    #If no params are included set to arbitraty values for the Beacon verifier to pass    
-    chrom = st_params.get('referenceName', '25')
-    start = int(st_params.get("start", 0)) + 1
-    ref = st_params.get('referenceBases', 'AB')
-    alt = st_params.get('alternateBases', 'AB')
-
-     
-    #RefSeq chrom mapping, hg37
-    if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
-        chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
-    
-
-    if chrom == "MT":
-        chrom = 23
-    elif chrom == "X":
-        chrom = 24
-    elif chrom == "Y":
-        chrom = 25
-    else:
-        pass
-
-    variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
-
-    #print ("Fetch variants by variant")
-    #print (variants_dict)
-
-    #Elastic
-    elastic_res = elastic_resp_handling(qparams, variants_dict)
-
-    #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
-    variants_hits = elastic_res
-
-    return resp[ 'total' ], resp[ 'rows' ]
-    
-    #else:
-    #    raise BeaconServerError( error = [ 'Authorization failed' ] )
+        log_history(request, qparams, request.url, access_token, token_status[1])
+        if token_status[1] == 401:
+            raise BeaconUnauthorised( error = [ 'Invalid auth token' ] )
+        else:
+            raise BeaconServerError( error = [ 'No auth token provided' ] )
 
 
 

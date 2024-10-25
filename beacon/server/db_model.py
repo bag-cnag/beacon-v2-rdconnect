@@ -16,3 +16,4 @@ class History(Base):
     endpoint = Column(String(1000), nullable=False)
     method = Column(String(120), nullable=False)
     content = Column(JSONB)
+    response_status_code = Column(Integer, nullable=False)
