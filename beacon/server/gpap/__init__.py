@@ -167,12 +167,26 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, re
         start = int(st_params.get("start", 0)) + 1
         ref = st_params.get('referenceBases', 'AB')
         alt = st_params.get('alternateBases', 'AB')
+        assembly = st_params.get('assemblyId', None)
 
-        
+
+        #Handle assembly and chrom issues
+        if assembly is not None and assembly != "GRCh37" and assembly != "hg19":
+            raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
+
+        if assembly is not None and chrom.startswith("NC_"):
+            raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
+
+        if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
+            raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
+  
         #RefSeq chrom mapping, hg37
         if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
             chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
+
         
+        if chrom.startswith("chr"):
+            chrom = chrom.split("chr")[1]
 
         if chrom == "MT":
             chrom = 23
@@ -194,7 +208,7 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, re
         #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
         #variants_hits = elastic_res
 
-        #return resp[ 'total' ], resp[ 'rows' ]
+        return resp[ 'total' ], resp[ 'rows' ]
     else:
         log_history(request, qparams, request.url, access_token, token_status[1])
         if token_status[1] == 401:
