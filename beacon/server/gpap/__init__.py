@@ -121,7 +121,7 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects ):
     token_status = check_token(access_token)
 
     if (token_status[1] == 200):
-        headers = { 'Authorization_Beacon': config.pheno_token, 'Content-Type': 'application/json' }
+        headers = { 'Authorization-Beacon': config.pheno_token, 'Content-Type': 'application/json' }
         if qparams[ 'targetIdReq' ]:
             url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
         else:
