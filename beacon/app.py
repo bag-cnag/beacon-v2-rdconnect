@@ -55,10 +55,9 @@ keys_list = list(map(lambda x: x['key'], beacon_keys))
 @web.middleware
 async def db_session_middleware(request, handler):
     request.db = SessionLocal()
-    try:
-        
-        # Log history after the response is generated
-        if request.method != "OPTIONS":
+    try:       
+        #Log history after the response is generated
+        if (request.method != "OPTIONS"):
 
             response = await handler(request)
 
@@ -81,9 +80,11 @@ async def db_session_middleware(request, handler):
             entity_id = splitted[len(splitted)-1]            
             content = await request.json() if request.method in ['POST', 'PUT'] else {} 
             res_status_code = response.status
-
-
-            await create_history_entry(request, entity_id, timestamp, user_name, institution, content, res_status_code)
+                       
+            info_endpoints = ["api", "info", "map", "service-info", "configuration", "entry_types", "filtering_terms"]
+ 
+            if entity_id not in info_endpoints:
+                await create_history_entry(request, entity_id, timestamp, user_name, institution, content, res_status_code)
 
             return response
     finally:
