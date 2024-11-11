@@ -69,11 +69,10 @@ class BeaconUnauthorised(web.HTTPUnauthorized):
         # we use auth scheme Bearer by default
         if api_error:
             content = json.dumps(make_response(401, error, fields = fields))
-            headers = { "WWW-Authenticate": f'Bearer realm="{conf.welcome_url}"\nerror="{error}"',
-                        'Content-Type': 'application/json' }
+            headers = { 'Content-Type': 'application/json' }
         else:
             content = error
-            headers = {"WWW-Authenticate": f'Bearer realm="{conf.welcome_url}"\nerror="{error}"'}
+            headers = None
         super().__init__(text=content, headers=headers)
 
 
