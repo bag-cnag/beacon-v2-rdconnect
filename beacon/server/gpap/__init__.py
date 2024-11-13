@@ -206,9 +206,10 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, re
         elastic_res = elastic_resp_handling(qparams, variants_dict)
 
         #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
-        #variants_hits = elastic_res
+        variants_hits = elastic_res
 
-        return resp[ 'total' ], resp[ 'rows' ]
+        #return resp[ 'total' ], resp[ 'rows' ]
+        return variants_hits, variants_hits
     else:
         log_history(request, qparams, request.url, access_token, token_status[1])
         if token_status[1] == 401:
