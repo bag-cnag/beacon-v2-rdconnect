@@ -137,8 +137,10 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
 
         num_total_results, response = fetch_func( qparams, access_token, groups, projects, request )
 
+        all_data = fetch_func( qparams, access_token, groups, projects, request )
+        
         # Create reponse
-        response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func )
+        response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func, all_data )
         
         LOG.info( 'Formatting the response for %s', entity )
         return await json_response( request, response_converted )

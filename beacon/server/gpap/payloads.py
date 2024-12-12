@@ -325,7 +325,9 @@ def phenostore_playload( qparams, psid ):
     """
     return {
         'page'    : 1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
-        'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        #In case of returning records need to have a pageSize (to check)
+        'pageSize': 50,
+        #'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'sorted'  : [],
         'filtered': ps_to_gpap( qparams, psid )
     }

@@ -123,18 +123,45 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
     payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
 
     if (token_status[1] == 200):
-        headers = { 'Authorization-Beacon': config.pheno_token, 'Content-Type': 'application/json' }
+
+        ind_responses = []
+
+        for i in config.individuals_endpoints:
+            headers = { 'Authorization-Beacon': i['pheno_token'], 'Content-Type': 'application/json' }
+            resp = requests.post( i['url'] + config.ps_participants, headers = headers, data = json.dumps( payload ), verify = False )
+
+            if resp.status_code != 200:
+                raise BeaconServerError( error = resp.json()[ 'message' ] )
+            
+            resp = json.loads( resp.text )
+
+            #ind_responses.append({i['entity']:[resp[ 'total' ], resp[ 'rows' ]]})
+
+            ind_responses.append({i['entity']:{"total":resp[ 'total' ]}})
+
+        
+        #print (ind_responses)
+        
+        return ind_responses
+
+
+
+        '''headers = { 'Authorization-Beacon': config.pheno_token, 'Content-Type': 'application/json' }
+        
+        
         if qparams[ 'targetIdReq' ]:
             url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
         else:
             url = config.gpap_base_url + config.ps_participants
+
         resp = requests.post( url, headers = headers, data = json.dumps( payload ), verify = False )
 
         if resp.status_code != 200:
             raise BeaconServerError( error = resp.json()[ 'message' ] )
+
         resp = json.loads( resp.text )
 
-        return resp[ 'total' ], resp[ 'rows' ]
+        return resp[ 'total' ], resp[ 'rows' ]'''
     
     else:
         log_history(request, qparams, request.url, access_token, token_status[1])
