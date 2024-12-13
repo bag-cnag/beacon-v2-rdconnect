@@ -12,24 +12,28 @@ from server.utils.request_origin import check_request_origin
 
 LOG = logging.getLogger(__name__)
 
-def handle_results_ranges(num_total_results):
+def handle_results_ranges(all_data):
     c_threshold = config.filters_in['counts_threshold']
-    f_num_total_results = num_total_results
-
-    if (num_total_results > 0) and (num_total_results < c_threshold):
-        f_num_total_results = c_threshold - 1
     
-    return f_num_total_results
+    for data in all_data:
+        for res_id, total_data in data.items():
+            f_num_total_results = total_data['total']
+
+            if (total_data['total'] > 0) and (total_data['total'] < c_threshold):
+                f_num_total_results = c_threshold - 1
+                data[res_id] = {'total':f_num_total_results}
+    
+    return (all_data)
+    #return f_num_total_results
 
 
 def build_beacon_response( entity, qparams, num_total_results, data, build_response_func, all_data):
-
-    print (all_data)
     
     #TO HANDLE
     #num_total_results = handle_results_ranges(num_total_results)
+    all_data_ranges = handle_results_ranges(all_data)
 
-    num_total_results = sum(entry[key]['total'] for entry in all_data for key in entry)
+    num_total_results = sum(entry[key]['total'] for entry in all_data_ranges for key in entry)
 
     rst = { 
            'meta': build_meta( qparams ),
@@ -43,7 +47,7 @@ def build_beacon_response( entity, qparams, num_total_results, data, build_respo
 
     if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
         rst[ 'responseSummary' ][ 'numTotalResults' ] = num_total_results
-        rst[ 'response' ] = build_response( entity, qparams, num_total_results, data, build_response_func, all_data )
+        rst[ 'response' ] = build_response( entity, qparams, num_total_results, data, build_response_func, all_data_ranges )
 
     return rst
 
