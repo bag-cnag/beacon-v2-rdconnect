@@ -135,12 +135,13 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
 
         qparams = await process_request( request, entity )
 
-        num_total_results, response = fetch_func( qparams, access_token, groups, projects, request )
-
+        #num_total_results, response, gamw = fetch_func( qparams, access_token, groups, projects, request )
         all_data = fetch_func( qparams, access_token, groups, projects, request )
+
+        print (all_data)
         
         # Create reponse
-        response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func, all_data )
+        response_converted = build_beacon_response( entity, qparams, build_response_func, all_data )
         
         LOG.info( 'Formatting the response for %s', entity )
         return await json_response( request, response_converted )

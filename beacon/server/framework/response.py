@@ -27,7 +27,7 @@ def handle_results_ranges(all_data):
     #return f_num_total_results
 
 
-def build_beacon_response( entity, qparams, num_total_results, data, build_response_func, all_data):
+def build_beacon_response( entity, qparams, build_response_func, all_data):
     
     #TO HANDLE
     #num_total_results = handle_results_ranges(num_total_results)
@@ -47,7 +47,7 @@ def build_beacon_response( entity, qparams, num_total_results, data, build_respo
 
     if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
         rst[ 'responseSummary' ][ 'numTotalResults' ] = num_total_results
-        rst[ 'response' ] = build_response( entity, qparams, num_total_results, data, build_response_func, all_data_ranges )
+        rst[ 'response' ] = build_response( entity, qparams, build_response_func, all_data_ranges )
 
     return rst
 
@@ -246,7 +246,7 @@ def build_resultSets_info(num_total_results):
     return info 
 
 
-def build_response( entity, qparams, num_total_results, data, func, all_data ):
+def build_response( entity, qparams, func, all_data ):
 
     req_origin = check_request_origin()
 

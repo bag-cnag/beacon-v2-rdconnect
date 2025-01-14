@@ -98,7 +98,28 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
     payload = datamanagement_playload( qparams, groups )
 
     if (token_status[1] == 200):
-        headers = { 'Authorization': 'Token {}'.format( config.datamanagement_token ), 'Accept': 'application/json' }
+
+        dm_responses = []
+
+        for i in config.individuals_endpoints:
+            headers = { 'Authorization': 'Token {}'.format( i['dm_token'] ), 'Accept': 'application/json' }
+            resp = requests.post( i['url'] + config.dm_experiments, headers = headers, data = json.dumps( payload ), verify = False )
+
+            if resp.status_code != 200:
+                raise BeaconServerError( error = resp.text )
+            resp = resp.json()
+
+            #dm_responses.append({i['entity']:[resp[ 'total' ], resp[ 'items' ]]})
+            dm_responses.append({i['entity']:{"total":resp[ '_meta' ][ 'total_items' ]}})
+
+            #return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
+        
+        print (dm_responses)
+        return dm_responses
+
+
+        #Previously with one single endpoint
+        '''headers = { 'Authorization': 'Token {}'.format( config.datamanagement_token ), 'Accept': 'application/json' }
 
         url = config.gpap_base_url + config.dm_experiments
 
@@ -106,7 +127,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
         if resp.status_code != 200:
             raise BeaconServerError( error = resp.text )
         resp = resp.json()
-        return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
+        return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]'''
     
     else:
         log_history(request, qparams, request.url, access_token, token_status[1])
@@ -136,18 +157,14 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
             resp = json.loads( resp.text )
 
             #ind_responses.append({i['entity']:[resp[ 'total' ], resp[ 'rows' ]]})
-
             ind_responses.append({i['entity']:{"total":resp[ 'total' ]}})
 
         
         #print (ind_responses)
-        
         return ind_responses
 
-
-
+        #Previously with one single endpoint
         '''headers = { 'Authorization-Beacon': config.pheno_token, 'Content-Type': 'application/json' }
-        
         
         if qparams[ 'targetIdReq' ]:
             url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
