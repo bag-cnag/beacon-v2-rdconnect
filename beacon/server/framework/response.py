@@ -269,7 +269,8 @@ def build_response( entity, qparams, func, all_data ):
                 'setType': entity,  # Adjust 'setType' as needed
                 'exists': True if total_data['total'] > 0 else False,
                 resCount: total_data['total'],
-                'results': []  # Empty list for 'results' as per your structure
+                #'results': []  # Empty list for 'results' as per your structure
+                'results': total_data['rows'] if 'rows' in total_data else []
             }
 
             info = build_resultSets_info(total_data['total'])

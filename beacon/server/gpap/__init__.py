@@ -85,10 +85,12 @@ def log_history(request, qparams, request_url, access_token, res_status_code):
 
 # Fetchers for GPAP's API
 def fetch_rest_by_type( qparams, access_token, groups, projects, request ):
-    return 0, [ {
+
+    return [{'datasetBeacon': {'total': 0}}]
+    '''return 0, [ {
         'id': 'verifBeacon',
         'type': 'Fake abstracted level for beacon v2 implementation (in test)'
-    } ]
+    } ]'''
 
 
 def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, request):
@@ -101,7 +103,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
 
         dm_responses = []
 
-        for i in config.individuals_endpoints:
+        for i in config.queries_endpoints:
             headers = { 'Authorization': 'Token {}'.format( i['dm_token'] ), 'Accept': 'application/json' }
             resp = requests.post( i['url'] + config.dm_experiments, headers = headers, data = json.dumps( payload ), verify = False )
 
@@ -109,12 +111,12 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
                 raise BeaconServerError( error = resp.text )
             resp = resp.json()
 
-            #dm_responses.append({i['entity']:[resp[ 'total' ], resp[ 'items' ]]})
-            dm_responses.append({i['entity']:{"total":resp[ '_meta' ][ 'total_items' ]}})
-
-            #return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
-        
-        print (dm_responses)
+            if i['granularity'] == 'record':
+                dm_responses.append({i['entity']:{"total":resp['_meta']['total_items'], "rows":resp['items']}})
+            else:
+                dm_responses.append({i['entity']:{"total":resp['_meta']['total_items']}})
+                
+        #print (dm_responses)
         return dm_responses
 
 
@@ -147,7 +149,7 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
 
         ind_responses = []
 
-        for i in config.individuals_endpoints:
+        for i in config.queries_endpoints:
             headers = { 'Authorization-Beacon': i['pheno_token'], 'Content-Type': 'application/json' }
             resp = requests.post( i['url'] + config.ps_participants, headers = headers, data = json.dumps( payload ), verify = False )
 
@@ -156,9 +158,10 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
             
             resp = json.loads( resp.text )
 
-            #ind_responses.append({i['entity']:[resp[ 'total' ], resp[ 'rows' ]]})
-            ind_responses.append({i['entity']:{"total":resp[ 'total' ]}})
-
+            if i['granularity'] == 'record':
+                ind_responses.append({i['entity']:{"total":resp[ 'total' ], "rows":resp['rows']}})
+            else:
+                ind_responses.append({i['entity']:{"total":resp[ 'total' ]}})
         
         #print (ind_responses)
         return ind_responses
