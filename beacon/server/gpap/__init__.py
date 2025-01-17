@@ -97,7 +97,6 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
     #Check token
     token_status = check_token(access_token)
 
-    payload = datamanagement_playload( qparams, groups )
 
     if (token_status[1] == 200):
 
@@ -105,6 +104,14 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
 
         for i in config.queries_endpoints:
             headers = { 'Authorization': 'Token {}'.format( i['dm_token'] ), 'Accept': 'application/json' }
+
+            payload = datamanagement_playload( qparams, groups )
+
+            #Add project filter for querying dataset
+            if 'subset' in i:
+                payload['filtered'].append({'id': "project", 'value': [i['subset']]})
+
+
             resp = requests.post( i['url'] + config.dm_experiments, headers = headers, data = json.dumps( payload ), verify = False )
 
             if resp.status_code != 200:
@@ -143,7 +150,6 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
     #Check token
     token_status = check_token(access_token)
 
-    payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
 
     if (token_status[1] == 200):
 
@@ -151,6 +157,14 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
 
         for i in config.queries_endpoints:
             headers = { 'Authorization-Beacon': i['pheno_token'], 'Content-Type': 'application/json' }
+
+            payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
+
+             #Add project filter for querying dataset
+            if 'subset' in i:
+                payload['filtered'].append({'id': "report_id", 'value': "impact"})
+
+        
             resp = requests.post( i['url'] + config.ps_participants, headers = headers, data = json.dumps( payload ), verify = False )
 
             if resp.status_code != 200:
