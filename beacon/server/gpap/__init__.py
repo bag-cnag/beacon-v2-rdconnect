@@ -146,10 +146,20 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
             raise BeaconServerError( error = [ 'No auth token provided' ] )
 
 
-def fetch_individuals_by_individual( qparams, access_token, groups, projects, request ):    
+def fetch_individuals_by_individual( qparams, access_token, groups, projects, roles, request ):    
     #Check token
-    token_status = check_token(access_token)
+    #token_status = check_token(access_token)
 
+    token_status = ['OK', 200]
+
+    print ("Projects are:")
+    print (projects)
+
+    print ("Groups are")
+    print (groups)
+
+    print ("Roles are")
+    print (roles)
 
     if (token_status[1] == 200):
 
@@ -160,9 +170,20 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
 
             payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
 
-             #Add project filter for querying dataset
-            if 'subset' in i:
-                payload['filtered'].append({'id': "report_id", 'value': "impact"})
+            #Add project filter for querying dataset
+
+            #If we add project field in PS
+            #for p in projects:
+            #    payload['filtered'].append({'id': "project", 'value': p})
+            
+            for g in groups:
+                payload['filtered'].append({'id': "owner", 'value': g})
+
+            #if 'subset' in i:
+            #    payload['filtered'].append({'id': "report_id", 'value': "impact"})
+
+
+            #print (payload)
 
         
             resp = requests.post( i['url'] + config.ps_participants, headers = headers, data = json.dumps( payload ), verify = False )
@@ -171,11 +192,18 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
                 raise BeaconServerError( error = resp.json()[ 'message' ] )
             
             resp = json.loads( resp.text )
-
-            if i['granularity'] == 'record':
+             
+            # Granularity handling
+            if "full_access" in roles:
                 ind_responses.append({i['entity']:{"total":resp[ 'total' ], "rows":resp['rows']}})
             else:
                 ind_responses.append({i['entity']:{"total":resp[ 'total' ]}})
+
+
+            #if i['granularity'] == 'record':
+            #    ind_responses.append({i['entity']:{"total":resp[ 'total' ], "rows":resp['rows']}})
+            #else:
+            #    ind_responses.append({i['entity']:{"total":resp[ 'total' ]}})
         
         #print (ind_responses)
         return ind_responses

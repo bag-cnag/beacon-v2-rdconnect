@@ -117,13 +117,21 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
             #access_token = access_token[ 7: ]
 
         try:
-            #decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
-            #groups   = _extract_items( decoded, 'group' )
-            #projects = _extract_items( decoded, 'group_projects' )
+            decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
+            groups   = _extract_items( decoded, 'group' )
+            projects = _extract_items( decoded, 'group_projects' )
+            roles =  _extract_items( decoded, 'realm_access' )
+            
+            #Possible roles: full_access, count_access, boolean_access
+            roles = ["count_access"]
+
+            print (groups)
+            print (projects)
+            print (roles)
             
             LOG.debug( 'Token was decoded' )
-            groups = "beacon"
-            projects = "beacon"
+            #groups = "beacon"
+            #projects = "beacon"
             
         except Exception as e:
             print( 'Exception', e )
@@ -136,7 +144,7 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
         qparams = await process_request( request, entity )
 
         #num_total_results, response, gamw = fetch_func( qparams, access_token, groups, projects, request )
-        all_data = fetch_func( qparams, access_token, groups, projects, request )
+        all_data = fetch_func( qparams, access_token, groups, projects, roles, request )
 
         print (all_data)
         
