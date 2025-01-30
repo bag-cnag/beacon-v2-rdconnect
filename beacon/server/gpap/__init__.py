@@ -93,9 +93,14 @@ def fetch_rest_by_type( qparams, access_token, groups, projects, request ):
     } ]'''
 
 
-def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, request):
-    #Check token
-    token_status = check_token(access_token)
+def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles, request):
+    
+    #Fixed token OR
+    if config.fixed_token_use: 
+        token_status = check_token(access_token)
+    #Jwt token
+    else:
+        token_status = ['OK', 200]
 
 
     if (token_status[1] == 200):
@@ -107,22 +112,25 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
 
             payload = datamanagement_playload( qparams, groups )
 
-            #Add project filter for querying dataset
-            if 'subset' in i:
-                payload['filtered'].append({'id': "project", 'value': [i['subset']]})
-
-
+            #Add project filter for querying dataset OR no need since the project will be already in token?
+            #Need to get projects from token
+            #projects = ["CMS", "TreatHSP"]
+            #payload['filtered'].append({'id': "project", 'value': projects})
+            #print (payload)
+            
             resp = requests.post( i['url'] + config.dm_experiments, headers = headers, data = json.dumps( payload ), verify = False )
 
             if resp.status_code != 200:
                 raise BeaconServerError( error = resp.text )
             resp = resp.json()
 
-            if i['granularity'] == 'record':
+            # Granularity handling
+            if "full_access" in roles:
                 dm_responses.append({i['entity']:{"total":resp['_meta']['total_items'], "rows":resp['items']}})
             else:
                 dm_responses.append({i['entity']:{"total":resp['_meta']['total_items']}})
-                
+
+         
         #print (dm_responses)
         return dm_responses
 
@@ -147,26 +155,42 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
 
 
 def fetch_individuals_by_individual( qparams, access_token, groups, projects, roles, request ):    
-    #Check token
-    #token_status = check_token(access_token)
 
-    token_status = ['OK', 200]
+    #Fixed token OR
+    if config.fixed_token_use: 
+        token_status = check_token(access_token)
+    #Jwt token
+    else:
+        token_status = ['OK', 200]
 
     print ("Projects are:")
     print (projects)
 
-    print ("Groups are")
+    print ("Groups are:")
     print (groups)
 
-    print ("Roles are")
+    print ("Roles are:")
     print (roles)
+
+    #print (access_token)
 
     if (token_status[1] == 200):
 
         ind_responses = []
 
         for i in config.queries_endpoints:
-            headers = { 'Authorization-Beacon': i['pheno_token'], 'Content-Type': 'application/json' }
+            
+            #Fixed token for participants_fixed
+            if config.fixed_token_use:
+                headers = { 'Authorization-Beacon': i['pheno_token'], 'Content-Type': 'application/json' }
+                ps_endpoint = config.ps_participants
+                total_var = "total"
+
+            #Keycloak token for participants_by_exp
+            else:
+                headers = { 'Authorization': access_token, 'Content-Type': 'application/json' }
+                ps_endpoint = config.ps_participants_by_exp
+                total_var = "total_page"
 
             payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
 
@@ -176,17 +200,12 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             #for p in projects:
             #    payload['filtered'].append({'id': "project", 'value': p})
             
-            for g in groups:
-                payload['filtered'].append({'id': "owner", 'value': g})
+            #for g in groups[0]:
+            #    payload['filtered'].append({'id': "owner", 'value': g})
+         
+            print (payload)            
 
-            #if 'subset' in i:
-            #    payload['filtered'].append({'id': "report_id", 'value': "impact"})
-
-
-            #print (payload)
-
-        
-            resp = requests.post( i['url'] + config.ps_participants, headers = headers, data = json.dumps( payload ), verify = False )
+            resp = requests.post( i['url'] + ps_endpoint, headers = headers, data = json.dumps( payload ), verify = False )
 
             if resp.status_code != 200:
                 raise BeaconServerError( error = resp.json()[ 'message' ] )
@@ -197,13 +216,7 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             if "full_access" in roles:
                 ind_responses.append({i['entity']:{"total":resp[ 'total' ], "rows":resp['rows']}})
             else:
-                ind_responses.append({i['entity']:{"total":resp[ 'total' ]}})
-
-
-            #if i['granularity'] == 'record':
-            #    ind_responses.append({i['entity']:{"total":resp[ 'total' ], "rows":resp['rows']}})
-            #else:
-            #    ind_responses.append({i['entity']:{"total":resp[ 'total' ]}})
+                ind_responses.append({i['entity']:{"total":resp[ total_var]}})
         
         #print (ind_responses)
         return ind_responses

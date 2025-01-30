@@ -46,14 +46,17 @@ cohorts_by_cohort         = handler.not_implemented_handler('cohorts')
 # Test
 query_test                = handler.test( 'test' )
 
-# Datasets
-#query_datasets_by_dataset = handler.handler_fixed_token( 'datasets' , fetch_datsets_by_dataset, lambda x, y: x )
+#Handler to use based on token type
+if config.fixed_token_use:
+    handler_to_use = handler.handler_fixed_token
+else:
+    handler_to_use = handler.handler_jwt_token
 
 # Individuals
-query_individuals_by_individuals = handler.handler_fixed_token( 'individuals', fetch_individuals_by_individual, individuals )
+query_individuals_by_individuals = handler_to_use( 'individuals', fetch_individuals_by_individual, individuals )
 
 # Biosamples
-query_biosamples_by_biosample = handler.handler_fixed_token( 'biosamples', fetch_biosamples_by_biosample, experiments )
+query_biosamples_by_biosample = handler_to_use( 'biosamples', fetch_biosamples_by_biosample, experiments )
 
 
 '''Beacon v1'''

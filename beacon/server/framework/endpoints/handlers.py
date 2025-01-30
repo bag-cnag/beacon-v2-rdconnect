@@ -99,9 +99,42 @@ def not_implemented(entity):
     return wrapper
 
 
-
-# ('datasets' , _datasets_proxy, fetch_datsets_by_dataset, build_dataset_response)
 def handler_fixed_token( entity, fetch_func, build_response_func ):
+    async def wrapper( request ):
+        LOG.info( 'Running a request for {}'.format( entity ) )
+        access_token = request.headers.get( 'auth-key' )
+        
+        if not access_token and config.gpap_token_required[ 0 ]:
+            LOG.debug( 'No access token but validation required.' )
+            #raise BeaconForbidden( error = 'No authentication header or wrong header name was provided' )
+        elif not config.gpap_token_required[ 0 ]:
+            LOG.debug( 'No access token and validation not required.' )
+            access_token = get_kc_token()[ 'access_token' ]
+        else:
+            LOG.debug( 'Access token received.' )
+
+        #Set values as this info is not in the fixed token
+        groups = "beacon"
+        projects = "beacon"
+        roles = "beacon"
+            
+        if len( projects ) == 0:
+            projects.append( 'no_project' )
+
+        qparams = await process_request( request, entity )
+
+        #num_total_results, response = fetch_func( qparams, access_token, groups, projects, request )
+        all_data = fetch_func( qparams, access_token, groups, projects, roles, request )
+
+        # Create reponse
+        response_converted = build_beacon_response( entity, qparams, build_response_func, all_data )
+        
+        LOG.info( 'Formatting the response for %s', entity )
+        return await json_response( request, response_converted )
+    return wrapper
+
+
+def handler_jwt_token( entity, fetch_func, build_response_func ):
     async def wrapper( request ):
         LOG.info( 'Running a request for {}'.format( entity ) )
         access_token = request.headers.get( 'auth-key' )
@@ -130,8 +163,6 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
             print (roles)
             
             LOG.debug( 'Token was decoded' )
-            #groups = "beacon"
-            #projects = "beacon"
             
         except Exception as e:
             print( 'Exception', e )
