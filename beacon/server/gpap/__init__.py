@@ -112,9 +112,12 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
 
             payload = datamanagement_playload( qparams, groups )
 
+            print ("Projects are:")
+            print (projects)
+
             #Add project filter for querying dataset OR no need since the project will be already in token?
             #Need to get projects from token
-            #projects = ["CMS", "TreatHSP"]
+            #projects = ["CMS", "TreatHSP", "SolveRD"]
             #payload['filtered'].append({'id': "project", 'value': projects})
             #print (payload)
             
@@ -172,7 +175,6 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
     print ("Roles are:")
     print (roles)
 
-    #print (access_token)
 
     if (token_status[1] == 200):
 
@@ -194,6 +196,9 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
 
             payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
 
+            #Add extra property to indicate that the query to participants_by_exp is for beacon purposes and filter by project there
+            payload["beacon_query"] = True
+
             #Add project filter for querying dataset
 
             #If we add project field in PS
@@ -211,6 +216,9 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
                 raise BeaconServerError( error = resp.json()[ 'message' ] )
             
             resp = json.loads( resp.text )
+
+            for r in (resp['rows']):
+                print (r['id'])
              
             # Granularity handling
             if "full_access" in roles:
