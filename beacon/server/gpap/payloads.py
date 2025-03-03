@@ -7,7 +7,7 @@ import re
 import json
 from elasticsearch import Elasticsearch
 from server.utils.request_origin import check_request_origin
-
+import requests
 
 # List of valid filtering keys per GPAP's endpoint
 # _valid_individuals = [ 'id', 'family_id', 'index', 'solved', 'sex', 'affectedStatus', 'lifeStatus' ]
@@ -415,6 +415,48 @@ def elastic_resp_handling(qparams, variants_dict):
 
     #Query elastic
     res = query_elastic(chrom,start)
+
+    found=0
+    if res['hits']['total']['value'] >=1:
+        for result in res['hits']['hits']:
+            if result['_source']['alt']==alt and result["_source"]['ref']==ref:
+                found+=1
+    
+  
+    #return data
+    return found
+
+'''With scala API'''
+def query_genomics_variants(access_token, chrom, start):
+
+    url = config.genomic_variants
+    headers = {'Content-Type': 'application/json', 'Accept':"*", 'Authorization': access_token}
+
+    print (access_token)
+    es_body = {"size":-1,"from":0,"fromCNV":0,"chrom":[],"indel":False,"svn":False,"genotypefeatures":{"other":False,"coding":False,"RNA":False},"variantclasses":{"high":False,"low":False,"moderate":False,"modifier":False},"variantconsequences":{"transcript_ablation":False,"splice_acceptor_variant":False,"splice_donor_variant":False,"stop_gained":False,"frameshift_variant":False,"stop_lost":False,"start_lost":False,"transcript_amplification":False,"feature_elongation":False,"feature_truncation":False,"inframe_insertion":False,"inframe_deletion":False,"missense_variant":False,"protein_altering_variant":False,"splice_donor_5th_base_variant":False,"splice_region_variant":False,"splice_donor_region_variant":False,"splice_polypyrimidine_tract_variant":False,"incomplete_terminal_codon_variant":False,"start_retained_variant":False,"stop_retained_variant":False,"synonymous_variant":False,"coding_sequence_variant":False,"mature_miRNA_variant":False,"prime_5_UTR_variant":False,"prime_3_UTR_variant":False,"non_coding_transcript_exon_variant":False,"intron_variant":False,"NMD_transcript_variant":False,"non_coding_transcript_variant":False,"coding_transcript_variant":False,"upstream_gene_variant":False,"downstream_gene_variant":False,"TFBS_ablation":False,"TFBS_amplification":False,"TF_binding_site_variant":False,"regulatory_region_ablation":False,"regulatory_region_amplification":False,"regulatory_region_variant":False,"intergenic_variant":False,"sequence_variant":False},"mutationtaster":{"A":False,"D":False,"P":False},"intervarclasses":{"P":False,"LP":False,"B":False,"LB":False,"VUS":False},"clinvarclasses":{"P":False,"L":False,"A":False,"U":False,"C":False,"D":False},"onco_filter":{"K":False,"P1":False,"P2":False,"PP":False},"onco_classifier":{"O":False,"LO":False,"VUS":False,"B":False,"LB":False},"polyphen2hvarpred":{"D":False,"P":False,"B":False},"population":{},"siftpred":{"D":False,"T":False},"gnomad_filter":{"pass":False,"nonpass":False},"gene":["CHAT"],"samples_germline":[{"sample_id":"Case10C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case10M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case12C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case12M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case13C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case13M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case14C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case14M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case15C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case15M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case1C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case1M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case2C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case2M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case3C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case3M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case4C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case4M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case5C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case5M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case6C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case6M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case7C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case7M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case8C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case8M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case9C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case9M","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case10F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case11C","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case12F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case13F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case14F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case15F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case1F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case2F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case3F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case4F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case5F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case6F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case7F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case8F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1},{"sample_id":"Case9F","gq":30,"gt":["0/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1}],"samples_somatic":[],"compound_in":False,"cosmic":False,"qc_filter":{"dp_tumor":10,"dp_control":10,"dp_ref_tumor":10,"dp_alt_tumor":3,"vaf_tumor_low":0.05,"vaf_tumor_high":0.8},"nprograms":0,"programs_filter":{"mutect":False,"strelka":False,"caveman":False,"muse":False,"lancet":False},"cnv_germline":True,"cnv_somatic":False}
+    print (url)
+    #print (es_body)
+    res = requests.post(url, data=es_body, headers=headers)
+
+    print ("HEREEEE:")
+    print (res.status_code)
+    print (res.text)
+   
+
+    return res
+
+
+def genomics_variants_resp_handling(qparams, access_token, variants_dict):
+
+    #Get from variants dicts
+    chrom = variants_dict["chrom"]
+    start = variants_dict["start"]
+    ref = variants_dict["ref"]
+    alt = variants_dict["alt"]
+
+    #Query elastic
+    print ("FTASAMEEE")
+    res = query_genomics_variants(access_token, chrom, start)
 
     found=0
     if res['hits']['total']['value'] >=1:

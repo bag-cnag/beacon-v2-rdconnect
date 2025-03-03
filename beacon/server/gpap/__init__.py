@@ -256,8 +256,16 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
 
 '''Beacon v1 purposes'''
 async def fetch_variants_by_variant( qparams, access_token, groups, projects, request ):
-    #Check token
-    token_status = check_token(access_token)
+    #Fixed token OR
+    if config.fixed_token_use: 
+        token_status = check_token(access_token)
+    #Jwt token
+    else:
+        token_status = ['OK', 200]
+    
+    #token_status = check_token(access_token)
+
+    print ("fetch_variants_by_variant")
     
     #Do not check token for now as Beacon v1 was Public
     if (token_status[1] == 200):
@@ -313,7 +321,8 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, re
         #print (variants_dict)
 
         #Elastic
-        elastic_res = elastic_resp_handling(qparams, variants_dict)
+        #elastic_res = elastic_resp_handling(qparams, variants_dict)
+        elastic_res = genomics_variants_resp_handling(qparams, access_token, variants_dict)
 
         #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
         variants_hits = elastic_res
