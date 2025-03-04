@@ -214,6 +214,8 @@ def handler_variants( entity, fetch_func, build_response_func ):
             LOG.debug( 'Token was decoded' )
             groups = "beacon"
             projects = "beacon"
+            roles = "beacon"
+
             
         except Exception as e:
             print( 'Exception', e )
@@ -225,8 +227,15 @@ def handler_variants( entity, fetch_func, build_response_func ):
 
         qparams = await process_request( request, entity )
 
+        
+        #num_total_results, response = await fetch_func( qparams, access_token, groups, projects, request )
+        all_data = await fetch_func( qparams, access_token, groups, projects, roles, request )
 
-        num_total_results, response = await fetch_func( qparams, access_token, groups, projects, request )
+        print (all_data)
+        
+        # Create reponse
+        response_converted = build_beacon_response( entity, qparams, build_response_func, all_data )
+
 
         # Create reponse
         #response_converted = build_beacon_response( entity, qparams, num_total_results, response, build_response_func )
@@ -235,10 +244,10 @@ def handler_variants( entity, fetch_func, build_response_func ):
         genomic_params = request.rel_url.query
         
         #Return directly the variant response
-        if "v1" in str(request.url):
-            response_converted = build_variant_v1_response( entity, qparams, num_total_results, response, build_response_func, genomic_params )
-        else:
-            response_converted = build_variant_response( entity, qparams, num_total_results, response, build_response_func )
+        #if "v1" in str(request.url):
+        #    response_converted = build_variant_v1_response( entity, qparams, num_total_results, response, build_response_func, genomic_params )
+        #else:
+        #    response_converted = build_variant_response( entity, qparams, num_total_results, response, build_response_func )
 
         
         LOG.info( 'Formatting the response for %s', entity )

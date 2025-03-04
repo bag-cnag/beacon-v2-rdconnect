@@ -255,7 +255,7 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
 
 
 '''Beacon v1 purposes'''
-async def fetch_variants_by_variant( qparams, access_token, groups, projects, request ):
+async def fetch_variants_by_variant( qparams, access_token, groups, projects, roles, request ):
     #Fixed token OR
     if config.fixed_token_use: 
         token_status = check_token(access_token)
@@ -265,70 +265,77 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, re
     
     #token_status = check_token(access_token)
 
-    print ("fetch_variants_by_variant")
     
     #Do not check token for now as Beacon v1 was Public
     if (token_status[1] == 200):
 
-        #POST case
-        if request.body_exists:
-            req_body = await request.json()
-            st_params = req_body["query"]["requestParameters"]
+        variants_responses = []
 
-        #GET case
-        else:
-            st_params = request.rel_url.query
+        for i in config.queries_endpoints:
 
-        
-        #If no params are included set to arbitraty values for the Beacon verifier to pass    
-        chrom = st_params.get('referenceName', '25')
-        start = int(st_params.get("start", 0)) + 1
-        ref = st_params.get('referenceBases', 'AB')
-        alt = st_params.get('alternateBases', 'AB')
-        assembly = st_params.get('assemblyId', None)
+            #POST case
+            if request.body_exists:
+                req_body = await request.json()
+                st_params = req_body["query"]["requestParameters"]
+
+            #GET case
+            else:
+                st_params = request.rel_url.query
+
+            
+            #If no params are included set to arbitraty values for the Beacon verifier to pass    
+            chrom = st_params.get('referenceName', '25')
+            start = int(st_params.get("start", 0)) + 1
+            ref = st_params.get('referenceBases', 'AB')
+            alt = st_params.get('alternateBases', 'AB')
+            assembly = st_params.get('assemblyId', None)
 
 
-        #Handle assembly and chrom issues
-        if assembly is not None and assembly != "GRCh37" and assembly != "hg19":
-            raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
+            #Handle assembly and chrom issues
+            if assembly is not None and assembly != "GRCh37" and assembly != "hg19":
+                raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
 
-        if assembly is not None and chrom.startswith("NC_"):
-            raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
+            if assembly is not None and chrom.startswith("NC_"):
+                raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
 
-        if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
-            raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
-  
-        #RefSeq chrom mapping, hg37
-        if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
-            chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
+            if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
+                raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
+    
+            #RefSeq chrom mapping, hg37
+            if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
+                chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
 
-        
-        if chrom.startswith("chr"):
-            chrom = chrom.split("chr")[1]
+            
+            if chrom.startswith("chr"):
+                chrom = chrom.split("chr")[1]
 
-        if chrom == "MT":
-            chrom = 23
-        elif chrom == "X":
-            chrom = 24
-        elif chrom == "Y":
-            chrom = 25
-        else:
-            pass
+            if chrom == "MT":
+                chrom = 23
+            elif chrom == "X":
+                chrom = 24
+            elif chrom == "Y":
+                chrom = 25
+            else:
+                pass
 
-        variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
+            variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
 
-        #print ("Fetch variants by variant")
-        #print (variants_dict)
+            #print ("Fetch variants by variant")
+            #print (variants_dict)
 
-        #Elastic
-        #elastic_res = elastic_resp_handling(qparams, variants_dict)
-        elastic_res = genomics_variants_resp_handling(qparams, access_token, variants_dict)
+            #Elastic
+            #elastic_res = elastic_resp_handling(qparams, variants_dict)
+            elastic_res = genomics_variants_resp_handling(qparams, access_token, variants_dict)
 
-        #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
-        variants_hits = elastic_res
+            #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
+            variants_hits = elastic_res
 
+            variants_responses.append({i['entity']:{"total":variants_hits}})
+         
+        return (variants_responses)
         #return resp[ 'total' ], resp[ 'rows' ]
-        return variants_hits, variants_hits
+        #return variants_hits, variants_hits
+
     else:
         log_history(request, qparams, request.url, access_token, token_status[1])
         if token_status[1] == 401:
