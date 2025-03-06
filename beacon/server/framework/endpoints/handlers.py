@@ -207,14 +207,18 @@ def handler_variants( entity, fetch_func, build_response_func ):
             #access_token = access_token[ 7: ]
 
         try:
-            #decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
-            #groups   = _extract_items( decoded, 'group' )
-            #projects = _extract_items( decoded, 'group_projects' )
-            
-            LOG.debug( 'Token was decoded' )
-            groups = "beacon"
-            projects = "beacon"
-            roles = "beacon"
+
+            if not config.fixed_token_use:
+                decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
+                groups   = _extract_items( decoded, 'group' )
+                projects = _extract_items( decoded, 'group_projects' )
+                roles =  _extract_items( decoded, 'realm_access' )
+                LOG.debug( 'Token was decoded' )
+
+            else:
+                groups = "beacon"
+                projects = "beacon"
+                roles = "beacon"
 
             
         except Exception as e:

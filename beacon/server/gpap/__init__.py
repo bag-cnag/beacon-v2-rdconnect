@@ -126,17 +126,20 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
             if resp.status_code != 200:
                 raise BeaconServerError( error = resp.text )
             resp = resp.json()
-
-            # Granularity handling
-            if "full_access" in roles:
-                dm_responses.append({i['entity']:{"total":resp['_meta']['total_items'], "rows":resp['items']}})
+          
+            #If call is made for g_variant query append experiment info
+            if "variant_query_use" in roles:
+                dm_responses = (resp['items'])
+           
             else:
-                dm_responses.append({i['entity']:{"total":resp['_meta']['total_items']}})
+                # Granularity handling
+                if "full_access" in roles:
+                    dm_responses.append({i['entity']:{"total":resp['_meta']['total_items'], "rows":resp['items']}})
+                else:
+                    dm_responses.append({i['entity']:{"total":resp['_meta']['total_items']}})
 
          
-        #print (dm_responses)
         return dm_responses
-
 
         #Previously with one single endpoint
         '''headers = { 'Authorization': 'Token {}'.format( config.datamanagement_token ), 'Accept': 'application/json' }
@@ -261,10 +264,15 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
         token_status = check_token(access_token)
     #Jwt token
     else:
-        token_status = ['OK', 200]
-    
-    #token_status = check_token(access_token)
-
+        token_status = ['OK', 200]            
+        #Query DM for experiments to query
+        experiments_to_query = []
+        roles.append("variant_query_use")
+        dm_experiments = fetch_biosamples_by_biosample( qparams, access_token, groups, projects, roles, request )
+        for e in dm_experiments:
+            if 'RD_Connect_ID_Experiment' in e:
+                experiments_to_query.append(e['RD_Connect_ID_Experiment'])
+        
     
     #Do not check token for now as Beacon v1 was Public
     if (token_status[1] == 200):
@@ -324,8 +332,10 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             #print (variants_dict)
 
             #Elastic
-            #elastic_res = elastic_resp_handling(qparams, variants_dict)
-            elastic_res = genomics_variants_resp_handling(qparams, access_token, variants_dict)
+            if config.fixed_token_use:
+                elastic_res = elastic_resp_handling(qparams, variants_dict)
+            else:
+                elastic_res = genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query)
 
             #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
             variants_hits = elastic_res
