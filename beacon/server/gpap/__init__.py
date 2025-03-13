@@ -15,6 +15,22 @@ from server.logger import LOG
 from server.db_model import History
 import datetime
 
+
+def get_kc_token_no_credentials():
+    keycloak_openid = KeycloakOpenID(
+        server_url=config.gpap_token_auth['server_url'],
+        client_id=config.gpap_token_auth['client_id'],
+        realm_name=config.gpap_token_auth['realm_name'],
+        client_secret_key=config.gpap_token_auth['client_secret_key'],
+        verify=False
+    )
+
+    # Use the client credentials grant type (no user credentials needed)
+    token = keycloak_openid.token(grant_type="client_credentials")
+
+    return token
+
+
 def get_kc_token():
     keycloak_openid = KeycloakOpenID(
         server_url        = config.gpap_token_auth[ 'server_url' ],
@@ -94,6 +110,9 @@ def fetch_rest_by_type( qparams, access_token, groups, projects, request ):
 
 
 def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles, request):
+
+    if "variant_query_use" in roles:
+        access_token = access_token['fixed_token']
     
     #Fixed token OR
     if config.fixed_token_use: 
@@ -101,7 +120,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
     #Jwt token
     else:
         token_status = ['OK', 200]
-
+    
 
     if (token_status[1] == 200):
 
@@ -210,8 +229,6 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             
             #for g in groups[0]:
             #    payload['filtered'].append({'id': "owner", 'value': g})
-         
-            print (payload)            
 
             resp = requests.post( i['url'] + ps_endpoint, headers = headers, data = json.dumps( payload ), verify = False )
 
@@ -261,17 +278,18 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
 async def fetch_variants_by_variant( qparams, access_token, groups, projects, roles, request ):
     #Fixed token OR
     if config.fixed_token_use: 
-        token_status = check_token(access_token)
+        token_status = check_token(access_token['fixed_token'])
     #Jwt token
     else:
         token_status = ['OK', 200]            
-        #Query DM for experiments to query
-        experiments_to_query = []
-        roles.append("variant_query_use")
-        dm_experiments = fetch_biosamples_by_biosample( qparams, access_token, groups, projects, roles, request )
-        for e in dm_experiments:
-            if 'RD_Connect_ID_Experiment' in e:
-                experiments_to_query.append(e['RD_Connect_ID_Experiment'])
+    
+    #Query DM for experiments to query
+    experiments_to_query = []
+    roles.append("variant_query_use")
+    dm_experiments = fetch_biosamples_by_biosample( qparams, access_token, groups, projects, roles, request )
+    for e in dm_experiments:
+        if 'RD_Connect_ID_Experiment' in e:
+            experiments_to_query.append(e['RD_Connect_ID_Experiment'])
         
     
     #Do not check token for now as Beacon v1 was Public
@@ -331,11 +349,13 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             #print ("Fetch variants by variant")
             #print (variants_dict)
 
+            elastic_res = genomics_variants_resp_handling(qparams, access_token['service_token'], variants_dict, experiments_to_query)
+
             #Elastic
-            if config.fixed_token_use:
-                elastic_res = elastic_resp_handling(qparams, variants_dict)
-            else:
-                elastic_res = genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query)
+            #if config.fixed_token_use:
+            #    elastic_res = elastic_resp_handling(qparams, variants_dict)
+            #else:
+            #    elastic_res = genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query)
 
             #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
             variants_hits = elastic_res

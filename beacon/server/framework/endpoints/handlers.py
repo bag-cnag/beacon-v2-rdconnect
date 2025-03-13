@@ -6,7 +6,7 @@ from server.config import config
 from server.framework.utils import json_response
 from server.framework.exceptions import  BeaconServerError, BeaconForbidden, BeaconEndPointNotImplemented
 from server.framework.response import build_beacon_response, build_variant_response, build_variant_v1_response
-from server.gpap import get_kc_token
+from server.gpap import get_kc_token, get_kc_token_no_credentials
 from server.logger import LOG
 
 from server.model.parameters import process_request
@@ -214,11 +214,21 @@ def handler_variants( entity, fetch_func, build_response_func ):
                 projects = _extract_items( decoded, 'group_projects' )
                 roles =  _extract_items( decoded, 'realm_access' )
                 LOG.debug( 'Token was decoded' )
+                
+                service_token = access_token
 
             else:
-                groups = "beacon"
-                projects = "beacon"
-                roles = "beacon"
+                service_token = get_kc_token_no_credentials()['access_token']
+
+                decoded  = jwt.decode (service_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
+                groups   = _extract_items( decoded, 'group' )
+                projects = _extract_items( decoded, 'group_projects' )
+                roles =  _extract_items( decoded, 'realm_access' )
+                LOG.debug( 'Token was decoded' )
+
+                #groups = "beacon"
+                #projects = "beacon"
+                #roles = "beacon"
 
             
         except Exception as e:
@@ -233,7 +243,7 @@ def handler_variants( entity, fetch_func, build_response_func ):
 
         
         #num_total_results, response = await fetch_func( qparams, access_token, groups, projects, request )
-        all_data = await fetch_func( qparams, access_token, groups, projects, roles, request )
+        all_data = await fetch_func( qparams, {"service_token":service_token, "fixed_token":access_token}, groups, projects, roles, request )
 
         print (all_data)
         
