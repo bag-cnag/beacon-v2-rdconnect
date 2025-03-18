@@ -463,16 +463,28 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
     found = 0
 
     #print (res.text[0])
+    found_zygosity = [{"Homozygous":{"total":0}}, {"Heterozygous":{"total":0}}]
+
     if res['snv']['hits']['total']['value'] >=1:
         for result in res['snv']['hits']['hits']:
             if result['_source']['alt']==alt and result["_source"]['ref']==ref:
 
                 #Count the number of samples
                 if "fields" in result and "samples_germline":
-                    print (len(result["fields"]["samples_germline"]))
                     found = len(result["fields"]["samples_germline"])
+                    
+                    heterozygous = homozygous = 0
+                    for sample in result["fields"]["samples_germline"]:
+                        if "gt" in sample and sample["gt"] == "0/1":
+                            heterozygous += 1
+                        elif "gt" in samples and sample["gt"] == "1/1":
+                            homozygoys +=1
+                        else:
+                            pass
+
+                    found_zygosity = [{"Homozygous":{"total":homozygous}}, {"Heterozygous":{"total":heterozygous}}]
                 #else:
                 #    found+=1
     
-  
-    return found
+    return (found_zygosity)
+    #return found

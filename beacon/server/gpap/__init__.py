@@ -359,8 +359,9 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
 
             #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
             variants_hits = elastic_res
-
-            variants_responses.append({i['entity']:{"total":variants_hits}})
+             
+            variants_responses = variants_hits
+            #variants_responses.append({i['entity']:{"total":variants_hits}})
          
         return (variants_responses)
         #return resp[ 'total' ], resp[ 'rows' ]
