@@ -441,12 +441,16 @@ def query_genomics_variants(access_token, chrom, start, experiments_to_query):
     #Query for all samples (Need to see how to get the samples list. From DM experiments or  )
     es_body = {"size":-1,"from":0,"fromCNV":0,"chrom":[{"chrom": chrom, "pos": start, "end_pos": start}],"indel":False,"svn":False,"genotypefeatures":{"other":False,"coding":False,"RNA":False},"variantclasses":{"high":False,"low":False,"moderate":False,"modifier":False},"variantconsequences":{"transcript_ablation":False,"splice_acceptor_variant":False,"splice_donor_variant":False,"stop_gained":False,"frameshift_variant":False,"stop_lost":False,"start_lost":False,"transcript_amplification":False,"feature_elongation":False,"feature_truncation":False,"inframe_insertion":False,"inframe_deletion":False,"missense_variant":False,"protein_altering_variant":False,"splice_donor_5th_base_variant":False,"splice_region_variant":False,"splice_donor_region_variant":False,"splice_polypyrimidine_tract_variant":False,"incomplete_terminal_codon_variant":False,"start_retained_variant":False,"stop_retained_variant":False,"synonymous_variant":False,"coding_sequence_variant":False,"mature_miRNA_variant":False,"prime_5_UTR_variant":False,"prime_3_UTR_variant":False,"non_coding_transcript_exon_variant":False,"intron_variant":False,"NMD_transcript_variant":False,"non_coding_transcript_variant":False,"coding_transcript_variant":False,"upstream_gene_variant":False,"downstream_gene_variant":False,"TFBS_ablation":False,"TFBS_amplification":False,"TF_binding_site_variant":False,"regulatory_region_ablation":False,"regulatory_region_amplification":False,"regulatory_region_variant":False,"intergenic_variant":False,"sequence_variant":False},"mutationtaster":{"A":False,"D":False,"P":False},"intervarclasses":{"P":False,"LP":False,"B":False,"LB":False,"VUS":False},"clinvarclasses":{"P":False,"L":False,"A":False,"U":False,"C":False,"D":False},"onco_filter":{"K":False,"P1":False,"P2":False,"PP":False},"onco_classifier":{"O":False,"LO":False,"VUS":False,"B":False,"LB":False},"polyphen2hvarpred":{"D":False,"P":False,"B":False},"population":{},"siftpred":{"D":False,"T":False},"gnomad_filter":{"pass":False,"nonpass":False},"gene":[],"samples_germline":samples_germline,"samples_somatic":[],"compound_in":False,"cosmic":False,"qc_filter":{"dp_tumor":10,"dp_control":10,"dp_ref_tumor":10,"dp_alt_tumor":3,"vaf_tumor_low":0.05,"vaf_tumor_high":0.8},"nprograms":0,"programs_filter":{"mutect":False,"strelka":False,"caveman":False,"muse":False,"lancet":False},"cnv_germline":True,"cnv_somatic":False}
     
-    res = requests.post(url, data=json.dumps(es_body), headers=headers)
 
-    #print (res.status_code)
-    #print (res.json())
-   
-    return res.json()
+    try:
+        res = requests.post(url, json=es_body, headers=headers)  
+        res.raise_for_status()
+        return res.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error querying genomics variants: {e}") 
+        return None  
+
+
 
 
 def genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query):
@@ -477,8 +481,8 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
                     for sample in result["fields"]["samples_germline"]:
                         if "gt" in sample and sample["gt"] == "0/1":
                             heterozygous += 1
-                        elif "gt" in samples and sample["gt"] == "1/1":
-                            homozygoys +=1
+                        elif "gt" in sample and sample["gt"] == "1/1":
+                            homozygous +=1
                         else:
                             pass
 
