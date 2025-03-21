@@ -342,8 +342,8 @@ def datamanagement_playload( qparams, groups ):
         # In the case of 0 results and with page set to 2, DM API returns a 500. Setting to 1 solves it.
         #'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
         'page':     1,
-        #'pageSize': 50,
-        'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        'pageSize': 100000,
+        #'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'fields': [
             'RD_Connect_ID_Experiment',
             'Participant_ID',
@@ -435,7 +435,8 @@ def query_genomics_variants(access_token, chrom, start, experiments_to_query):
         sample = {"sample_id":i,"gq":30,"gt":["0/1","1/1"],"dp":10,"ad_low":0.2,"ad_high":0.8,"index":1}
         samples_germline.append(sample)
     
-    url = config.genomic_variants
+    url = config.gpap_base_url + config.genomic_variants
+
     headers = {'Content-Type': 'application/json', 'Accept':"*", 'X-TOKEN-AUTH': access_token}
     
     #Query for all samples (Need to see how to get the samples list. From DM experiments or  )
