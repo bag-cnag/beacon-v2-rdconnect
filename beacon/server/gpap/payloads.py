@@ -326,8 +326,8 @@ def phenostore_playload( qparams, psid ):
     return {
         'page'    : 1,
         #In case of returning records need to have a pageSize (to check)
-        'pageSize': 50,
-        #'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        #'pageSize': 50,
+        'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'sorted'  : [],
         'filtered': ps_to_gpap( qparams, psid )
     }
@@ -342,8 +342,8 @@ def datamanagement_playload( qparams, groups ):
         # In the case of 0 results and with page set to 2, DM API returns a 500. Setting to 1 solves it.
         #'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
         'page':     1,
-        'pageSize': 50,
-        #'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        #'pageSize': 50,
+        'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'fields': [
             'RD_Connect_ID_Experiment',
             'Participant_ID',
