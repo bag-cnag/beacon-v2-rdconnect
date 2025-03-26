@@ -311,7 +311,11 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             
             #If no params are included set to arbitraty values for the Beacon verifier to pass    
             chrom = st_params.get('referenceName', '25')
-            start = int(st_params.get("start", 0)) + 1
+
+            #Need to check (add 1 or get it as it is?)
+            start = int(st_params.get("start", 0))
+            #start = int(st_params.get("start", 0)) + 1
+            
             ref = st_params.get('referenceBases', 'AB')
             alt = st_params.get('alternateBases', 'AB')
             assembly = st_params.get('assemblyId', None)
@@ -321,8 +325,8 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             if assembly is not None and assembly != "GRCh37" and assembly != "hg19":
                 raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
 
-            if assembly is not None and chrom.startswith("NC_"):
-                raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
+            #if assembly is not None and chrom.startswith("NC_"):
+            #    raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
 
             if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
                 raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
@@ -334,6 +338,9 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             
             if chrom.startswith("chr"):
                 chrom = chrom.split("chr")[1]
+
+            if assembly is not None and chrom not in config.filters_in['ref_seq_chrom_map_hg37'].values():
+                raise BeaconServerError( error = [ 'Invalid referenceName (chromosome) provided' ] )
 
             if chrom == "MT":
                 chrom = 23
