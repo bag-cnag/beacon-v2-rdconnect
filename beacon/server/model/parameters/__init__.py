@@ -13,9 +13,12 @@ from server.model.schemas import supported_schemas_by_entity
 
 
 async def process_request( request, entity ):
+
+    if entity == "variants" : entity = "genomicVariant"
+
     default_params = {
         'meta': {
-            'apiVersion'           : 'v2.0.0-draft.4',
+            'apiVersion'           : 'v2.0',
             'requestedSchemas'     : [ { 'entityType': entity, 'schema': supported_schemas_by_entity[ entity ] } ],
         },
         'query': {

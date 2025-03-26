@@ -15,6 +15,22 @@ from server.logger import LOG
 from server.db_model import History
 import datetime
 
+
+def get_kc_token_no_credentials():
+    keycloak_openid = KeycloakOpenID(
+        server_url=config.gpap_token_auth['server_url'],
+        client_id=config.gpap_token_auth['client_id'],
+        realm_name=config.gpap_token_auth['realm_name'],
+        client_secret_key=config.gpap_token_auth['client_secret_key'],
+        verify=False
+    )
+
+    # Use the client credentials grant type (no user credentials needed)
+    token = keycloak_openid.token(grant_type="client_credentials")
+
+    return token
+
+
 def get_kc_token():
     keycloak_openid = KeycloakOpenID(
         server_url        = config.gpap_token_auth[ 'server_url' ],
@@ -85,20 +101,67 @@ def log_history(request, qparams, request_url, access_token, res_status_code):
 
 # Fetchers for GPAP's API
 def fetch_rest_by_type( qparams, access_token, groups, projects, request ):
-    return 0, [ {
+
+    return [{'datasetBeacon': {'total': 0}}]
+    '''return 0, [ {
         'id': 'verifBeacon',
         'type': 'Fake abstracted level for beacon v2 implementation (in test)'
-    } ]
+    } ]'''
 
 
-def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, request):
-    #Check token
-    token_status = check_token(access_token)
+def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles, request):
 
-    payload = datamanagement_playload( qparams, groups )
+    if "variant_query_use" in roles:
+        access_token = access_token['fixed_token']
+    
+    #Fixed token OR
+    if config.fixed_token_use: 
+        token_status = check_token(access_token)
+    #Jwt token
+    else:
+        token_status = ['OK', 200]
+    
 
     if (token_status[1] == 200):
-        headers = { 'Authorization': 'Token {}'.format( config.datamanagement_token ), 'Accept': 'application/json' }
+
+        dm_responses = []
+
+        for i in config.queries_endpoints:
+            headers = { 'Authorization': 'Token {}'.format( i['dm_token'] ), 'Accept': 'application/json' }
+
+            payload = datamanagement_playload( qparams, groups )
+
+            print ("Projects are:")
+            print (projects)
+
+            #Add project filter for querying dataset OR no need since the project will be already in token?
+            #Need to get projects from token
+            #projects = ["CMS", "TreatHSP", "SolveRD"]
+            #payload['filtered'].append({'id': "project", 'value': projects})
+            #print (payload)
+            
+            resp = requests.post( i['url'] + config.dm_experiments, headers = headers, data = json.dumps( payload ), verify = False )
+
+            if resp.status_code != 200:
+                raise BeaconServerError( error = resp.text )
+            resp = resp.json()
+          
+            #If call is made for g_variant query append experiment info
+            if "variant_query_use" in roles:
+                dm_responses = (resp['items'])
+           
+            else:
+                # Granularity handling
+                if "full_access" in roles:
+                    dm_responses.append({i['entity']:{"total":resp['_meta']['total_items'], "rows":resp['items']}})
+                else:
+                    dm_responses.append({i['entity']:{"total":resp['_meta']['total_items']}})
+
+         
+        return dm_responses
+
+        #Previously with one single endpoint
+        '''headers = { 'Authorization': 'Token {}'.format( config.datamanagement_token ), 'Accept': 'application/json' }
 
         url = config.gpap_base_url + config.dm_experiments
 
@@ -106,7 +169,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
         if resp.status_code != 200:
             raise BeaconServerError( error = resp.text )
         resp = resp.json()
-        return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]
+        return resp[ '_meta' ][ 'total_items' ], resp[ 'items' ]'''
     
     else:
         log_history(request, qparams, request.url, access_token, token_status[1])
@@ -116,25 +179,92 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, reque
             raise BeaconServerError( error = [ 'No auth token provided' ] )
 
 
-def fetch_individuals_by_individual( qparams, access_token, groups, projects, request ):    
-    #Check token
-    token_status = check_token(access_token)
+def fetch_individuals_by_individual( qparams, access_token, groups, projects, roles, request ):    
 
-    payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
+    #Fixed token OR
+    if config.fixed_token_use: 
+        token_status = check_token(access_token)
+    #Jwt token
+    else:
+        token_status = ['OK', 200]
+
+    print ("Projects are:")
+    print (projects)
+
+    print ("Groups are:")
+    print (groups)
+
+    print ("Roles are:")
+    print (roles)
+
 
     if (token_status[1] == 200):
-        headers = { 'Authorization-Beacon': config.pheno_token, 'Content-Type': 'application/json' }
+
+        ind_responses = []
+
+        for i in config.queries_endpoints:
+            
+            #Fixed token for participants_fixed
+            if config.fixed_token_use:
+                headers = { 'Authorization-Beacon': i['pheno_token'], 'Content-Type': 'application/json' }
+                ps_endpoint = config.ps_participants
+                total_var = "total"
+
+            #Keycloak token for participants_by_exp
+            else:
+                headers = { 'Authorization': access_token, 'Content-Type': 'application/json' }
+                ps_endpoint = config.ps_participants_by_exp
+                total_var = "total_page"
+
+            payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
+
+            #Add extra property to indicate that the query to participants_by_exp is for beacon purposes and filter by project there
+            payload["beacon_query"] = True
+
+            #Add project filter for querying dataset
+
+            #If we add project field in PS
+            #for p in projects:
+            #    payload['filtered'].append({'id': "project", 'value': p})
+            
+            #for g in groups[0]:
+            #    payload['filtered'].append({'id': "owner", 'value': g})
+
+            resp = requests.post( i['url'] + ps_endpoint, headers = headers, data = json.dumps( payload ), verify = False )
+
+            if resp.status_code != 200:
+                raise BeaconServerError( error = resp.json()[ 'message' ] )
+            
+            resp = json.loads( resp.text )
+
+            for r in (resp['rows']):
+                print (r['id'])
+             
+            # Granularity handling
+            if "full_access" in roles:
+                ind_responses.append({i['entity']:{"total":resp[ 'total' ], "rows":resp['rows']}})
+            else:
+                ind_responses.append({i['entity']:{"total":resp[ total_var]}})
+        
+        #print (ind_responses)
+        return ind_responses
+
+        #Previously with one single endpoint
+        '''headers = { 'Authorization-Beacon': config.pheno_token, 'Content-Type': 'application/json' }
+        
         if qparams[ 'targetIdReq' ]:
             url = config.gpap_base_url + config.ps_participant.format( qparams[ 'targetIdReq' ] )
         else:
             url = config.gpap_base_url + config.ps_participants
+
         resp = requests.post( url, headers = headers, data = json.dumps( payload ), verify = False )
 
         if resp.status_code != 200:
             raise BeaconServerError( error = resp.json()[ 'message' ] )
+
         resp = json.loads( resp.text )
 
-        return resp[ 'total' ], resp[ 'rows' ]
+        return resp[ 'total' ], resp[ 'rows' ]'''
     
     else:
         log_history(request, qparams, request.url, access_token, token_status[1])
@@ -145,71 +275,105 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, re
 
 
 '''Beacon v1 purposes'''
-async def fetch_variants_by_variant( qparams, access_token, groups, projects, request ):
-    #Check token
-    token_status = check_token(access_token)
+async def fetch_variants_by_variant( qparams, access_token, groups, projects, roles, request ):
+    #Fixed token OR
+    if config.fixed_token_use: 
+        token_status = check_token(access_token['fixed_token'])
+    #Jwt token
+    else:
+        token_status = ['OK', 200]            
+    
+    #Query DM for experiments to query
+    experiments_to_query = []
+    roles.append("variant_query_use")
+    dm_experiments = fetch_biosamples_by_biosample( qparams, access_token, groups, projects, roles, request )
+    for e in dm_experiments:
+        if 'RD_Connect_ID_Experiment' in e:
+            experiments_to_query.append(e['RD_Connect_ID_Experiment'])
+        
     
     #Do not check token for now as Beacon v1 was Public
     if (token_status[1] == 200):
 
-        #POST case
-        if request.body_exists:
-            req_body = await request.json()
-            st_params = req_body["query"]["requestParameters"]
+        variants_responses = []
 
-        #GET case
-        else:
-            st_params = request.rel_url.query
+        for i in config.queries_endpoints:
 
-        
-        #If no params are included set to arbitraty values for the Beacon verifier to pass    
-        chrom = st_params.get('referenceName', '25')
-        start = int(st_params.get("start", 0)) + 1
-        ref = st_params.get('referenceBases', 'AB')
-        alt = st_params.get('alternateBases', 'AB')
-        assembly = st_params.get('assemblyId', None)
+            #POST case
+            if request.body_exists:
+                req_body = await request.json()
+                st_params = req_body["query"]["requestParameters"]
+
+            #GET case
+            else:
+                st_params = request.rel_url.query
+
+            
+            #If no params are included set to arbitraty values for the Beacon verifier to pass    
+            chrom = st_params.get('referenceName', '25')
+
+            #Need to check (add 1 or get it as it is?)
+            start = int(st_params.get("start", 0))
+            #start = int(st_params.get("start", 0)) + 1
+            
+            ref = st_params.get('referenceBases', 'AB')
+            alt = st_params.get('alternateBases', 'AB')
+            assembly = st_params.get('assemblyId', None)
 
 
-        #Handle assembly and chrom issues
-        if assembly is not None and assembly != "GRCh37" and assembly != "hg19":
-            raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
+            #Handle assembly and chrom issues
+            if assembly is not None and assembly != "GRCh37" and assembly != "hg19":
+                raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
 
-        if assembly is not None and chrom.startswith("NC_"):
-            raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
+            #if assembly is not None and chrom.startswith("NC_"):
+            #    raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
 
-        if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
-            raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
-  
-        #RefSeq chrom mapping, hg37
-        if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
-            chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
+            if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
+                raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
+    
+            #RefSeq chrom mapping, hg37
+            if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
+                chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
 
-        
-        if chrom.startswith("chr"):
-            chrom = chrom.split("chr")[1]
+            
+            if chrom.startswith("chr"):
+                chrom = chrom.split("chr")[1]
 
-        if chrom == "MT":
-            chrom = 23
-        elif chrom == "X":
-            chrom = 24
-        elif chrom == "Y":
-            chrom = 25
-        else:
-            pass
+            if assembly is not None and chrom not in config.filters_in['ref_seq_chrom_map_hg37'].values():
+                raise BeaconServerError( error = [ 'Invalid referenceName (chromosome) provided' ] )
 
-        variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
+            if chrom == "MT":
+                chrom = 23
+            elif chrom == "X":
+                chrom = 24
+            elif chrom == "Y":
+                chrom = 25
+            else:
+                pass
 
-        #print ("Fetch variants by variant")
-        #print (variants_dict)
+            variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
 
-        #Elastic
-        elastic_res = elastic_resp_handling(qparams, variants_dict)
+            #print ("Fetch variants by variant")
+            #print (variants_dict)
 
-        #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
-        variants_hits = elastic_res
+            elastic_res = genomics_variants_resp_handling(qparams, access_token['service_token'], variants_dict, experiments_to_query)
 
+            #Elastic
+            #if config.fixed_token_use:
+            #    elastic_res = elastic_resp_handling(qparams, variants_dict)
+            #else:
+            #    elastic_res = genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query)
+
+            #variants_hits = elastic_res["datasetAlleleResponses"][0]["variantCount"]
+            variants_hits = elastic_res
+             
+            variants_responses = variants_hits
+            #variants_responses.append({i['entity']:{"total":variants_hits}})
+         
+        return (variants_responses)
         #return resp[ 'total' ], resp[ 'rows' ]
-        return variants_hits, variants_hits
+        #return variants_hits, variants_hits
+
     else:
         log_history(request, qparams, request.url, access_token, token_status[1])
         if token_status[1] == 401:

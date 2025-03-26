@@ -24,6 +24,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 import asyncio
 import datetime
+import jwt
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -34,6 +35,16 @@ from server.db_model import History
 from server.config import config
 from server.logger import LOG
 from server.framework.endpoints import routes
+
+jwt_options = config.jwt_options
+jwt_algorithm = config.jwt_algorithm
+public_key  = '-----BEGIN PUBLIC KEY-----\n' + config.beacon_idrsa + '\n-----END PUBLIC KEY-----'
+
+#For restart on change
+#from watchgod import run_process
+#from asgiref.wsgi import WsgiToAsgi
+#from asgiref.compatibility import guarantee_single_callable
+
 
 # Set up the SQLAlchemy engine and session for asynchronous use
 DATABASE_URL = config.SQLALCHEMY_DATABASE_URI
@@ -63,14 +74,24 @@ async def db_session_middleware(request, handler):
 
             token = request.headers.get('auth-key')
 
-            if (token in keys_list):
-                user_name = next(item["contact"] for item in beacon_keys if item["key"] == token)
-                institution = next(item["institution"] for item in beacon_keys if item["key"] == token)
-            else:
-                if token:
-                    user_name = institution = "invalid_token"
+            if config.fixed_token_use:
+                if (token in keys_list):
+                    user_name = next(item["contact"] for item in beacon_keys if item["key"] == token)
+                    institution = next(item["institution"] for item in beacon_keys if item["key"] == token)
                 else:
-                    user_name = institution = "missing_token"
+                    if token:
+                        user_name = institution = "invalid_token"
+                    else:
+                        user_name = institution = "missing_token"
+            
+            else:
+                try:
+                    decoded  = jwt.decode (token, public_key, algorithms = jwt_algorithm, options = jwt_options )
+                    user_name = decoded['preferred_username']
+                    institution = decoded['group']
+                except Exception as e:
+                    user_name = institution = "invalid_token"
+
 
             if not (config.gpap_token_required[0]):
                 user_name = institution = "no_token_required"
@@ -114,6 +135,35 @@ def init_db():
     Base.metadata.create_all(engine) 
 
 
+#For restart on change
+'''def create_app():
+    """Creates and configures the aiohttp application."""
+    config.load_filts()
+    init_db()
+
+    app = web.Application(middlewares=[db_session_middleware])
+    app.add_routes(routes)
+    return app
+
+
+def start_server():
+    """Starts the aiohttp application."""
+    app = create_app()
+    web.run_app(
+        app,
+        host=getattr(config, "beacon_host", "0.0.0.0"),
+        port=getattr(config, "beacon_port", 5050),
+        shutdown_timeout=0,
+        ssl_context=None,
+    )
+
+
+if __name__ == "__main__":
+    # Use watchgod to restart the server on file changes
+    run_process(".", target=start_server)'''
+
+
+#Default main
 def main():
     config.load_filts()
 

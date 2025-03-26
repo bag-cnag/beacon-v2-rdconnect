@@ -12,19 +12,28 @@ from server.utils.request_origin import check_request_origin
 
 LOG = logging.getLogger(__name__)
 
-def handle_results_ranges(num_total_results):
+def handle_results_ranges(all_data):
     c_threshold = config.filters_in['counts_threshold']
-    f_num_total_results = num_total_results
-
-    if (num_total_results > 0) and (num_total_results < c_threshold):
-        f_num_total_results = c_threshold - 1
     
-    return f_num_total_results
+    for data in all_data:
+        for res_id, total_data in data.items():
+            f_num_total_results = total_data['total']
 
-
-def build_beacon_response( entity, qparams, num_total_results, data, build_response_func ):
+            if (total_data['total'] > 0) and (total_data['total'] < c_threshold):
+                f_num_total_results = c_threshold - 1
+                data[res_id] = {'total':f_num_total_results}
     
-    num_total_results = handle_results_ranges(num_total_results)
+    return (all_data)
+    #return f_num_total_results
+
+
+def build_beacon_response( entity, qparams, build_response_func, all_data):
+    
+    #TO HANDLE
+    #num_total_results = handle_results_ranges(num_total_results)
+    all_data_ranges = handle_results_ranges(all_data)
+
+    num_total_results = sum(entry[key]['total'] for entry in all_data_ranges for key in entry)
 
     rst = { 
            'meta': build_meta( qparams ),
@@ -38,7 +47,7 @@ def build_beacon_response( entity, qparams, num_total_results, data, build_respo
 
     if qparams[ 'query' ][ 'requestedGranularity' ] in ('count', 'record'):
         rst[ 'responseSummary' ][ 'numTotalResults' ] = num_total_results
-        rst[ 'response' ] = build_response( entity, qparams, num_total_results, data, build_response_func )
+        rst[ 'response' ] = build_response( entity, qparams, build_response_func, all_data_ranges )
 
     return rst
 
@@ -68,7 +77,7 @@ def build_meta( qparams ):
         #Currently we always return 'count'
         #'returnedGranularity': qparams[ 'query' ][ 'requestedGranularity' ],
         'returnedGranularity': 'count',
-        'receivedRequestSummary':  build_received_request_summary( qparams ),
+        #'receivedRequestSummary':  build_received_request_summary( qparams ),
         'returnedSchemas': qparams[ 'meta' ][ 'requestedSchemas' ],
     }
     return meta
@@ -237,20 +246,50 @@ def build_resultSets_info(num_total_results):
     return info 
 
 
-def build_response( entity, qparams, num_total_results, data, func, ):
+def build_response( entity, qparams, func, all_data ):
 
     req_origin = check_request_origin()
 
     resCount =  'resultCount' if req_origin == 'ejp' else 'resultsCount'
-    resType = 'type' if req_origin == 'ejp' else 'setType'
+    resId =  'Unknown Zygosity' if entity == 'variants' else 'datasetBeacon'
 
-    response = { 
+
+    if entity == "variants" : entity = "genomicVariant"
+
+    response = {
+    'resultSets': []
+    }
+
+    # Iterate through all_data and add it to resultSets
+    for data in all_data:
+        for res_id, total_data in data.items():
+            # Create the result set object
+            result_set = {
+                'id': res_id,
+                'setType': entity,  # Adjust 'setType' as needed
+                'exists': True if total_data['total'] > 0 else False,
+                resCount: total_data['total'],
+                #'results': []  # Empty list for 'results' as per your structure
+                'results': total_data['rows'] if 'rows' in total_data else []
+            }
+
+            info = build_resultSets_info(total_data['total'])
+            if info: result_set['info'] = info
+
+            # Append to resultSets
+            response['resultSets'].append(result_set)
+
+    
+
+    '''response = { 
         'resultSets': [ {
-            'id': 'datasetBeacon',
-            resType : entity,
+            'id': resId,
+            'setType' : entity,
             'exists': True if num_total_results > 0 else False,
             resCount : num_total_results,
-            'results': [{"info":"Currently only counts are returned"}] if num_total_results > 0 else []
+            'results': [],
+            #'results': func( data, qparams )
+            #'results': [{"info":"Currently only counts are returned"}] if num_total_results > 0 else []
             #Return actual results 'results': func( data, qparams ),
 
             #'info': build_resultSets_info(num_total_results)
@@ -258,7 +297,7 @@ def build_response( entity, qparams, num_total_results, data, func, ):
             # { 'description': '', '$ref': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/blob/main/common/beaconCommonComponents.json#/definitions/Info' },
             #'resultsHandover': [], # build_results_handover
             #'beaconHandover': config.beacon_handovers#,
-        } ] }
+        } ] }'''
     
 
     #In case of variants do not return ranges
@@ -267,8 +306,8 @@ def build_response( entity, qparams, num_total_results, data, func, ):
     #    if info: response['resultSets'][0]['info'] = info
 
 
-    info = build_resultSets_info(num_total_results)
-    if info: response['resultSets'][0]['info'] = info
+    #info = build_resultSets_info(num_total_results)
+    #if info: response['resultSets'][0]['info'] = info
 
     return response
 
