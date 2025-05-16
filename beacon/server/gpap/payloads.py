@@ -470,7 +470,8 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
     #print (res.text[0])
     found_zygosity = [{"Homozygous":{"total":0}}, {"Heterozygous":{"total":0}}]
 
-    if res['snv']['hits']['total']['value'] >=1:
+
+    if res and res['snv']['hits']['total']['value'] >=1:
         for result in res['snv']['hits']['hits']:
             if result['_source']['alt']==alt and result["_source"]['ref']==ref:
 
