@@ -114,9 +114,9 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
             LOG.debug( 'Access token received.' )
 
         #Set values as this info is not in the fixed token
-        groups = "beacon"
-        projects = "beacon"
-        roles = "beacon"
+        groups = ["beacon"]
+        projects = ["beacon"]
+        roles = ["beacon"]
             
         if len( projects ) == 0:
             projects.append( 'no_project' )

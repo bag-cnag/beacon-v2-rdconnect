@@ -136,18 +136,21 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
 
             #Add project filter for querying dataset OR no need since the project will be already in token?
             #Need to get projects from token
-            #projects = ["CMS", "TreatHSP", "SolveRD"]
-            #payload['filtered'].append({'id': "project", 'value': projects})
-            #print (payload)
+            if config.fixed_token_use and "projects" in i:
+                #projects = ["CMS", "TreatHSP", "Solve-RD","test"]
+                projects = i["projects"]
+                payload['filtered'].append({'id': "project", 'value': projects})
+                print (payload)
             
             resp = requests.post( i['url'] + config.dm_experiments, headers = headers, data = json.dumps( payload ), verify = False )
+            
 
             if resp.status_code != 200:
                 raise BeaconServerError( error = resp.text )
             resp = resp.json()
           
             #If call is made for g_variant query append experiment info
-            if "variant_query_use" in roles:
+            if "variant_query_use" or 'individual_query_use' in roles:
                 dm_responses = (resp['items'])
            
             else:
@@ -199,6 +202,20 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
 
 
     if (token_status[1] == 200):
+        
+        #Query DM for experiments to query
+        experiments_to_query = []
+        roles.append("individual_query_use")
+        dm_experiments = fetch_biosamples_by_biosample( qparams, access_token, groups, projects, roles, request )
+        
+      
+        for e in dm_experiments:
+            if 'Participant_ID' in e and e['Participant_ID']:
+                experiments_to_query.append(e['Participant_ID'])
+                
+        
+        print ("Experiments to query are:")
+        print (experiments_to_query)
 
         ind_responses = []
 
@@ -221,7 +238,11 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             #Add extra property to indicate that the query to participants_by_exp is for beacon purposes and filter by project there
             payload["beacon_query"] = True
 
-            #Add project filter for querying dataset
+            #Add project filter for querying dataset 
+            if config.fixed_token_use and "projects" in i and experiments_to_query:
+                #projects = ["CMS", "TreatHSP", "Solve-RD","test"]
+                projects = i["projects"]
+                payload['filtered'].append({'id': "report_id", 'value': experiments_to_query})
 
             #If we add project field in PS
             #for p in projects:
@@ -229,6 +250,8 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             
             #for g in groups[0]:
             #    payload['filtered'].append({'id': "owner", 'value': g})
+              
+            print (payload)
 
             resp = requests.post( i['url'] + ps_endpoint, headers = headers, data = json.dumps( payload ), verify = False )
 
@@ -290,7 +313,6 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
     for e in dm_experiments:
         if 'RD_Connect_ID_Experiment' in e:
             experiments_to_query.append(e['RD_Connect_ID_Experiment'])
-        
     
     #Do not check token for now as Beacon v1 was Public
     if (token_status[1] == 200):
