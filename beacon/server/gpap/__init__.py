@@ -150,7 +150,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
             resp = resp.json()
           
             #If call is made for g_variant query append experiment info
-            if "variant_query_use" or 'individual_query_use' in roles:
+            if "variant_query_use" in roles or 'individual_query_use' in roles:
                 dm_responses = (resp['items'])
            
             else:
