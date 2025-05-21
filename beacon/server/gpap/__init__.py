@@ -131,8 +131,8 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
 
             payload = datamanagement_playload( qparams, groups )
 
-            print ("Projects are:")
-            print (projects)
+            #print ("Projects are:")
+            #print (projects)
 
             #Add project filter for querying dataset OR no need since the project will be already in token?
             #Need to get projects from token
@@ -140,7 +140,10 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
                 #projects = ["CMS", "TreatHSP", "Solve-RD","test"]
                 projects = i["projects"]
                 payload['filtered'].append({'id': "project", 'value': projects})
-                print (payload)
+            
+            
+            print ("DM Payload is:")
+            print (payload)
             
             resp = requests.post( i['url'] + config.dm_experiments, headers = headers, data = json.dumps( payload ), verify = False )
             
@@ -191,31 +194,31 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
     else:
         token_status = ['OK', 200]
 
-    print ("Projects are:")
+    '''print ("Projects are:")
     print (projects)
 
     print ("Groups are:")
     print (groups)
 
     print ("Roles are:")
-    print (roles)
+    print (roles)'''
 
 
     if (token_status[1] == 200):
         
         #Query DM for experiments to query
-        experiments_to_query = []
+        participants_to_query = []
         roles.append("individual_query_use")
         dm_experiments = fetch_biosamples_by_biosample( qparams, access_token, groups, projects, roles, request )
         
       
         for e in dm_experiments:
             if 'Participant_ID' in e and e['Participant_ID']:
-                experiments_to_query.append(e['Participant_ID'])
+                participants_to_query.append(e['Participant_ID'])
                 
         
-        print ("Experiments to query are:")
-        print (experiments_to_query)
+        print ("Participants to query are:")
+        print (participants_to_query)
 
         ind_responses = []
 
@@ -239,10 +242,10 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             payload["beacon_query"] = True
 
             #Add project filter for querying dataset 
-            if config.fixed_token_use and "projects" in i and experiments_to_query:
+            if config.fixed_token_use and "projects" in i and participants_to_query:
                 #projects = ["CMS", "TreatHSP", "Solve-RD","test"]
                 projects = i["projects"]
-                payload['filtered'].append({'id': "report_id", 'value': experiments_to_query})
+                payload['filtered'].append({'id': "report_id", 'value': participants_to_query})
 
             #If we add project field in PS
             #for p in projects:
@@ -250,7 +253,8 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             
             #for g in groups[0]:
             #    payload['filtered'].append({'id': "owner", 'value': g})
-              
+            
+            print ("PhenoStore Payload is:")
             print (payload)
 
             resp = requests.post( i['url'] + ps_endpoint, headers = headers, data = json.dumps( payload ), verify = False )
@@ -313,6 +317,9 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
     for e in dm_experiments:
         if 'RD_Connect_ID_Experiment' in e:
             experiments_to_query.append(e['RD_Connect_ID_Experiment'])
+    
+    print ("Experiments to query are:")
+    print (experiments_to_query)
     
     #Do not check token for now as Beacon v1 was Public
     if (token_status[1] == 200):
