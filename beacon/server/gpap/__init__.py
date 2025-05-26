@@ -143,8 +143,6 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
             #print (projects)
             projects_from_token = token_status[2]
             subprojects_from_token = token_status[3]
-            print (projects_from_token)
-            print (subprojects_from_token)
 
             #Add project filter for querying dataset OR no need since the project will be already in token?
             #Need to get projects from token
@@ -254,12 +252,13 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
 
             #Add extra property to indicate that the query to participants_by_exp is for beacon purposes and filter by project there
             payload["beacon_query"] = True
+            
+            projects_from_token = token_status[2]
 
             #Add project filter for querying dataset 
-            if config.fixed_token_use and "projects" in i and participants_to_query:
-                #projects = ["CMS", "TreatHSP", "Solve-RD","test"]
-                projects = i["projects"]
+            if config.fixed_token_use and projects_from_token:
                 payload['filtered'].append({'id': "report_id", 'value': participants_to_query})
+
 
             #If we add project field in PS
             #for p in projects:
