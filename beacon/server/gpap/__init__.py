@@ -51,8 +51,16 @@ def check_token(token):
         try:
             if (token in keys_list):
                 userid = next(item["contact"] for item in beacon_keys if item["key"] == token)
+                try:
+                    projects = next((item["projects"] for item in beacon_keys if "projects" in item and item["key"] == token), None)
+                    subprojects = next((item["subprojects"] for item in beacon_keys if "subprojects" in item and item["key"] == token), None)
+                
+                except Exception as e:
+                    print(f"Error accessing projects: {str(e)}")
+                    return None
+
                 LOG.debug("#### Request submitted by: " + userid)
-                return {'message': 'correct API key'}, 200
+                return {'message': 'correct API key'}, 200, projects, subprojects
 
             else:
                 LOG.debug('Request made with wrong token:' + token)
@@ -133,16 +141,19 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
 
             #print ("Projects are:")
             #print (projects)
+            projects_from_token = token_status[2]
+            subprojects_from_token = token_status[3]
+            print (projects_from_token)
+            print (subprojects_from_token)
 
             #Add project filter for querying dataset OR no need since the project will be already in token?
             #Need to get projects from token
-            if config.fixed_token_use and "projects" in i:
-                #projects = ["CMS", "TreatHSP", "Solve-RD","test"]
-                projects = i["projects"]
-                payload['filtered'].append({'id': "project", 'value': projects})
+            if config.fixed_token_use and projects_from_token:
+                #projects = i["projects"]
+                payload['filtered'].append({'id': "project", 'value': projects_from_token})
                 
-                if "subprojects" in i:
-                    payload['filtered'].append({'id': "subproject", 'value': i["subprojects"]})
+                if subprojects_from_token:
+                    payload['filtered'].append({'id': "subproject", 'value': subprojects_from_token})
             
             
             print ("DM Payload is:")
