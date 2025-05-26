@@ -140,6 +140,9 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
                 #projects = ["CMS", "TreatHSP", "Solve-RD","test"]
                 projects = i["projects"]
                 payload['filtered'].append({'id': "project", 'value': projects})
+                
+                if "subprojects" in i:
+                    payload['filtered'].append({'id': "subproject", 'value': i["subprojects"]})
             
             
             print ("DM Payload is:")
