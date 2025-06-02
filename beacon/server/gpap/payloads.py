@@ -186,16 +186,17 @@ def set_ern(item):
     return ern
 
         
-def set_unsupported_filter(item, service):
+def set_unsupported_filter(item, service):    
+    obj = {}
     if service == "ps":
         if "value" not in item:
             obj = {"id": item["id"], "value": "no_value"}
         else:
             obj = item
     
-    #In case of DM set to arbitrary filter which is accepted from the API
-    else:
-        obj = {"id": "subproject", "value": ["no_value"]}
+    # In case of DM set to arbitrary filter which is accepted from the API
+    #else:
+    #    obj = {"id": "subproject", "value": ["no_value"]}
 
     return obj
 
@@ -312,7 +313,9 @@ def dm_to_gpap( qparams ):
             #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
             req_origin = check_request_origin()
             if (req_origin != "ejp") and (not ern_fltr and not library_strategy_fltr) and ("id" in item and item["id"] != ""):
-                fltrs.append(set_unsupported_filter(item, "dm"))
+                unsupported_filter = set_unsupported_filter(item, "dm")
+                if unsupported_filter:
+                    fltrs.append(unsupported_filter)
             
     return fltrs
 
@@ -326,8 +329,8 @@ def phenostore_playload( qparams, psid ):
     return {
         'page'    : 1,
         #In case of returning records need to have a pageSize (to check)
-        #'pageSize': 50,
-        'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        'pageSize': 50,
+        #'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'sorted'  : [],
         'filtered': ps_to_gpap( qparams, psid )
     }
@@ -470,7 +473,8 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
     #print (res.text[0])
     found_zygosity = [{"Homozygous":{"total":0}}, {"Heterozygous":{"total":0}}]
 
-    if res['snv']['hits']['total']['value'] >=1:
+
+    if res and res['snv']['hits']['total']['value'] >=1:
         for result in res['snv']['hits']['hits']:
             if result['_source']['alt']==alt and result["_source"]['ref']==ref:
 
