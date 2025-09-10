@@ -77,7 +77,7 @@ def build_meta( qparams ):
         #Currently we always return 'count'
         #'returnedGranularity': qparams[ 'query' ][ 'requestedGranularity' ],
         'returnedGranularity': 'count',
-        #'receivedRequestSummary':  build_received_request_summary( qparams ),
+        'receivedRequestSummary':  build_received_request_summary( qparams ),
         'returnedSchemas': qparams[ 'meta' ][ 'requestedSchemas' ],
     }
     return meta

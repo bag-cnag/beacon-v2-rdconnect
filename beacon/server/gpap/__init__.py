@@ -141,8 +141,19 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
 
             #print ("Projects are:")
             #print (projects)
-            projects_from_token = token_status[2]
-            subprojects_from_token = token_status[3]
+            print ("token_status is:")
+            print (token_status)
+            
+            if len(token_status[0]) > 2:
+                projects_from_token = token_status[2]
+            else:
+                projects_from_token = []
+            
+            if len(token_status[0]) > 3:
+                subprojects_from_token = token_status[3]
+            else:
+                subprojects_from_token = []
+            
 
             #Add project filter for querying dataset OR no need since the project will be already in token?
             #Need to get projects from token
@@ -214,6 +225,9 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
 
     print ("Roles are:")
     print (roles)'''
+    
+    print ("token_status is:")
+    print (token_status)
 
 
     if (token_status[1] == 200):
@@ -253,8 +267,11 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             #Add extra property to indicate that the query to participants_by_exp is for beacon purposes and filter by project there
             payload["beacon_query"] = True
             
-            projects_from_token = token_status[2]
-
+            if len(token_status[0]) > 2:    #projects
+                projects_from_token = token_status[2]
+            else:
+                projects_from_token = []
+          
             #Add project filter for querying dataset 
             if config.fixed_token_use and projects_from_token:
                 payload['filtered'].append({'id': "report_id", 'value': participants_to_query})
@@ -362,9 +379,12 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             alt = st_params.get('alternateBases', 'AB')
             assembly = st_params.get('assemblyId', None)
 
+            # Check if there are no query parameters at all
+            if not st_params:
+                return variants_responses
 
             #Handle assembly and chrom issues
-            if assembly is not None and assembly != "GRCh37" and assembly != "hg19":
+            if assembly is not None and assembly not in config.genome_assembly_supported:
                 raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
 
             #if assembly is not None and chrom.startswith("NC_"):

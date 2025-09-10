@@ -18,7 +18,7 @@ async def process_request( request, entity ):
 
     default_params = {
         'meta': {
-            'apiVersion'           : 'v2.0',
+            'apiVersion'           : 'v2.0.0',
             'requestedSchemas'     : [ { 'entityType': entity, 'schema': supported_schemas_by_entity[ entity ] } ],
         },
         'query': {
