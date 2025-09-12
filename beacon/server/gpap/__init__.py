@@ -9,7 +9,8 @@ from keycloak import KeycloakOpenID
 
 from server.config import config
 from server.gpap.payloads import *
-from server.framework.exceptions import BeaconEndPointNotImplemented, BeaconForbidden, BeaconServerError, BeaconUnauthorised
+from server.utils.request_origin import check_request_origin
+from server.framework.exceptions import BeaconEndPointNotImplemented, BeaconForbidden, BeaconServerError, BeaconUnauthorised, BeaconBadRequest
 from server.logger import LOG
 #from app import create_history_entry
 from server.db_model import History
@@ -276,6 +277,10 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             if config.fixed_token_use and projects_from_token:
                 payload['filtered'].append({'id': "report_id", 'value': participants_to_query})
 
+            # Check for duplicate 'features' fields in payload['filtered']
+            features_count = sum(1 for item in payload['filtered'] if isinstance(item, dict) and item.get('id') == 'features')
+            if features_count > 1 and check_request_origin() == "nasertic":
+                raise BeaconBadRequest("Multiple 'HPO' terms found in filtered payload. Only one HPO term is allowed.")
 
             #If we add project field in PS
             #for p in projects:
