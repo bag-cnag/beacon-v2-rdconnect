@@ -174,7 +174,7 @@ beacon_spec_filters = [
       #G_variants filters
       {  
         "id": "assemblyId",
-        "label": "Genome assembly. Permitted values: hg19,GRCh37, hg38GRCh38",
+        "label": "Genome assembly. Permitted values: hg19,GRCh37,hg38,GRCh38",
         "type": "alphanumeric",
         "scopes": ["genomicVariations"]
       },
@@ -218,7 +218,7 @@ def filtering_terms():
         if not f_spec_filters: f_spec_filters = spec_filters
         
         # Add HPO and Orphanet filters for individuals scope
-        if scope_endpoint == "individuals":
+        if scope_endpoint == "individuals" or scope_endpoint == "api":
             hpo_filters = generate_hpo_filters()
             ordo_filters = generate_ordo_filters()
             f_spec_filters.extend(hpo_filters)
