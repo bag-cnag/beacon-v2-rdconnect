@@ -6,6 +6,40 @@ from server.logger import LOG
 from server.framework.utils import json_response
 from server.utils.request_origin import check_request_origin
 
+def generate_hpo_filters():
+    """Generate filter objects for each HPO ID"""
+    hpo_ids = config.filters_in.get('hpos', [])
+    # Filter out empty strings
+    hpo_ids = [hpo_id for hpo_id in hpo_ids if hpo_id.strip()]
+    
+    hpo_filters = []
+    for hpo_id in hpo_ids:
+        hpo_filters.append({
+            "id": hpo_id,
+            "label": "Phenotype",
+            "type": "ontology",
+            "scopes": ["individuals"]
+        })
+    
+    return hpo_filters
+
+def generate_ordo_filters():
+    """Generate filter objects for each Orphanet ID"""
+    ordo_ids = config.filters_in.get('ordos', [])
+    # Filter out empty strings
+    ordo_ids = [ordo_id for ordo_id in ordo_ids if ordo_id.strip()]
+    
+    ordo_filters = []
+    for ordo_id in ordo_ids:
+        ordo_filters.append({
+            "id": ordo_id,
+            "label": "Diagnosis",
+            "type": "ontology",
+            "scopes": ["individuals"]
+        })
+    
+    return ordo_filters
+
 ejp_spec_filters = [
       #Individuals filters 
       {
@@ -13,20 +47,6 @@ ejp_spec_filters = [
         "label": "Sex. Permitted values: ncit_C16576, ncit_C20197, ncit_C124294, ncit_C17998",
         "type": "alphanumeric",
         "scopes": ["individuals"]
-      },
-      {
-        "id": "A single Orphanet id or an array of Orphanet ids (e.g. ordo:Orphanet_141091)",
-        "label": "Disease or disorder",
-        "type": "ontology",
-        "scopes": ["individuals"]
-
-      },
-      {
-        "id": "A single HPO id or an array of HPO ids (e.g. hp:0000957)",
-        "label": "Phenotype",
-        "type": "ontology",
-        "scopes": ["individuals"]
-
       },
       {
         "id": "edam:data_2295",
@@ -128,19 +148,12 @@ beacon_spec_filters = [
         "scopes": ["individuals"]
       },
       {
-        "id": "A single Orphanet id or an array of Orphanet ids (e.g. Orphanet:141091)",
-        "label": "Disease or disorder",
-        "type": "ontology",
+        "id": "edam:data_2295",
+        "label": "Causative gene. Permitted values: a single value of a HGNC gene symbol",
+        "type": "alphanumeric",
         "scopes": ["individuals"]
-
       },
-      {
-        "id": "A single HPO id or an array of HPO ids (e.g. HP:0000957)",
-        "label": "Phenotype",
-        "type": "ontology",
-        "scopes": ["individuals"]
-
-      },
+      
       #Biosamples filters
       {  
 
@@ -150,15 +163,22 @@ beacon_spec_filters = [
         "type": "alphanumeric",
         "scopes": ["biosamples"]
       },
-      {
-        "id": "ERN",
-        "label": "ERN. Permitted values: any existing ERN",
-        "type": "alphanumeric",
-        "scopes": ["biosamples"]
-      },
+      #{
+      #  "id": "ERN",
+      #  "label": "ERN. Permitted values: any existing ERN",
+      #  "type": "alphanumeric",
+      #  "scopes": ["biosamples"]
+      #}
+      
+      
       #G_variants filters
       {  
-        #Id "DNA sequencing class"
+        "id": "assemblyId",
+        "label": "Genome assembly. Permitted values: hg19,GRCh37,hg38,GRCh38",
+        "type": "alphanumeric",
+        "scopes": ["genomicVariations"]
+      },
+      {  
         "id": "referenceName",
         "label": "Chromosome",
         "type": "alphanumeric",
@@ -194,8 +214,15 @@ def filtering_terms():
         scope_endpoint = str(request.url).split("/")[-2]
 
         if scope_endpoint == "g_variants": scope_endpoint = "genomicVariations"
-        f_spec_filters = [d for d in spec_filters if d.get("scope") == scope_endpoint]
+        f_spec_filters = [d for d in spec_filters if d.get("scopes")[0] == scope_endpoint]
         if not f_spec_filters: f_spec_filters = spec_filters
+        
+        # Add HPO and Orphanet filters for individuals scope
+        if scope_endpoint == "individuals" or scope_endpoint == "api":
+            hpo_filters = generate_hpo_filters()
+            ordo_filters = generate_ordo_filters()
+            f_spec_filters.extend(hpo_filters)
+            f_spec_filters.extend(ordo_filters)
 
         rsp = {
             'meta': {
