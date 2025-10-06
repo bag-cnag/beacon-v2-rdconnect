@@ -145,12 +145,13 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
             print ("token_status is:")
             print (token_status)
             
-            if len(token_status[0]) > 2:
+            
+            if len(token_status) > 2:
                 projects_from_token = token_status[2]
             else:
                 projects_from_token = []
             
-            if len(token_status[0]) > 3:
+            if len(token_status) > 3:
                 subprojects_from_token = token_status[3]
             else:
                 subprojects_from_token = []
@@ -268,7 +269,8 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             #Add extra property to indicate that the query to participants_by_exp is for beacon purposes and filter by project there
             payload["beacon_query"] = True
             
-            if len(token_status[0]) > 2:    #projects
+            
+            if len(token_status) > 2:    #projects
                 projects_from_token = token_status[2]
             else:
                 projects_from_token = []
