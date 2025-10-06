@@ -29,13 +29,25 @@ def make_response(error_code, error, fields = None):
                 },
                 'query': None,
             },
-            'returnedSchemas': None,
+            'returnedSchemas': [],
+            'returnedGranularity': "count",
+            'receivedRequestSummary':  {
+                'apiVersion': 'v2.0',
+                'requestedSchemas': [],         
+                'requestedGranularity': 'count',
+                'pagination': {
+                    'skip': 1,
+                    'limit': 5,
+                }
+            }
         },
         'response': {
-            'exists': None,
+            'exists': False,
             'error': {'errorCode': error_code,
                       'errorMessage': error},
         },
+        'responseSummary': {'exists': False},
+        
     }
 
 class BeaconBadRequest(web.HTTPBadRequest):
