@@ -22,7 +22,7 @@ async def process_request( request, entity ):
             'requestedSchemas'     : [ { 'entityType': entity, 'schema': supported_schemas_by_entity[ entity ] } ],
         },
         'query': {
-            'pagination'           : { 'skip': 1, 'limit': 5 },
+            'pagination'           : { 'skip': 0, 'limit': 5 },
             'requestedGranularity' : 'count', #["boolean", "count", "aggregated", "record"]
             'filters'              : [],
         },
