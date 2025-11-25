@@ -162,6 +162,25 @@ if __name__ == "__main__":
     # Use watchgod to restart the server on file changes
     run_process(".", target=start_server)'''
 
+@web.middleware
+async def cors_middleware(request, handler):
+    # Handle preflight
+    if request.method == 'OPTIONS':
+        resp = web.Response(status=200)
+    else:
+        resp = await handler(request)
+
+    # Allowed origins could come from config
+    allowed_origins = config.allowed_origins
+
+    origin = request.headers.get("Origin")
+    if origin in allowed_origins:
+        resp.headers["Access-Control-Allow-Origin"] = origin
+        resp.headers["Access-Control-Allow-Credentials"] = "true"
+        resp.headers["Access-Control-Allow-Headers"] = "*"
+        resp.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
+
+    return resp
 
 #Default main
 def main():
@@ -169,15 +188,19 @@ def main():
 
     init_db()
 
-    beacon = web.Application(middlewares=[db_session_middleware])
-    beacon.add_routes(routes)
+    app = web.Application(middlewares=[cors_middleware, db_session_middleware])
+    app.add_routes(routes)
 
+
+    #
+    # ---- Run server ----
+    #
     web.run_app(
-        beacon,
-        host=getattr(config, 'beacon_host', '0.0.0.0'),
-        port=getattr(config, 'beacon_port', 5050),
+        app,
+        host=getattr(config, "beacon_host", "0.0.0.0"),
+        port=getattr(config, "beacon_port", 5050),
         shutdown_timeout=0,
-        ssl_context=None
+        ssl_context=None,
     )
 
 
