@@ -368,7 +368,7 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             #POST case
             if request.body_exists:
                 req_body = await request.json()
-                st_params = req_body["query"]["requestParameters"]
+                st_params = req_body["query"]["requestParameters"] if "requestParameters" in req_body["query"] else {}
 
             #GET case
             else:
@@ -379,13 +379,13 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             chrom = st_params.get('referenceName', '25')
 
             #Need to check (add 1 or get it as it is?)
-            start = int(st_params.get("start", 0))
+            start = int(st_params.get("start", 0)[0]) if isinstance(st_params.get("start", 0), list) else int(st_params.get("start", 0))
             #start = int(st_params.get("start", 0)) + 1
             
             ref = st_params.get('referenceBases', 'AB')
             alt = st_params.get('alternateBases', 'AB')
             assembly = st_params.get('assemblyId', None)
-
+            
             # Check if there are no query parameters at all
             if not st_params:
                 return variants_responses
