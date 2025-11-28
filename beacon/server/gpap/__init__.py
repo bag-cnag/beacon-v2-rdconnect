@@ -141,10 +141,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
             payload = datamanagement_playload( qparams, groups )
 
             #print ("Projects are:")
-            #print (projects)
-            print ("token_status is:")
-            print (token_status)
-            
+            #print (projects)            
             
             if len(token_status) > 2:
                 projects_from_token = token_status[2]
@@ -228,9 +225,6 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
     print ("Roles are:")
     print (roles)'''
     
-    print ("token_status is:")
-    print (token_status)
-
 
     if (token_status[1] == 200):
         
@@ -245,8 +239,8 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
                 participants_to_query.append(e['Participant_ID'])
                 
         
-        print ("Participants to query are:")
-        print (participants_to_query)
+        #print ("Participants to query are:")
+        #print (participants_to_query)
 
         ind_responses = []
 
@@ -300,9 +294,6 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
                 raise BeaconServerError( error = resp.json()[ 'message' ] )
             
             resp = json.loads( resp.text )
-
-            for r in (resp['rows']):
-                print (r['id'])
              
             # Granularity handling
             if "full_access" in roles:
@@ -391,34 +382,35 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
                 return variants_responses
 
             #Handle assembly and chrom issues
-            if assembly is not None and assembly not in config.genome_assembly_supported:
-                raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
+            if st_params:
+                if assembly is not None and assembly not in config.genome_assembly_supported:
+                    raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
 
-            #if assembly is not None and chrom.startswith("NC_"):
-            #    raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
+                #if assembly is not None and chrom.startswith("NC_"):
+                #    raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
 
-            if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
-                raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
-    
-            #RefSeq chrom mapping, hg37
-            if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
-                chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
+                if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
+                    raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
+        
+                #RefSeq chrom mapping, hg37
+                if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
+                    chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
 
-            
-            if chrom.startswith("chr"):
-                chrom = chrom.split("chr")[1]
+                
+                if chrom.startswith("chr"):
+                    chrom = chrom.split("chr")[1]
 
-            if assembly is not None and chrom not in config.filters_in['ref_seq_chrom_map_hg37'].values():
-                raise BeaconServerError( error = [ 'Invalid referenceName (chromosome) provided' ] )
+                if assembly is not None and chrom not in config.filters_in['ref_seq_chrom_map_hg37'].values():
+                    raise BeaconServerError( error = [ 'Invalid referenceName (chromosome) provided' ] )
 
-            if chrom == "MT":
-                chrom = 23
-            elif chrom == "X":
-                chrom = 24
-            elif chrom == "Y":
-                chrom = 25
-            else:
-                pass
+                if chrom == "MT":
+                    chrom = 23
+                elif chrom == "X":
+                    chrom = 24
+                elif chrom == "Y":
+                    chrom = 25
+                else:
+                    pass
 
             variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
 

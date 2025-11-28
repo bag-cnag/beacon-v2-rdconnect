@@ -280,7 +280,8 @@ def build_response( entity, qparams, func, all_data ):
             if info: result_set['info'] = info
 
             # Append to resultSets
-            response['resultSets'].append(result_set)
+            if result_set[resCount]:
+                response['resultSets'].append(result_set)
 
     
 

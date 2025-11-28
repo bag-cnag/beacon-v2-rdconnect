@@ -156,10 +156,14 @@ def handler_jwt_token( entity, fetch_func, build_response_func ):
             roles =  _extract_items( decoded, 'realm_access' )
             
             #Possible roles: full_access, count_access, boolean_access
-            roles = ["count_access"]
-
+            roles = ["full_access"]
+            
+            print ("jwt token info is:")
+            print ("groups:")
             print (groups)
+            print ("projects:")
             print (projects)
+            print ("roles:")
             print (roles)
             
             LOG.debug( 'Token was decoded' )
@@ -176,8 +180,9 @@ def handler_jwt_token( entity, fetch_func, build_response_func ):
 
         #num_total_results, response, gamw = fetch_func( qparams, access_token, groups, projects, request )
         all_data = fetch_func( qparams, access_token, groups, projects, roles, request )
-
-        print (all_data)
+       
+        #Prints responses from endpoints
+        #print (all_data)
         
         # Create reponse
         response_converted = build_beacon_response( entity, qparams, build_response_func, all_data )
