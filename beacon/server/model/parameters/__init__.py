@@ -117,7 +117,7 @@ def validate_filters(api_version, filters, entity ):
                 return False, 'Provided filter "{}"  is not available.'.format( x[ 'value' ]), [ ]
 
             #Check type and if is supported
-            if (filter_key in x) and (x[filter_key] not in (config.filters_in["individuals_supported_type_terms"])) and ("orpha" not in str(x[filter_key]).lower()) and ("hp" not in str(x[filter_key]).lower()):
+            if (filter_key in x) and (x[filter_key] not in (config.filters_in["individuals_supported_type_terms"])) and ("orpha" not in str(x[filter_key]).lower()) and ("hp" not in str(x[filter_key]).lower()) and ("omim" not in str(x[filter_key]).lower()):
                 unsupported_types.append(x[filter_key])
 
         if entity == 'biosamples':

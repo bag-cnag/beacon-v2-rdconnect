@@ -91,7 +91,6 @@ def set_ordo(item, flt_schema):
                 ordo = []
                 for i in mult_values:
                     ordo.append({'id': 'diagnosis', 'value': i})
-        
     return ordo
 
 def set_omim(item, flt_schema):
@@ -102,9 +101,33 @@ def set_omim(item, flt_schema):
     version = flt_schema["version"]
     ontology_id = config.filters_in['ontologies_' + version]['diagnosis']
 
-    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and (item[value].lower().startswith('omim')):
-        omim_string = "OMIM:" + re.split('[_ :]', item[value])[-1]
-        omim = {'id': 'disorders', 'value': omim_string}
+    if version == "v0.2":
+        key = value = "id"
+    
+    if not isinstance(item["id"], list):
+        if (key in item) and (item[value].lower().startswith('omim')):
+            omim_string = "OMIM:" + re.split('[_ :]', item[value])[-1]
+            omim = {'id': 'disorders', 'value': omim_string}
+    else:
+        mult_values = []
+        if key in item:
+            for obj in item[key]:
+                if ((obj.lower().startswith('omim'))):
+                    omim_string = "OMIM:" + re.split('[_ :]', obj)[-1]
+                    mult_values.append(omim_string)
+
+        if len(mult_values) > 0:
+            req_origin = check_request_origin()
+
+            #For EJP, if we have an array the logic is OR
+            if (req_origin == 'ejp'):
+                omim = {'id': 'disorders', 'value': mult_values}
+            
+            #Otherwise, the logic is AND as in Beaconv2 spec
+            else:
+                omim = []
+                for i in mult_values:
+                    omim.append({'id': 'disorders', 'value': i})
     
     return omim
 
@@ -265,11 +288,19 @@ def ps_to_gpap( qparams, psid = None ):
                     fltrs.append(i)
                 else:
                     fltrs.append(ordo_fltr)
-                
+            
+            if omim_fltr:
+                if isinstance(omim_fltr, list) and omim_fltr[0]["id"] == "disorders":
+                  for i in omim_fltr:
+                    fltrs.append(i)
+                else:
+                    fltrs.append(omim_fltr)
+                            
             #if hpo_fltr:  fltrs.append(hpo_fltr)
             #if ordo_fltr: fltrs.append(ordo_fltr)
+            #if omim_fltr: fltrs.append(omim_fltr)
+
             if sex_fltr:  fltrs.append(sex_fltr)
-            if omim_fltr: fltrs.append(omim_fltr)
             if gene_fltr: fltrs.append(gene_fltr)
             
             #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
@@ -285,7 +316,6 @@ def ps_to_gpap( qparams, psid = None ):
     else:
         fltrs = []
 
-    print (fltrs)
     return fltrs
 
 # Function to translate from RequestParameters to DataManagement filtering
@@ -337,7 +367,8 @@ def phenostore_playload( qparams, psid ):
             'sex', 
             'features', 
             'diagnosis', 
-            'measurements', 
+            'disorders',
+            'genes',
             'id'
         ],
         'sorted'  : [],
