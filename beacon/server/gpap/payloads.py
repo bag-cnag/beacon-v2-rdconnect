@@ -369,7 +369,13 @@ def phenostore_playload( qparams, psid ):
             'diagnosis', 
             'disorders',
             'genes',
-            'id'
+            'id',
+            'birth',
+            'index',
+            'affectedStatus',
+            'solved',
+            'otheraffected',
+            'owner'
         ],
         'sorted'  : [],
         'filtered': ps_to_gpap( qparams, psid ),
@@ -391,21 +397,13 @@ def datamanagement_playload( qparams, groups ):
         'fields': [
             'RD_Connect_ID_Experiment',
             'Participant_ID',
-            'EGA_ID',
-            'Owner',
-            'in_platform',
-            'POSTEMBARGO',
+            'project',
+            'subproject',
             'experiment_type',
             'kit',
             'tissue',
             'library_source',
-            'library_selection',
-            'library_strategy',
-            'library_contruction_protocol',
-            'design_description',
-            'read_insert_size'
-            'erns',
-            'tumour_experiment_id'
+            'LOADDATE'
         ],
         'sorted':   [],
         'filtered': dm_to_gpap( qparams )
