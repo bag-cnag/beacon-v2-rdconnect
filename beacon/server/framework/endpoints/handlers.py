@@ -247,6 +247,9 @@ def handler_variants( entity, fetch_func, build_response_func ):
         qparams = await process_request( request, entity )
 
         
+        #Possible roles: full_access, count_access, boolean_access
+        roles = ["full_access"]
+        
         #num_total_results, response = await fetch_func( qparams, access_token, groups, projects, request )
         all_data = await fetch_func( qparams, {"service_token":service_token, "fixed_token":access_token}, groups, projects, roles, request )
 

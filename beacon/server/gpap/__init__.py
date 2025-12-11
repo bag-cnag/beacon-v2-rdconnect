@@ -417,7 +417,7 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             #print ("Fetch variants by variant")
             #print (variants_dict)
 
-            elastic_res = genomics_variants_resp_handling(qparams, access_token['service_token'], variants_dict, experiments_to_query)
+            elastic_res = genomics_variants_resp_handling(qparams, access_token['service_token'], variants_dict, experiments_to_query, roles)
 
             #Elastic
             #if config.fixed_token_use:

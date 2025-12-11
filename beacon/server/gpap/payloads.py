@@ -498,7 +498,7 @@ def query_genomics_variants(access_token, chrom, start, experiments_to_query):
 
 
 
-def genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query):
+def genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query, roles):
 
     #Get from variants dicts
     chrom = variants_dict["chrom"]
@@ -519,6 +519,8 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
         for result in res['snv']['hits']['hits']:
             if result['_source']['alt']==alt and result["_source"]['ref']==ref:
 
+                print (result)
+
                 #Count the number of samples
                 if "fields" in result and "samples_germline":
                     found = len(result["fields"]["samples_germline"])
@@ -531,8 +533,23 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
                             homozygous +=1
                         else:
                             pass
+                    
+                    if "full_access" in roles:
+                        rows = []
+                        for eff in result["fields"]["effs"]:
+                            rows.append({
+                                "gene_name": eff["gene_name"],
+                                "transcript_id": [eff["transcript_id"]],
+                                "functional_class": eff["functional_class"],
+                                "amino_acid_length": eff["amino_acid_length"],
+                                "effect_impact": eff["effect_impact"],
+                                "effect": eff["effect"]
+                            })
+                        rows = result["fields"]["samples_germline"]
+                    else:
+                        rows = []
 
-                    found_zygosity = [{"Homozygous":{"total":homozygous}}, {"Heterozygous":{"total":heterozygous}}]
+                    found_zygosity = [{"Homozygous":{"total":homozygous, "rows":rows}}, {"Heterozygous":{"total":heterozygous, "rows":rows}}]
                 #else:
                 #    found+=1
     
