@@ -536,18 +536,34 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
                     
                     if "full_access" in roles:
                         rows = []
-                        for eff in result["fields"]["effs"]:
-                            rows.append({
-                                "gene_name": eff["gene_name"],
-                                "transcript_id": [eff["transcript_id"]],
-                                "functional_class": eff["functional_class"],
-                                "amino_acid_length": eff["amino_acid_length"],
-                                "effect_impact": eff["effect_impact"],
-                                "effect": eff["effect"]
-                            })
-                        rows = result["fields"]["samples_germline"]
+                        samples = result["fields"]["samples_germline"]
+                        effs = result["fields"].get("effs", [])
+                        
+                        # Group effects by transcript_id and build transcript information array
+                        transcripts_info = []
+                        if effs:
+                            for eff in effs:
+                                transcript_data = {
+                                    "transcript_id": eff.get("transcript_id", ""),
+                                    "codon_change": eff.get("codon_change", ""),
+                                    "amino_acid_change": eff.get("amino_acid_change", ""),
+                                    "gene_name": eff.get("gene_name", ""),
+                                    #"functional_class": eff.get("functional_class", ""),
+                                    #"amino_acid_length": eff.get("amino_acid_length", ""),
+                                    #"effect_impact": eff.get("effect_impact", ""),
+                                    #"effect": eff.get("effect", "")
+                                }
+                                transcripts_info.append(transcript_data)
+                        
+                        # Add one row per sample with the same transcripts information
+                        for sample in samples:
+                            row = sample.copy()
+                            row["transcripts"] = transcripts_info
+                            rows.append(row)
                     else:
                         rows = []
+                    
+                    print (rows)
 
                     found_zygosity = [{"Homozygous":{"total":homozygous, "rows":rows}}, {"Heterozygous":{"total":heterozygous, "rows":rows}}]
                 #else:
