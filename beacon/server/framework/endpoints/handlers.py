@@ -116,7 +116,7 @@ def handler_fixed_token( entity, fetch_func, build_response_func ):
         #Set values as this info is not in the fixed token
         groups = ["beacon"]
         projects = ["beacon"]
-        roles = ["beacon"]
+        roles = ["beacon", "full_access"]
             
         if len( projects ) == 0:
             projects.append( 'no_project' )
@@ -156,10 +156,14 @@ def handler_jwt_token( entity, fetch_func, build_response_func ):
             roles =  _extract_items( decoded, 'realm_access' )
             
             #Possible roles: full_access, count_access, boolean_access
-            roles = ["count_access"]
-
+            roles = ["full_access"]
+            
+            print ("jwt token info is:")
+            print ("groups:")
             print (groups)
+            print ("projects:")
             print (projects)
+            print ("roles:")
             print (roles)
             
             LOG.debug( 'Token was decoded' )
@@ -176,8 +180,9 @@ def handler_jwt_token( entity, fetch_func, build_response_func ):
 
         #num_total_results, response, gamw = fetch_func( qparams, access_token, groups, projects, request )
         all_data = fetch_func( qparams, access_token, groups, projects, roles, request )
-
-        print (all_data)
+       
+        #Prints responses from endpoints
+        #print (all_data)
         
         # Create reponse
         response_converted = build_beacon_response( entity, qparams, build_response_func, all_data )
@@ -241,6 +246,9 @@ def handler_variants( entity, fetch_func, build_response_func ):
 
         qparams = await process_request( request, entity )
 
+        
+        #Possible roles: full_access, count_access, boolean_access
+        roles = ["full_access"]
         
         #num_total_results, response = await fetch_func( qparams, access_token, groups, projects, request )
         all_data = await fetch_func( qparams, {"service_token":service_token, "fixed_token":access_token}, groups, projects, roles, request )

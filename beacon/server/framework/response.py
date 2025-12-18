@@ -21,7 +21,11 @@ def handle_results_ranges(all_data):
 
             if (total_data['total'] > 0) and (total_data['total'] < c_threshold):
                 f_num_total_results = c_threshold - 1
+                 
                 data[res_id] = {'total':f_num_total_results}
+
+                #Full Records with ranges is currently incompatible as it does not make sense to return ranges for full records
+                #data[res_id] = {'total':f_num_total_results, 'rows':total_data['rows']}
     
     return (all_data)
     #return f_num_total_results
@@ -32,7 +36,6 @@ def build_beacon_response( entity, qparams, build_response_func, all_data):
     #TO HANDLE
     #num_total_results = handle_results_ranges(num_total_results)
     all_data_ranges = handle_results_ranges(all_data)
-
     num_total_results = sum(entry[key]['total'] for entry in all_data_ranges for key in entry)
 
     rst = { 
@@ -277,7 +280,8 @@ def build_response( entity, qparams, func, all_data ):
             if info: result_set['info'] = info
 
             # Append to resultSets
-            response['resultSets'].append(result_set)
+            if result_set[resCount]:
+                response['resultSets'].append(result_set)
 
     
 

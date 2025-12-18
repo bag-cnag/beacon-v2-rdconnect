@@ -39,6 +39,23 @@ def generate_ordo_filters():
         })
     
     return ordo_filters
+  
+def generate_omim_filters():
+    """Generate filter objects for each OMIM ID"""
+    omim_ids = config.filters_in.get('omims', [])
+    # Filter out empty strings
+    omim_ids = [omim_id for omim_id in omim_ids if omim_id.strip()]
+    
+    omim_filters = []
+    for omim_id in omim_ids:
+        omim_filters.append({
+            "id": omim_id,
+            "label": "Disorder",
+            "type": "ontology",
+            "scopes": ["individuals"]
+        })
+    
+    return omim_filters
 
 ejp_spec_filters = [
       #Individuals filters 
@@ -215,15 +232,16 @@ def filtering_terms():
 
         if scope_endpoint == "g_variants": scope_endpoint = "genomicVariations"
         f_spec_filters = [d for d in spec_filters if d.get("scopes")[0] == scope_endpoint]
-        if not f_spec_filters: f_spec_filters = spec_filters
+        if not f_spec_filters: f_spec_filters = list(spec_filters)  # Create a copy to avoid mutating the module-level list
         
         # Add HPO and Orphanet filters for individuals scope
         if scope_endpoint == "individuals" or scope_endpoint == "api":
             hpo_filters = generate_hpo_filters()
             ordo_filters = generate_ordo_filters()
+            omim_filters = generate_omim_filters()
             f_spec_filters.extend(hpo_filters)
             f_spec_filters.extend(ordo_filters)
-
+            f_spec_filters.extend(omim_filters)
         rsp = {
             'meta': {
                 'beaconId':	config.beacon_id,

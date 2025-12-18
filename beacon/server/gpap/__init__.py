@@ -141,10 +141,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
             payload = datamanagement_playload( qparams, groups )
 
             #print ("Projects are:")
-            #print (projects)
-            print ("token_status is:")
-            print (token_status)
-            
+            #print (projects)            
             
             if len(token_status) > 2:
                 projects_from_token = token_status[2]
@@ -228,9 +225,6 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
     print ("Roles are:")
     print (roles)'''
     
-    print ("token_status is:")
-    print (token_status)
-
 
     if (token_status[1] == 200):
         
@@ -245,8 +239,8 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
                 participants_to_query.append(e['Participant_ID'])
                 
         
-        print ("Participants to query are:")
-        print (participants_to_query)
+        #print ("Participants to query are:")
+        #print (participants_to_query)
 
         ind_responses = []
 
@@ -300,9 +294,6 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
                 raise BeaconServerError( error = resp.json()[ 'message' ] )
             
             resp = json.loads( resp.text )
-
-            for r in (resp['rows']):
-                print (r['id'])
              
             # Granularity handling
             if "full_access" in roles:
@@ -368,7 +359,7 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             #POST case
             if request.body_exists:
                 req_body = await request.json()
-                st_params = req_body["query"]["requestParameters"]
+                st_params = req_body["query"]["requestParameters"] if "requestParameters" in req_body["query"] else {}
 
             #GET case
             else:
@@ -379,53 +370,54 @@ async def fetch_variants_by_variant( qparams, access_token, groups, projects, ro
             chrom = st_params.get('referenceName', '25')
 
             #Need to check (add 1 or get it as it is?)
-            start = int(st_params.get("start", 0))
+            start = int(st_params.get("start", 0)[0]) if isinstance(st_params.get("start", 0), list) else int(st_params.get("start", 0))
             #start = int(st_params.get("start", 0)) + 1
             
             ref = st_params.get('referenceBases', 'AB')
             alt = st_params.get('alternateBases', 'AB')
             assembly = st_params.get('assemblyId', None)
-
+            
             # Check if there are no query parameters at all
             if not st_params:
                 return variants_responses
 
             #Handle assembly and chrom issues
-            if assembly is not None and assembly not in config.genome_assembly_supported:
-                raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
+            if st_params:
+                if assembly is not None and assembly not in config.genome_assembly_supported:
+                    raise BeaconServerError( error = [ 'Assembly id not found into database."' ] )
 
-            #if assembly is not None and chrom.startswith("NC_"):
-            #    raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
+                #if assembly is not None and chrom.startswith("NC_"):
+                #    raise BeaconServerError( error = [ 'Reference name should be in chr<Z> or <Z> notation (e.g. chr9 or 9)"' ] )
 
-            if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
-                raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
-    
-            #RefSeq chrom mapping, hg37
-            if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
-                chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
+                if assembly is None and chrom not in config.filters_in['ref_seq_chrom_map_hg37']:
+                    raise BeaconServerError( error = [ 'Reference name or version not found into database.' ] )
+        
+                #RefSeq chrom mapping, hg37
+                if chrom.startswith("NC_") and chrom in config.filters_in['ref_seq_chrom_map_hg37']:
+                    chrom = config.filters_in['ref_seq_chrom_map_hg37'][chrom]
 
-            
-            if chrom.startswith("chr"):
-                chrom = chrom.split("chr")[1]
+                
+                if chrom.startswith("chr"):
+                    chrom = chrom.split("chr")[1]
 
-            if assembly is not None and chrom not in config.filters_in['ref_seq_chrom_map_hg37'].values():
-                raise BeaconServerError( error = [ 'Invalid referenceName (chromosome) provided' ] )
+                if assembly is not None and chrom not in config.filters_in['ref_seq_chrom_map_hg37'].values():
+                    raise BeaconServerError( error = [ 'Invalid referenceName (chromosome) provided' ] )
 
-            if chrom == "MT":
-                chrom = 23
-            elif chrom == "X":
-                chrom = 24
-            elif chrom == "Y":
-                chrom = 25
-            else:
-                pass
+                if chrom == "MT":
+                    chrom = 23
+                elif chrom == "X":
+                    chrom = 24
+                elif chrom == "Y":
+                    chrom = 25
+                else:
+                    pass
 
             variants_dict = {"chrom":chrom, "start":start, "ref":ref, "alt":alt}
 
             #print ("Fetch variants by variant")
             #print (variants_dict)
 
-            elastic_res = genomics_variants_resp_handling(qparams, access_token['service_token'], variants_dict, experiments_to_query)
+            elastic_res = genomics_variants_resp_handling(qparams, access_token['service_token'], variants_dict, experiments_to_query, roles)
 
             #Elastic
             #if config.fixed_token_use:
