@@ -208,6 +208,16 @@ def set_ern(item):
     
     return ern
 
+
+def set_subproject(item):
+    """ Set Subproject """
+    subproject = {}
+    if item["id"] == 'subproject':
+        if item["value"] in config.filters_in[ 'subprojects' ]:
+            subproject = { 'id': 'subproject', 'value': [ item["value"] ] }
+    
+    return subproject
+
         
 def set_unsupported_filter(item, service):    
     obj = {}
@@ -336,13 +346,15 @@ def dm_to_gpap( qparams ):
             #Set filters
             ern_fltr = set_ern(item)
             library_strategy_fltr = set_library_strategy(item)
-
+            subproject_fltr = set_subproject(item)
+            
             if ern_fltr:  fltrs.append(ern_fltr)
             if library_strategy_fltr: fltrs.append(library_strategy_fltr)
-
+            if subproject_fltr: fltrs.append(subproject_fltr)
+            
             #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
             req_origin = check_request_origin()
-            if (req_origin != "ejp") and (not ern_fltr and not library_strategy_fltr) and ("id" in item and item["id"] != ""):
+            if (req_origin != "ejp") and (not ern_fltr and not library_strategy_fltr and not subproject_fltr) and ("id" in item and item["id"] != ""):
                 unsupported_filter = set_unsupported_filter(item, "dm")
                 if unsupported_filter:
                     fltrs.append(unsupported_filter)

@@ -284,6 +284,10 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             
             #for g in groups[0]:
             #    payload['filtered'].append({'id': "owner", 'value': g})
+
+            for f in payload['filtered'].copy():
+                if f.get('id') == 'subproject':
+                    payload['filtered'].remove(f)
             
             print ("PhenoStore Payload is:")
             print (payload)

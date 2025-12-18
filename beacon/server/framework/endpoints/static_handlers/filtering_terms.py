@@ -180,6 +180,13 @@ beacon_spec_filters = [
         "type": "alphanumeric",
         "scopes": ["biosamples"]
       },
+
+      {
+        "id": "subproject",
+        "label": "Subproject. Permitted values: any existing subproject e.g. NAGENPEDIATRICS",
+        "type": "alphanumeric",
+        "scopes": ["biosamples"]
+      },
       #{
       #  "id": "ERN",
       #  "label": "ERN. Permitted values: any existing ERN",
