@@ -399,10 +399,11 @@ def datamanagement_playload( qparams, groups ):
             'Participant_ID',
             'project',
             'subproject',
-            'experiment_type',
+            #'experiment_type',
             'kit',
             'tissue',
             'library_source',
+            'library_strategy',
             'LOADDATE'
         ],
         'sorted':   [],
