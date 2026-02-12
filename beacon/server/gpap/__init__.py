@@ -136,7 +136,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
         dm_responses = []
 
         for i in config.queries_endpoints:
-            headers = { 'Authorization': 'Token {}'.format( i['dm_token'] ), 'Accept': 'application/json' }
+            headers = { 'Authorization': 'Token {}'.format( i['dm_token'] ), 'Content-Type': 'application/json' }
 
             payload = datamanagement_playload( qparams, groups )
 
