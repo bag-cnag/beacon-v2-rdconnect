@@ -30,6 +30,14 @@ def _extract_items( token,name) :
         return []
 
 
+def _extract_groups( token ):
+    """Extract groups from token: try 'groupold' first (for Nasert), fall back to 'group'."""
+    groups = _extract_items( token, 'groupold' )
+    if not groups:
+        groups = _extract_items( token, 'group' )
+    return groups
+
+
 # ('datasets' , _datasets_proxy, fetch_datsets_by_dataset, build_dataset_response)
 def generic( entity, fetch_func, build_response_func ):
     async def wrapper( request ):
@@ -49,7 +57,7 @@ def generic( entity, fetch_func, build_response_func ):
         try:
             decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
             LOG.debug( 'Token was decoded' )
-            groups   = _extract_items( decoded, 'group' )
+            groups   = _extract_groups( decoded )
             projects = _extract_items( decoded, 'group_projects' )
         except Exception as e:
             print( 'Exception', e )
@@ -151,7 +159,7 @@ def handler_jwt_token( entity, fetch_func, build_response_func ):
 
         try:
             decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
-            groups   = _extract_items( decoded, 'group' )
+            groups   = _extract_groups( decoded )
             projects = _extract_items( decoded, 'group_projects' )
             roles =  _extract_items( decoded, 'realm_access' )
             
@@ -216,7 +224,7 @@ def handler_variants( entity, fetch_func, build_response_func ):
 
             if not config.fixed_token_use:
                 decoded  = jwt.decode (access_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
-                groups   = _extract_items( decoded, 'group' )
+                groups   = _extract_groups( decoded )
                 projects = _extract_items( decoded, 'group_projects' )
                 roles =  _extract_items( decoded, 'realm_access' )
                 LOG.debug( 'Token was decoded' )
@@ -227,7 +235,7 @@ def handler_variants( entity, fetch_func, build_response_func ):
                 service_token = get_kc_token_no_credentials()['access_token']
 
                 decoded  = jwt.decode (service_token, public_key, algorithms = jwt_algorithm, options = jwt_options )
-                groups   = _extract_items( decoded, 'group' )
+                groups   = _extract_groups( decoded )
                 projects = _extract_items( decoded, 'group_projects' )
                 roles =  _extract_items( decoded, 'realm_access' )
                 LOG.debug( 'Token was decoded' )

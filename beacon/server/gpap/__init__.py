@@ -163,6 +163,9 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
                 if subprojects_from_token:
                     payload['filtered'].append({'id': "subproject", 'value': subprojects_from_token})
             
+            if not config.fixed_token_use and check_request_origin() == "nasertic":
+                payload['filtered'].append({'id': "project", 'value': ['NAGENDATA']})
+            
             
             print ("DM Payload is:")
             print (payload)
