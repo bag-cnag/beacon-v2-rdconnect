@@ -91,7 +91,6 @@ def set_ordo(item, flt_schema):
                 ordo = []
                 for i in mult_values:
                     ordo.append({'id': 'diagnosis', 'value': i})
-        
     return ordo
 
 def set_omim(item, flt_schema):
@@ -102,9 +101,33 @@ def set_omim(item, flt_schema):
     version = flt_schema["version"]
     ontology_id = config.filters_in['ontologies_' + version]['diagnosis']
 
-    if (key in item) and ((item[key] == ontology_id) or (item[key] == ontology_id.split(":")[-1])) and (item[value].lower().startswith('omim')):
-        omim_string = "OMIM:" + re.split('[_ :]', item[value])[-1]
-        omim = {'id': 'disorders', 'value': omim_string}
+    if version == "v0.2":
+        key = value = "id"
+    
+    if not isinstance(item["id"], list):
+        if (key in item) and (item[value].lower().startswith('omim')):
+            omim_string = "OMIM:" + re.split('[_ :]', item[value])[-1]
+            omim = {'id': 'disorders', 'value': omim_string}
+    else:
+        mult_values = []
+        if key in item:
+            for obj in item[key]:
+                if ((obj.lower().startswith('omim'))):
+                    omim_string = "OMIM:" + re.split('[_ :]', obj)[-1]
+                    mult_values.append(omim_string)
+
+        if len(mult_values) > 0:
+            req_origin = check_request_origin()
+
+            #For EJP, if we have an array the logic is OR
+            if (req_origin == 'ejp'):
+                omim = {'id': 'disorders', 'value': mult_values}
+            
+            #Otherwise, the logic is AND as in Beaconv2 spec
+            else:
+                omim = []
+                for i in mult_values:
+                    omim.append({'id': 'disorders', 'value': i})
     
     return omim
 
@@ -265,11 +288,19 @@ def ps_to_gpap( qparams, psid = None ):
                     fltrs.append(i)
                 else:
                     fltrs.append(ordo_fltr)
-                
+            
+            if omim_fltr:
+                if isinstance(omim_fltr, list) and omim_fltr[0]["id"] == "disorders":
+                  for i in omim_fltr:
+                    fltrs.append(i)
+                else:
+                    fltrs.append(omim_fltr)
+                            
             #if hpo_fltr:  fltrs.append(hpo_fltr)
             #if ordo_fltr: fltrs.append(ordo_fltr)
+            #if omim_fltr: fltrs.append(omim_fltr)
+
             if sex_fltr:  fltrs.append(sex_fltr)
-            if omim_fltr: fltrs.append(omim_fltr)
             if gene_fltr: fltrs.append(gene_fltr)
             
             #For generic Beaconv2 spec include every filter in the query (in EJP unsupported filters are ignored)
@@ -285,7 +316,6 @@ def ps_to_gpap( qparams, psid = None ):
     else:
         fltrs = []
 
-    print (fltrs)
     return fltrs
 
 # Function to translate from RequestParameters to DataManagement filtering
@@ -327,12 +357,29 @@ def phenostore_playload( qparams, psid ):
     PhenoStore filtering ciretia to be included as playload in each query.
     """
     return {
-        'page'    : 1,
+        #'page'    : 1,
         #In case of returning records need to have a pageSize (to check)
-        'pageSize': 50,
-        #'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        #'pageSize': 50,
+        'page': 1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+        'pageSize': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+         #Configure fields to return in the full response
+        'fields': [
+            'sex', 
+            'features', 
+            'diagnosis', 
+            'disorders',
+            'genes',
+            'id',
+            'birth',
+            'index',
+            'affectedStatus',
+            'solved',
+            'otheraffected',
+            'owner'
+        ],
         'sorted'  : [],
-        'filtered': ps_to_gpap( qparams, psid )
+        'filtered': ps_to_gpap( qparams, psid ),
+       
     }
 
 
@@ -343,34 +390,26 @@ def datamanagement_playload( qparams, groups ):
 
     payload = {
         # In the case of 0 results and with page set to 2, DM API returns a 500. Setting to 1 solves it.
-        #'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
-        'page':     1,
-        'pageSize': 100000,
-        #'pageSize': 1 + qparams[ 'query' ][ 'pagination' ][ 'limit' ],
+        #'page':     1,
+        #'pageSize': 100000,
+        'page':     1 + qparams[ 'query' ][ 'pagination' ][ 'skip' ],
+        'pageSize': qparams[ 'query' ][ 'pagination' ][ 'limit' ],
         'fields': [
             'RD_Connect_ID_Experiment',
             'Participant_ID',
-            'EGA_ID',
-            'Owner',
-            'in_platform',
-            'POSTEMBARGO',
-            'experiment_type',
+            'project',
+            'subproject',
+            #'experiment_type',
             'kit',
             'tissue',
             'library_source',
-            'library_selection',
             'library_strategy',
-            'library_contruction_protocol',
-            'design_description',
-            'read_insert_size'
-            'erns',
-            'tumour_experiment_id'
+            'LOADDATE'
         ],
         'sorted':   [],
         'filtered': dm_to_gpap( qparams )
     }
 
-    print (payload['filtered'])
 
     return payload
 
@@ -442,9 +481,12 @@ def query_genomics_variants(access_token, chrom, start, experiments_to_query):
 
     headers = {'Content-Type': 'application/json', 'Accept':"*", 'X-TOKEN-AUTH': access_token}
     
-    #Query for all samples (Need to see how to get the samples list. From DM experiments or  )
-    es_body = {"size":-1,"from":0,"fromCNV":0,"chrom":[{"chrom": chrom, "pos": start, "end_pos": start}],"indel":False,"svn":False,"genotypefeatures":{"other":False,"coding":False,"RNA":False},"variantclasses":{"high":False,"low":False,"moderate":False,"modifier":False},"variantconsequences":{"transcript_ablation":False,"splice_acceptor_variant":False,"splice_donor_variant":False,"stop_gained":False,"frameshift_variant":False,"stop_lost":False,"start_lost":False,"transcript_amplification":False,"feature_elongation":False,"feature_truncation":False,"inframe_insertion":False,"inframe_deletion":False,"missense_variant":False,"protein_altering_variant":False,"splice_donor_5th_base_variant":False,"splice_region_variant":False,"splice_donor_region_variant":False,"splice_polypyrimidine_tract_variant":False,"incomplete_terminal_codon_variant":False,"start_retained_variant":False,"stop_retained_variant":False,"synonymous_variant":False,"coding_sequence_variant":False,"mature_miRNA_variant":False,"prime_5_UTR_variant":False,"prime_3_UTR_variant":False,"non_coding_transcript_exon_variant":False,"intron_variant":False,"NMD_transcript_variant":False,"non_coding_transcript_variant":False,"coding_transcript_variant":False,"upstream_gene_variant":False,"downstream_gene_variant":False,"TFBS_ablation":False,"TFBS_amplification":False,"TF_binding_site_variant":False,"regulatory_region_ablation":False,"regulatory_region_amplification":False,"regulatory_region_variant":False,"intergenic_variant":False,"sequence_variant":False},"mutationtaster":{"A":False,"D":False,"P":False},"intervarclasses":{"P":False,"LP":False,"B":False,"LB":False,"VUS":False},"clinvarclasses":{"P":False,"L":False,"A":False,"U":False,"C":False,"D":False},"onco_filter":{"K":False,"P1":False,"P2":False,"PP":False},"onco_classifier":{"O":False,"LO":False,"VUS":False,"B":False,"LB":False},"polyphen2hvarpred":{"D":False,"P":False,"B":False},"population":{},"siftpred":{"D":False,"T":False},"gnomad_filter":{"pass":False,"nonpass":False},"gene":[],"samples_germline":samples_germline,"samples_somatic":[],"compound_in":False,"cosmic":False,"qc_filter":{"dp_tumor":10,"dp_control":10,"dp_ref_tumor":10,"dp_alt_tumor":3,"vaf_tumor_low":0.05,"vaf_tumor_high":0.8},"nprograms":0,"programs_filter":{"mutect":False,"strelka":False,"caveman":False,"muse":False,"lancet":False},"cnv_germline":True,"cnv_somatic":False}
-    
+    #If no parameters are provided, query for all samples without chrom details (query fails)
+    if chrom == '25':
+        es_body = {"size":3000,"from":0,"fromCNV":0,"chrom":[],"indel":False,"svn":False,"genotypefeatures":{"other":False,"coding":False,"RNA":False},"variantclasses":{"high":False,"low":False,"moderate":False,"modifier":False},"variantconsequences":{"transcript_ablation":False,"splice_acceptor_variant":False,"splice_donor_variant":False,"stop_gained":False,"frameshift_variant":False,"stop_lost":False,"start_lost":False,"transcript_amplification":False,"feature_elongation":False,"feature_truncation":False,"inframe_insertion":False,"inframe_deletion":False,"missense_variant":False,"protein_altering_variant":False,"splice_donor_5th_base_variant":False,"splice_region_variant":False,"splice_donor_region_variant":False,"splice_polypyrimidine_tract_variant":False,"incomplete_terminal_codon_variant":False,"start_retained_variant":False,"stop_retained_variant":False,"synonymous_variant":False,"coding_sequence_variant":False,"mature_miRNA_variant":False,"prime_5_UTR_variant":False,"prime_3_UTR_variant":False,"non_coding_transcript_exon_variant":False,"intron_variant":False,"NMD_transcript_variant":False,"non_coding_transcript_variant":False,"coding_transcript_variant":False,"upstream_gene_variant":False,"downstream_gene_variant":False,"TFBS_ablation":False,"TFBS_amplification":False,"TF_binding_site_variant":False,"regulatory_region_ablation":False,"regulatory_region_amplification":False,"regulatory_region_variant":False,"intergenic_variant":False,"sequence_variant":False},"mutationtaster":{"A":False,"D":False,"P":False},"intervarclasses":{"P":False,"LP":False,"B":False,"LB":False,"VUS":False},"clinvarclasses":{"P":False,"L":False,"A":False,"U":False,"C":False,"D":False},"onco_filter":{"K":False,"P1":False,"P2":False,"PP":False},"onco_classifier":{"O":False,"LO":False,"VUS":False,"B":False,"LB":False},"polyphen2hvarpred":{"D":False,"P":False,"B":False},"population":{},"siftpred":{"D":False,"T":False},"gnomad_filter":{"pass":False,"nonpass":False},"gene":[],"samples_germline":samples_germline,"samples_somatic":[],"compound_in":False,"cosmic":False,"qc_filter":{"dp_tumor":10,"dp_control":10,"dp_ref_tumor":10,"dp_alt_tumor":3,"vaf_tumor_low":0.05,"vaf_tumor_high":0.8},"nprograms":0,"programs_filter":{"mutect":False,"strelka":False,"caveman":False,"muse":False,"lancet":False},"cnv_germline":True,"cnv_somatic":False}
+    else:
+        es_body = {"size":-1,"from":0,"fromCNV":0,"chrom":[{"chrom": chrom, "pos": start, "end_pos": start}],"indel":False,"svn":False,"genotypefeatures":{"other":False,"coding":False,"RNA":False},"variantclasses":{"high":False,"low":False,"moderate":False,"modifier":False},"variantconsequences":{"transcript_ablation":False,"splice_acceptor_variant":False,"splice_donor_variant":False,"stop_gained":False,"frameshift_variant":False,"stop_lost":False,"start_lost":False,"transcript_amplification":False,"feature_elongation":False,"feature_truncation":False,"inframe_insertion":False,"inframe_deletion":False,"missense_variant":False,"protein_altering_variant":False,"splice_donor_5th_base_variant":False,"splice_region_variant":False,"splice_donor_region_variant":False,"splice_polypyrimidine_tract_variant":False,"incomplete_terminal_codon_variant":False,"start_retained_variant":False,"stop_retained_variant":False,"synonymous_variant":False,"coding_sequence_variant":False,"mature_miRNA_variant":False,"prime_5_UTR_variant":False,"prime_3_UTR_variant":False,"non_coding_transcript_exon_variant":False,"intron_variant":False,"NMD_transcript_variant":False,"non_coding_transcript_variant":False,"coding_transcript_variant":False,"upstream_gene_variant":False,"downstream_gene_variant":False,"TFBS_ablation":False,"TFBS_amplification":False,"TF_binding_site_variant":False,"regulatory_region_ablation":False,"regulatory_region_amplification":False,"regulatory_region_variant":False,"intergenic_variant":False,"sequence_variant":False},"mutationtaster":{"A":False,"D":False,"P":False},"intervarclasses":{"P":False,"LP":False,"B":False,"LB":False,"VUS":False},"clinvarclasses":{"P":False,"L":False,"A":False,"U":False,"C":False,"D":False},"onco_filter":{"K":False,"P1":False,"P2":False,"PP":False},"onco_classifier":{"O":False,"LO":False,"VUS":False,"B":False,"LB":False},"polyphen2hvarpred":{"D":False,"P":False,"B":False},"population":{},"siftpred":{"D":False,"T":False},"gnomad_filter":{"pass":False,"nonpass":False},"gene":[],"samples_germline":samples_germline,"samples_somatic":[],"compound_in":False,"cosmic":False,"qc_filter":{"dp_tumor":10,"dp_control":10,"dp_ref_tumor":10,"dp_alt_tumor":3,"vaf_tumor_low":0.05,"vaf_tumor_high":0.8},"nprograms":0,"programs_filter":{"mutect":False,"strelka":False,"caveman":False,"muse":False,"lancet":False},"cnv_germline":True,"cnv_somatic":False}
+
 
     try:
         res = requests.post(url, json=es_body, headers=headers)  
@@ -457,7 +499,7 @@ def query_genomics_variants(access_token, chrom, start, experiments_to_query):
 
 
 
-def genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query):
+def genomics_variants_resp_handling(qparams, access_token, variants_dict, experiments_to_query, roles):
 
     #Get from variants dicts
     chrom = variants_dict["chrom"]
@@ -478,6 +520,8 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
         for result in res['snv']['hits']['hits']:
             if result['_source']['alt']==alt and result["_source"]['ref']==ref:
 
+                print (result)
+
                 #Count the number of samples
                 if "fields" in result and "samples_germline":
                     found = len(result["fields"]["samples_germline"])
@@ -490,8 +534,39 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
                             homozygous +=1
                         else:
                             pass
+                    
+                    if "full_access" in roles:
+                        rows = []
+                        samples = result["fields"]["samples_germline"]
+                        effs = result["fields"].get("effs", [])
+                        
+                        # Group effects by transcript_id and build transcript information array
+                        transcripts_info = []
+                        if effs:
+                            for eff in effs:
+                                transcript_data = {
+                                    "transcript_id": eff.get("transcript_id", ""),
+                                    "codon_change": eff.get("codon_change", ""),
+                                    "amino_acid_change": eff.get("amino_acid_change", ""),
+                                    "gene_name": eff.get("gene_name", ""),
+                                    #"functional_class": eff.get("functional_class", ""),
+                                    #"amino_acid_length": eff.get("amino_acid_length", ""),
+                                    #"effect_impact": eff.get("effect_impact", ""),
+                                    #"effect": eff.get("effect", "")
+                                }
+                                transcripts_info.append(transcript_data)
+                        
+                        # Add one row per sample with the same transcripts information
+                        for sample in samples:
+                            row = sample.copy()
+                            row["transcripts"] = transcripts_info
+                            rows.append(row)
+                    else:
+                        rows = []
+                    
+                    print (rows)
 
-                    found_zygosity = [{"Homozygous":{"total":homozygous}}, {"Heterozygous":{"total":heterozygous}}]
+                    found_zygosity = [{"Homozygous":{"total":homozygous, "rows":rows}}, {"Heterozygous":{"total":heterozygous, "rows":rows}}]
                 #else:
                 #    found+=1
     
