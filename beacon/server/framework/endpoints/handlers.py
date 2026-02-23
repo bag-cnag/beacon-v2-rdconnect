@@ -156,7 +156,8 @@ def handler_jwt_token( entity, fetch_func, build_response_func ):
             roles =  _extract_items( decoded, 'realm_access' )
             
             #Possible roles: full_access, count_access, boolean_access
-            roles = ["full_access"]
+            #roles = ["full_access"]
+            roles = []
             
             print ("jwt token info is:")
             print ("groups:")
@@ -248,7 +249,8 @@ def handler_variants( entity, fetch_func, build_response_func ):
 
         
         #Possible roles: full_access, count_access, boolean_access
-        roles = ["full_access"]
+        #roles = ["full_access"]
+        roles = []
         
         #num_total_results, response = await fetch_func( qparams, access_token, groups, projects, request )
         all_data = await fetch_func( qparams, {"service_token":service_token, "fixed_token":access_token}, groups, projects, roles, request )
