@@ -276,6 +276,10 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             #Add project filter for querying dataset 
             if config.fixed_token_use and projects_from_token:
                 payload['filtered'].append({'id': "report_id", 'value': participants_to_query})
+            
+            #With jwt token also  
+            if not config.fixed_token_use and check_request_origin() == "nasertic":
+                payload['filtered'].append({'id': "report_id", 'value': participants_to_query})
 
             # Check for duplicate 'features' fields in payload['filtered']
             features_count = sum(1 for item in payload['filtered'] if isinstance(item, dict) and item.get('id') == 'features')
