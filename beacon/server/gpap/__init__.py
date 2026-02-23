@@ -256,7 +256,8 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             else:
                 headers = { 'Authorization': access_token, 'Content-Type': 'application/json' }
                 ps_endpoint = config.ps_participants_by_exp
-                total_var = "total_page"
+                total_var = "total"
+                #total_var = "total_page"
 
             payload = phenostore_playload( qparams, qparams[ 'targetIdReq' ] )
 
