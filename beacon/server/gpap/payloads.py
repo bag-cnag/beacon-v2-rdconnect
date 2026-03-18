@@ -535,7 +535,7 @@ def genomics_variants_resp_handling(qparams, access_token, variants_dict, experi
                         else:
                             pass
                     
-                    if "full_access" in roles:
+                    if "beacon_full_access" in roles:
                         rows = []
                         samples = result["fields"]["samples_germline"]
                         effs = result["fields"].get("effs", [])

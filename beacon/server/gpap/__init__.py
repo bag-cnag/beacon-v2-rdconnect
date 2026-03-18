@@ -183,7 +183,7 @@ def fetch_biosamples_by_biosample(qparams, access_token, groups, projects, roles
            
             else:
                 # Granularity handling
-                if "full_access" in roles:
+                if "beacon_full_access" in roles:
                     dm_responses.append({i['entity']:{"total":resp['_meta']['total_items'], "rows":resp['items']}})
                 else:
                     dm_responses.append({i['entity']:{"total":resp['_meta']['total_items']}})
@@ -307,7 +307,7 @@ def fetch_individuals_by_individual( qparams, access_token, groups, projects, ro
             resp = json.loads( resp.text )
              
             # Granularity handling
-            if "full_access" in roles:
+            if "beacon_full_access" in roles:
                 ind_responses.append({i['entity']:{"total":resp[ 'total' ], "rows":resp['rows']}})
             else:
                 ind_responses.append({i['entity']:{"total":resp[ total_var]}})
